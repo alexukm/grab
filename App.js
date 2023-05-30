@@ -10,7 +10,6 @@ import UserSignUp from "./src/screens/UserRegisterForm";
 import DriverSignUp from "./src/screens/DriverRegisterForm";
 import DriverRegisterImage from "./src/screens/DriverRegisterImage";
 const Stack = createStackNavigator();
-const test = 1
 export default function App() {
   return (
       <NativeBaseProvider>

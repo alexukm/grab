@@ -6,6 +6,7 @@ import MapView from 'react-native-maps';
 import RemixIcon from 'react-native-remix-icon';
 import DatePicker from 'react-native-date-picker';
 import Geocoder from 'react-native-geocoding';
+import MapViewDirections from 'react-native-maps-directions';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc'); // 将YOUR_API_KEY替换为您的逆地理编码API密钥
@@ -34,6 +35,10 @@ const HomeScreen = () => {
 
     const [isDepartureSelected, setIsDepartureSelected] = useState(false);
     const [isDestinationSelected, setIsDestinationSelected] = useState(false);
+
+    //跳转目的地地图
+    const [destinationCoords, setDestinationCoords] = useState(null);
+
 
     const fetchDepartureSuggestions = async (input) => {
         if (!showDepartureSuggestions) {
@@ -74,6 +79,28 @@ const HomeScreen = () => {
             setDestinationSuggestions([]); // 清空建议列表
         }
     }, [destination]);
+
+    //获取经纬度，并将地图焦点移动到新的位置
+    const moveToLocation = async (placeId) => {
+        try {
+            const response = await fetch(
+                `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`
+            );
+            const data = await response.json();
+            const location = data.result.geometry.location;
+
+            mapRef.current.animateToRegion({
+                latitude: location.lat,
+                longitude: location.lng,
+                latitudeDelta: 0.005,  // smaller value for a more zoomed in view
+                longitudeDelta: 0.005,  // smaller value for a more zoomed in view
+            }, 1000);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+
 
 
     const getCurrentLocation = () => {
@@ -186,7 +213,7 @@ const HomeScreen = () => {
             <View style={styles.container}>
                 <MapView
                     ref={mapRef}
-                    style={styles.map}
+                    style={{...styles.map, marginBottom: Dimensions.get('window').height / 2}}
                     initialRegion={{
                         latitude: 2.9435,
                         longitude: 101.7654,
@@ -291,12 +318,12 @@ const HomeScreen = () => {
                                         let shortAddress = addressParts.slice(0, 2).join(','); // Join the first two parts
                                         setDeparture(shortAddress); // 然后更新出发地的值
                                         setShowDepartureSuggestions(false); // 先关闭推荐列表
+                                        moveToLocation(suggestion.place_id); // 这里添加代码使地图移动到新的出发地
                                         // 这里添加代码使地图移动到新的出发地
                                     }}
                                 >
                                     {suggestion.description}
                                 </Text>
-
                             ))}
                             <HStack space={2} alignItems="center">
                                 <RemixIcon name="flag-line" size={20} />
@@ -313,18 +340,28 @@ const HomeScreen = () => {
                             {showDestinationSuggestions && destinationSuggestions.slice(0, 5).map((suggestion) => (
                                 <Text
                                     key={suggestion.place_id}
-                                    onPress={() => {
+                                    onPress={async () => {
                                         setIsDestinationSelected(true);
                                         let addressParts = suggestion.description.split(','); // Split the address into parts
                                         let shortAddress = addressParts.slice(0, 2).join(','); // Join the first two parts
-                                        setDestination(shortAddress); // 然后更新目的地的值
+                                        setDestination(shortAddress); // 更新目的地的值
                                         setShowDestinationSuggestions(false); // 先关闭推荐列表
-                                        // 这里添加代码使地图移动到新的目的地
+
+                                        // 获取新的目的地的经纬度并移动地图
+                                        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(shortAddress)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`);
+                                        const data = await response.json();
+                                        const location = data.results[0].geometry.location;
+                                        setDestinationCoords({ latitude: location.lat, longitude: location.lng });
+                                        mapRef.current.animateToRegion({
+                                            latitude: location.lat,
+                                            longitude: location.lng,
+                                            latitudeDelta: 0.005,
+                                            longitudeDelta: 0.005,
+                                        }, 1000);
                                     }}
                                 >
                                     {suggestion.description}
                                 </Text>
-
                             ))}
                             <Pressable onPress={handleOpenDatePicker} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <HStack space={2} alignItems="center">

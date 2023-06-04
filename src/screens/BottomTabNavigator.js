@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // 更改为MaterialCommunityIcons
+import RemixIcon from 'react-native-remix-icon'; // 更改为RemixIcon
 
 import HomeScreen from './HomeScreen';
 import RideStatusScreen from './RideStatusScreen';
@@ -18,16 +18,16 @@ const BottomTabNavigator = () => {
                     let iconName;
 
                     if (route.name === 'Home') {
-                        iconName = 'home';
+                        iconName = 'home-line';
                     } else if (route.name === 'Ride Status') {
-                        iconName = 'home';
+                        iconName = 'car-line';
                     } else if (route.name === 'Messages') {
-                        iconName = 'home';
+                        iconName = 'message-2-line';
                     } else if (route.name === 'Account') {
-                        iconName = 'home'; // 更改为account-outline
+                        iconName = 'account-circle-line';
                     }
 
-                    return <Icon name={iconName} size={size} color={color} />;
+                    return <RemixIcon name={iconName} size={size} color={color} />;
                 },
                 tabBarActiveTintColor: 'orange',
                 tabBarInactiveTintColor: 'gray',

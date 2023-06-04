@@ -2,12 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { PermissionsAndroid, Dimensions, Image, Pressable, View, Alert } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import { Box, Button, HStack, Input, NativeBaseProvider, Text, VStack, Modal } from 'native-base';
-import MapView from 'react-native-maps';
+// import MapView from 'react-native-maps';
 import RemixIcon from 'react-native-remix-icon';
 import DatePicker from 'react-native-date-picker';
 import Geocoder from 'react-native-geocoding';
-import MapViewDirections from 'react-native-maps-directions';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import MapView, { Polyline } from 'react-native-maps';
+
+
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc'); // 将YOUR_API_KEY替换为您的逆地理编码API密钥
 
@@ -39,10 +40,17 @@ const HomeScreen = () => {
     //跳转目的地地图
     const [destinationCoords, setDestinationCoords] = useState(null);
 
+    //存储这个坐标数组
+    const [coords, setCoords] = useState([]);
+
+
+    const [estimatedDistance, setEstimatedDistance] = useState(null);
+    const [estimatedDuration, setEstimatedDuration] = useState(null);
 
     const fetchDepartureSuggestions = async (input) => {
         if (!showDepartureSuggestions) {
             const response = await fetch(
+                // 'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&components=country:MY|administrative_area:Selangor&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc'
                 `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&components=country:my&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`
             );
             const data = await response.json();
@@ -99,9 +107,6 @@ const HomeScreen = () => {
             console.error(error);
         }
     };
-
-
-
 
     const getCurrentLocation = () => {
         Geolocation.getCurrentPosition(async info => {
@@ -220,7 +225,14 @@ const HomeScreen = () => {
                         latitudeDelta: 0.0922,
                         longitudeDelta: 0.0421,
                     }}
-                />
+                >
+                    <Polyline
+                        coordinates={coords}
+                        strokeWidth={4}
+                        strokeColor="red"
+                    />
+                </MapView>
+
                 {isSuccessScreen ? (
                     <Box
                         bg="white"
@@ -263,7 +275,7 @@ const HomeScreen = () => {
                                 <Button variant="unstyled" onPress={handleBack}>
                                     <Text>Back</Text>
                                 </Button>
-                                <Text>The estimated distance is: 10.6 KM</Text>
+                                <Text>The estimated distance is: {estimatedDistance}</Text>
                             </HStack>
                             <HStack justifyContent="space-between" alignItems="center">
                                 <Image
@@ -272,7 +284,7 @@ const HomeScreen = () => {
                                     }}
                                     style={{ width: 100, height: 100 }}
                                 />
-                                <Text>23 mins</Text>
+                                <Text>The estimated time is: {estimatedDuration}</Text>
                                 <Text>MYR 23</Text>
                             </HStack>
                             <Input
@@ -331,11 +343,52 @@ const HomeScreen = () => {
                                     flex={1}
                                     placeholder="Destination"
                                     value={destination}
-                                    onChangeText={(text) => {
+                                    onChangeText={async (text) => {
                                         setIsDestinationSelected(false);
                                         setDestination(text);
+
+                                        // 如果出发地和目的地都已经选择，请求路径规划
+                                        if (departure) {
+                                            fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${departure}&destination=${text}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    if (data.routes.length) {
+                                                        const legs = data.routes[0].legs[0];
+
+                                                        const distance = legs.distance.text; // 这里可以得到距离，例如 "10.6 km"
+                                                        const duration = legs.duration.text; // 这里可以得到预计时间，例如 "23 mins"
+
+                                                        setEstimatedDistance(distance);
+                                                        setEstimatedDuration(duration);
+
+                                                        const steps = legs.steps;
+                                                        const newCoords = steps.reduce((acc, step) => {
+                                                            const startLoc = step.start_location;
+                                                            const endLoc = step.end_location;
+                                                            return acc.concat([
+                                                                { latitude: startLoc.lat, longitude: startLoc.lng },
+                                                                { latitude: endLoc.lat, longitude: endLoc.lng }
+                                                            ]);
+                                                        }, []);
+                                                        setCoords(newCoords);
+
+                                                        const latitudeList = newCoords.map(coord => coord.latitude);
+                                                        const longitudeList = newCoords.map(coord => coord.longitude);
+                                                        const minLatitude = Math.min(...latitudeList);
+                                                        const maxLatitude = Math.max(...latitudeList);
+                                                        const minLongitude = Math.min(...longitudeList);
+                                                        const maxLongitude = Math.max(...longitudeList);
+
+                                                        mapRef.current.fitToCoordinates([{ latitude: minLatitude, longitude: minLongitude }, { latitude: maxLatitude, longitude: maxLongitude }], {
+                                                            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+                                                            animated: true,
+                                                        });
+                                                    }
+                                                });
+                                        }
                                     }}
                                 />
+
                             </HStack>
                             {showDestinationSuggestions && destinationSuggestions.slice(0, 5).map((suggestion) => (
                                 <Text

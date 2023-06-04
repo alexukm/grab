@@ -47,6 +47,13 @@ const HomeScreen = () => {
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedDuration, setEstimatedDuration] = useState(null);
 
+
+    const updateAddressSuggestions = async (input, setSuggestions) => {
+        const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&components=country:my&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`);
+        const data = await response.json();
+        setSuggestions(data.predictions);
+    }
+
     const fetchDepartureSuggestions = async (input) => {
         if (!showDepartureSuggestions) {
             const response = await fetch(
@@ -318,6 +325,7 @@ const HomeScreen = () => {
                                     onChangeText={(text) => {
                                         setIsDepartureSelected(false);
                                         setDeparture(text);
+                                        updateAddressSuggestions(text, setDepartureSuggestions);
                                     }}
                                 />
                             </HStack>
@@ -343,13 +351,32 @@ const HomeScreen = () => {
                                     flex={1}
                                     placeholder="Destination"
                                     value={destination}
-                                    onChangeText={async (text) => {
+                                    onChangeText={(text) => {
                                         setIsDestinationSelected(false);
                                         setDestination(text);
+                                        updateAddressSuggestions(text, setDestinationSuggestions);
+                                    }}
+                                />
+                            </HStack>
+                            {showDestinationSuggestions && destinationSuggestions.slice(0, 5).map((suggestion) => (
+                                <Text
+                                    key={suggestion.place_id}
+                                    onPress={async () => {
+                                        setIsDestinationSelected(true);
+                                        let addressParts = suggestion.description.split(','); // Split the address into parts
+                                        let shortAddress = addressParts.slice(0, 2).join(','); // Join the first two parts
+                                        setDestination(shortAddress); // 更新目的地的值
+                                        setShowDestinationSuggestions(false); // 先关闭推荐列表
+
+                                        // 获取新的目的地的经纬度并进行路径规划
+                                        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(shortAddress)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`);
+                                        const data = await response.json();
+                                        const location = data.results[0].geometry.location;
+                                        setDestinationCoords({ latitude: location.lat, longitude: location.lng });
 
                                         // 如果出发地和目的地都已经选择，请求路径规划
                                         if (departure) {
-                                            fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${departure}&destination=${text}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
+                                            fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${departure}&destination=${shortAddress}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
                                                 .then(response => response.json())
                                                 .then(data => {
                                                     if (data.routes.length) {
@@ -380,42 +407,18 @@ const HomeScreen = () => {
                                                         const maxLongitude = Math.max(...longitudeList);
 
                                                         mapRef.current.fitToCoordinates([{ latitude: minLatitude, longitude: minLongitude }, { latitude: maxLatitude, longitude: maxLongitude }], {
-                                                            edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+                                                            edgePadding: { top: 130, right: 130, bottom: 130, left: 130 },
                                                             animated: true,
                                                         });
                                                     }
                                                 });
                                         }
                                     }}
-                                />
-
-                            </HStack>
-                            {showDestinationSuggestions && destinationSuggestions.slice(0, 5).map((suggestion) => (
-                                <Text
-                                    key={suggestion.place_id}
-                                    onPress={async () => {
-                                        setIsDestinationSelected(true);
-                                        let addressParts = suggestion.description.split(','); // Split the address into parts
-                                        let shortAddress = addressParts.slice(0, 2).join(','); // Join the first two parts
-                                        setDestination(shortAddress); // 更新目的地的值
-                                        setShowDestinationSuggestions(false); // 先关闭推荐列表
-
-                                        // 获取新的目的地的经纬度并移动地图
-                                        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(shortAddress)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`);
-                                        const data = await response.json();
-                                        const location = data.results[0].geometry.location;
-                                        setDestinationCoords({ latitude: location.lat, longitude: location.lng });
-                                        mapRef.current.animateToRegion({
-                                            latitude: location.lat,
-                                            longitude: location.lng,
-                                            latitudeDelta: 0.005,
-                                            longitudeDelta: 0.005,
-                                        }, 1000);
-                                    }}
                                 >
                                     {suggestion.description}
                                 </Text>
                             ))}
+
                             <Pressable onPress={handleOpenDatePicker} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <HStack space={2} alignItems="center">
                                     <RemixIcon name="calendar-2-fill" size={20} color="gray" />

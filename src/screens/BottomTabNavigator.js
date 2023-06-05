@@ -1,14 +1,26 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet } from 'react-native';
-import RemixIcon from 'react-native-remix-icon'; // 更改为RemixIcon
+import RemixIcon from 'react-native-remix-icon';
 
 import HomeScreen from './HomeScreen';
 import RideStatusScreen from './RideStatusScreen';
 import MessagesScreen from './MessagesScreen';
 import AccountScreen from './AccountScreen';
+import OrderDetailScreen from './OrderDetailScreen';
 
 const Tab = createBottomTabNavigator();
+const HomeStack = createStackNavigator();
+
+const HomeStackNavigator = () => {
+    return (
+        <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+            <HomeStack.Screen name="Home" component={HomeScreen} />
+            <HomeStack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
+        </HomeStack.Navigator>
+    );
+};
 
 const BottomTabNavigator = () => {
     return (
@@ -19,7 +31,7 @@ const BottomTabNavigator = () => {
 
                     if (route.name === 'Home') {
                         iconName = 'home-line';
-                    } else if (route.name === 'Ride Status') {
+                    } else if (route.name === 'Activity') {
                         iconName = 'car-line';
                     } else if (route.name === 'Messages') {
                         iconName = 'message-2-line';
@@ -36,8 +48,8 @@ const BottomTabNavigator = () => {
                 tabBarLabelStyle: styles.tabBarLabelStyle,
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Ride Status" component={RideStatusScreen} />
+            <Tab.Screen name="HomeTab" component={HomeStackNavigator} />
+            <Tab.Screen name="Activity" component={RideStatusScreen} />
             <Tab.Screen name="Messages" component={MessagesScreen} />
             <Tab.Screen name="Account" component={AccountScreen} />
         </Tab.Navigator>

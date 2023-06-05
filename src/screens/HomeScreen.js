@@ -7,7 +7,7 @@ import RemixIcon from 'react-native-remix-icon';
 import DatePicker from 'react-native-date-picker';
 import Geocoder from 'react-native-geocoding';
 import MapView, { Polyline } from 'react-native-maps';
-
+import { useNavigation } from '@react-navigation/native';
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc'); // 将YOUR_API_KEY替换为您的逆地理编码API密钥
@@ -46,6 +46,8 @@ const HomeScreen = () => {
 
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedDuration, setEstimatedDuration] = useState(null);
+
+    const navigation = useNavigation();
 
 
     const updateAddressSuggestions = async (input, setSuggestions) => {
@@ -180,9 +182,54 @@ const HomeScreen = () => {
 
 
     const handleNextStep = () => {
+        if (departure && destination) {
+            fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${departure}&destination=${destination}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.routes.length) {
+                        const legs = data.routes[0].legs[0];
+
+                        const distance = legs.distance.text;
+                        const duration = legs.duration.text;
+
+                        setEstimatedDistance(distance);
+                        setEstimatedDuration(duration);
+
+                        const steps = legs.steps;
+                        const newCoords = steps.reduce((acc, step) => {
+                            const startLoc = step.start_location;
+                            const endLoc = step.end_location;
+                            return acc.concat([
+                                { latitude: startLoc.lat, longitude: startLoc.lng },
+                                { latitude: endLoc.lat, longitude: endLoc.lng }
+                            ]);
+                        }, []);
+                        setCoords(newCoords);
+
+                        const latitudeList = newCoords.map(coord => coord.latitude);
+                        const longitudeList = newCoords.map(coord => coord.longitude);
+                        const minLatitude = Math.min(...latitudeList);
+                        const maxLatitude = Math.max(...latitudeList);
+                        const minLongitude = Math.min(...longitudeList);
+                        const maxLongitude = Math.max(...longitudeList);
+
+                        mapRef.current.fitToCoordinates([{ latitude: minLatitude, longitude: minLongitude }, { latitude: maxLatitude, longitude: maxLongitude }], {
+                            edgePadding: { top: 30, right: 30, bottom: 30, left: 30 },
+                            animated: true,
+                        });
+                    }
+                });
+        }
         if(isBookingConfirmed) {
-            // Move to the Success Screen
-            setIsSuccessScreen(true);
+            // Move to the OrderDetailScreen
+            navigation.navigate('OrderDetailScreen', {
+                departure,
+                destination,
+                date: date.toISOString(), // 将日期转换为字符串
+                passengerCount,
+                pickupWaiting,
+                coords
+            });
         } else {
             // Confirm the booking
             setIsBookingConfirmed(true);
@@ -368,57 +415,18 @@ const HomeScreen = () => {
                                         setDestination(shortAddress); // 更新目的地的值
                                         setShowDestinationSuggestions(false); // 先关闭推荐列表
 
-                                        // 获取新的目的地的经纬度并进行路径规划
+                                        // 获取新的目的地的经纬度
                                         const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(shortAddress)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`);
                                         const data = await response.json();
                                         const location = data.results[0].geometry.location;
                                         setDestinationCoords({ latitude: location.lat, longitude: location.lng });
 
-                                        // 如果出发地和目的地都已经选择，请求路径规划
-                                        if (departure) {
-                                            fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${departure}&destination=${shortAddress}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (data.routes.length) {
-                                                        const legs = data.routes[0].legs[0];
-
-                                                        const distance = legs.distance.text; // 这里可以得到距离，例如 "10.6 km"
-                                                        const duration = legs.duration.text; // 这里可以得到预计时间，例如 "23 mins"
-
-                                                        setEstimatedDistance(distance);
-                                                        setEstimatedDuration(duration);
-
-                                                        const steps = legs.steps;
-                                                        const newCoords = steps.reduce((acc, step) => {
-                                                            const startLoc = step.start_location;
-                                                            const endLoc = step.end_location;
-                                                            return acc.concat([
-                                                                { latitude: startLoc.lat, longitude: startLoc.lng },
-                                                                { latitude: endLoc.lat, longitude: endLoc.lng }
-                                                            ]);
-                                                        }, []);
-                                                        setCoords(newCoords);
-
-                                                        const latitudeList = newCoords.map(coord => coord.latitude);
-                                                        const longitudeList = newCoords.map(coord => coord.longitude);
-                                                        const minLatitude = Math.min(...latitudeList);
-                                                        const maxLatitude = Math.max(...latitudeList);
-                                                        const minLongitude = Math.min(...longitudeList);
-                                                        const maxLongitude = Math.max(...longitudeList);
-
-                                                        mapRef.current.fitToCoordinates([{ latitude: minLatitude, longitude: minLongitude }, { latitude: maxLatitude, longitude: maxLongitude }], {
-                                                            edgePadding: { top: 130, right: 130, bottom: 130, left: 130 },
-                                                            animated: true,
-                                                        });
-                                                    }
-                                                });
-                                        }
+                                        // 路径规划的逻辑已经移到 handleNextStep 函数中，这里不再需要
                                     }}
                                 >
                                     {suggestion.description}
                                 </Text>
                             ))}
-
                             <Pressable onPress={handleOpenDatePicker} style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <HStack space={2} alignItems="center">
                                     <RemixIcon name="calendar-2-fill" size={20} color="gray" />

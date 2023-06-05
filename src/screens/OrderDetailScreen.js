@@ -51,7 +51,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
     const maxLongitude = Math.max(...coords.map(c => c.longitude));
     const centerLatitude = (minLatitude + maxLatitude) / 2;
     const centerLongitude = (minLongitude + maxLongitude) / 2;
-    const padding = 2.0; // 你可以调整这个值
+    const padding = 2.8; // 你可以调整这个值
     const latitudeDelta = (maxLatitude - minLatitude) * padding;
     const longitudeDelta = (maxLongitude - minLongitude) * padding;
 

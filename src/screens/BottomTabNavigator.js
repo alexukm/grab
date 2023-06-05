@@ -9,18 +9,11 @@ import RideStatusScreen from './RideStatusScreen';
 import MessagesScreen from './MessagesScreen';
 import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
+import RideOrderScreen from './RideOrderScreen';
+
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
-
-const HomeStackNavigator = () => {
-    return (
-        <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-            <HomeStack.Screen name="Home" component={HomeScreen} />
-            <HomeStack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
-        </HomeStack.Navigator>
-    );
-};
 
 const BottomTabNavigator = () => {
     return (
@@ -48,7 +41,23 @@ const BottomTabNavigator = () => {
                 tabBarLabelStyle: styles.tabBarLabelStyle,
             })}
         >
-            <Tab.Screen name="HomeTab" component={HomeStackNavigator} />
+            <Tab.Screen name="HomeTab">
+                {() => (
+                    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+                        <HomeStack.Screen name="Home" component={HomeScreen} />
+                        <HomeStack.Screen
+                            name="OrderDetailScreen"
+                            component={OrderDetailScreen}
+                            options={{ headerShown: true }}
+                        />
+                        <HomeStack.Screen
+                            name="RideOrderScreen"
+                            component={RideOrderScreen}
+                            options={{ headerShown: true }}
+                        />
+                    </HomeStack.Navigator>
+                )}
+            </Tab.Screen>
             <Tab.Screen name="Activity" component={RideStatusScreen} />
             <Tab.Screen name="Messages" component={MessagesScreen} />
             <Tab.Screen name="Account" component={AccountScreen} />

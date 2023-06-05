@@ -39,14 +39,18 @@
 //
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-// import BottomTabNavigator from './BottomTabNavigator';
+import { NativeBaseProvider } from 'native-base';
 import BottomTabNavigator from "./src/screens/BottomTabNavigator";
+
 const App = () => {
     return (
-        <NavigationContainer>
-            <BottomTabNavigator />
-        </NavigationContainer>
+        <NativeBaseProvider>
+            <NavigationContainer>
+                <BottomTabNavigator />
+            </NavigationContainer>
+        </NativeBaseProvider>
     );
 };
 
 export default App;
+

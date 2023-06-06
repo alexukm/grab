@@ -170,6 +170,11 @@ const RideOrderScreen = () => {
         setOpen(true);
     };
 
+    const navigateHome = () => {
+        navigation.navigate('Tabs', { screen: 'Home' });
+    };
+
+
     const formatDate = (date) => {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
@@ -285,7 +290,14 @@ const RideOrderScreen = () => {
                         strokeWidth={4}
                         strokeColor="red"
                     />
+
                 </MapView>
+
+                {!isSuccessScreen && !isBookingConfirmed && (
+                    <Button variant="link" onPress={navigateHome} position="absolute" left={5} top={5}>
+                        <RemixIcon name="arrow-left-circle-line" size={30} color="black" />
+                    </Button>
+                )}
 
                 {isSuccessScreen ? (
                     <Box
@@ -443,7 +455,15 @@ const RideOrderScreen = () => {
                                     </Box>
                                 </HStack>
                             </Pressable>
-                            <Button mt={4} onPress={handleNextStep}>
+                            <Button
+                                mt={4}
+                                onPress={handleNextStep}
+                                style={{
+                                    paddingVertical: 15,
+                                    paddingHorizontal: 20,
+                                    borderRadius: 10
+                                }}
+                            >
                                 Next Step
                             </Button>
                             <DatePicker

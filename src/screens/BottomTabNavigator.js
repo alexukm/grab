@@ -11,9 +11,19 @@ import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';
 
-
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
+const OrderStack = createStackNavigator();  // 创建一个新的 StackNavigator
+
+// 创建 OrderStack
+const OrderStackScreen = () => {
+    return (
+        <OrderStack.Navigator screenOptions={{ headerShown: false }}>
+            <OrderStack.Screen name="RideOrderScreen" component={RideOrderScreen} />
+            <OrderStack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
+        </OrderStack.Navigator>
+    );
+};
 
 const BottomTabNavigator = () => {
     return (
@@ -41,27 +51,20 @@ const BottomTabNavigator = () => {
                 tabBarLabelStyle: styles.tabBarLabelStyle,
             })}
         >
-            <Tab.Screen name="HomeTab">
-                {() => (
-                    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-                        <HomeStack.Screen name="Home" component={HomeScreen} />
-                        <HomeStack.Screen
-                            name="OrderDetailScreen"
-                            component={OrderDetailScreen}
-                            options={{ headerShown: true }}
-                        />
-                        <HomeStack.Screen
-                            name="RideOrderScreen"
-                            component={RideOrderScreen}
-                            options={{ headerShown: true }}
-                        />
-                    </HomeStack.Navigator>
-                )}
-            </Tab.Screen>
-            <Tab.Screen name="Activity" component={RideStatusScreen} />
+            <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Tab.Screen name="Activity" component={RideStatusScreen} screenOptions={{ headerShown: false }}/>
             <Tab.Screen name="Messages" component={MessagesScreen} />
             <Tab.Screen name="Account" component={AccountScreen} />
         </Tab.Navigator>
+    );
+};
+
+const MainNavigator = () => {
+    return (
+        <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+            <HomeStack.Screen name="Tabs" component={BottomTabNavigator} />
+            <HomeStack.Screen name="Orders" component={OrderStackScreen} options={{ headerShown: false }} />
+        </HomeStack.Navigator>
     );
 };
 
@@ -82,4 +85,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default BottomTabNavigator;
+export default MainNavigator;

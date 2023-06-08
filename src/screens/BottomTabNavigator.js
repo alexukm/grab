@@ -5,7 +5,7 @@ import { StyleSheet } from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 
 import HomeScreen from './HomeScreen';
-import RideStatusScreen from './RideStatusScreen';
+import OrderListScreen from "./OrderListScreen";
 import MessagesScreen from './MessagesScreen';
 import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
@@ -52,7 +52,7 @@ const BottomTabNavigator = () => {
             })}
         >
             <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Activity" component={RideStatusScreen} screenOptions={{ headerShown: false }}/>
+            <Tab.Screen name="Activity" component={OrderListScreen} options={{ headerShown: false }}/>
             <Tab.Screen name="Messages" component={MessagesScreen} />
             <Tab.Screen name="Account" component={AccountScreen} />
         </Tab.Navigator>

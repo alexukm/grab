@@ -10,10 +10,13 @@ import MessagesScreen from './MessagesScreen';
 import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';
+import SimpleOrderDetailScreen from './SimpleOrderDetailScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const OrderStack = createStackNavigator();  // 创建一个新的 StackNavigator
+const SimpleOrderDetailStack = createStackNavigator();
+
 
 // 创建 OrderStack
 const OrderStackScreen = () => {
@@ -24,6 +27,12 @@ const OrderStackScreen = () => {
         </OrderStack.Navigator>
     );
 };
+
+const SimpleOrderDetailStackScreen = () => (
+    <SimpleOrderDetailStack.Navigator screenOptions={{ headerShown: false }}>
+        <SimpleOrderDetailStack.Screen name="SimpleOrderDetailScreen" component={SimpleOrderDetailScreen} />
+    </SimpleOrderDetailStack.Navigator>
+);
 
 const BottomTabNavigator = () => {
     return (
@@ -59,14 +68,13 @@ const BottomTabNavigator = () => {
     );
 };
 
-const MainNavigator = () => {
-    return (
-        <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-            <HomeStack.Screen name="Tabs" component={BottomTabNavigator} />
-            <HomeStack.Screen name="Orders" component={OrderStackScreen} options={{ headerShown: false }} />
-        </HomeStack.Navigator>
-    );
-};
+const MainNavigator = () => (
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+        <HomeStack.Screen name="Tabs" component={BottomTabNavigator} />
+        <HomeStack.Screen name="Orders" component={OrderStackScreen} options={{ headerShown: false }} />
+        <HomeStack.Screen name="SimpleOrderDetails" component={SimpleOrderDetailStackScreen} options={{ headerShown: false }} />
+    </HomeStack.Navigator>
+);
 
 const styles = StyleSheet.create({
     tabBarStyle: {

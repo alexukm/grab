@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PermissionsAndroid, Dimensions, Image, Pressable, View, Alert } from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
+import {check, PERMISSIONS, RESULTS, request} from 'react-native-permissions';
 import { Box, Button, HStack, Input, NativeBaseProvider, Text, VStack, Modal } from 'native-base';
 // import MapView from 'react-native-maps';
 import RemixIcon from 'react-native-remix-icon';
@@ -8,6 +9,7 @@ import DatePicker from 'react-native-date-picker';
 import Geocoder from 'react-native-geocoding';
 import MapView, { Polyline } from 'react-native-maps';
 import { useNavigation } from '@react-navigation/native';
+
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc'); // 将YOUR_API_KEY替换为您的逆地理编码API密钥
@@ -290,7 +292,6 @@ const RideOrderScreen = () => {
                         strokeWidth={4}
                         strokeColor="red"
                     />
-
                 </MapView>
 
                 {!isSuccessScreen && !isBookingConfirmed && (

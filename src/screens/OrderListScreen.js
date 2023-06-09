@@ -66,7 +66,7 @@ const OrderListScreen = ({ navigation }) => {
             Destination: 'Chicago',
             Time: '2023-06-10 10:00',
             Price: '$400',
-            Status: 'Completed',
+            Status: 'Awaiting departure',
         },
         {
             id: '3',
@@ -74,7 +74,15 @@ const OrderListScreen = ({ navigation }) => {
             Destination: 'Boston',
             Time: '2023-06-11 16:00',
             Price: '$350',
-            Status: 'Cancel',
+            Status: 'Cancelled',
+        },
+        {
+            id: '4',
+            Departure: 'Houston',
+            Destination: 'Boston',
+            Time: '2023-06-11 16:00',
+            Price: '$350',
+            Status: 'Arrived',
         }
         //... other initial orders
     ];
@@ -88,8 +96,9 @@ const OrderListScreen = ({ navigation }) => {
                 Destination: 'Boston',
                 Time: '2023-06-11 16:00',
                 Price: '$350',
-                Status: 'Cancel',
+                Status: 'In transit',
             },
+
 
             //... other more orders
         ];

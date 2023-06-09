@@ -29,7 +29,7 @@ const OrderStackScreen = () => {
 };
 
 const SimpleOrderDetailStackScreen = () => (
-    <SimpleOrderDetailStack.Navigator screenOptions={{ headerShown: false }}>
+    <SimpleOrderDetailStack.Navigator>
         <SimpleOrderDetailStack.Screen name="SimpleOrderDetailScreen" component={SimpleOrderDetailScreen} />
     </SimpleOrderDetailStack.Navigator>
 );

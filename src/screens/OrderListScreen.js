@@ -62,8 +62,8 @@ const OrderListScreen = ({ navigation }) => {
         },
         {
             id: '2',
-            Departure: 'Los Angeles',
-            Destination: 'Chicago',
+            Departure: 'KIZ Student Premier Housing, Bangi',
+            Destination: 'Vista Bangi Service Apartment, Jalan Reko',
             Time: '2023-06-10 10:00',
             Price: '$400',
             Status: 'Awaiting departure',

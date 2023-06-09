@@ -54,44 +54,42 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
     };
 
 
-    const InfoBox = ({ children, showBack }) => (
-        <Box style={styles.box}>
-            <View style={{ borderBottomWidth: 1, borderBottomColor: '#ddd', marginBottom: 5 }} />
-            {children}
+    const InfoBox = ({ title, children }) => (
+        <Box bg="white" shadow={2} rounded="lg" p={4}>
+            <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{title}</Text>
+            <VStack space={4} mt={3}>
+                {children}
+            </VStack>
         </Box>
     );
 
 
-
     const OrderInfoBox = ({ showStatus }) => (
-        <InfoBox title="Order Information" showBack={showStatus}>
-            <VStack space={4} alignItems="stretch">
-                <HStack justifyContent="space-between" alignItems="center">
-                </HStack>
-                <HStack>
-                    <RemixIcon name="map-pin-2-fill" size={24} color="black" />
-                    <Text>Departure: {Departure}</Text>
-                </HStack>
-                <HStack>
-                    <RemixIcon name="map-pin-2-fill" size={24} color="black" />
-                    <Text>Destination: {Destination}</Text>
-                </HStack>
-                <HStack>
-                    <RemixIcon name="calendar-line" size={24} color="black" />
-                    <Text>Date and Time: {Time}</Text>
-                </HStack>
-                <HStack>
-                    <RemixIcon name="money-dollar-circle-line" size={24} color="black" />
-                    <Text>Price: {Price}</Text>
-                </HStack>
-                {showStatus && (
-                    <Button variant="solid" colorScheme="blue">
-                        <Text>Status: {Status}</Text>
-                    </Button>
-                )}
-            </VStack>
+        <InfoBox title="Order Information">
+            <HStack space={2} alignItems="center">
+                <RemixIcon name="map-pin-line" size={24} color="blue" />
+                <Text>Departure: {Departure}</Text>
+            </HStack>
+            <HStack space={2} alignItems="center">
+                <RemixIcon name="map-pin-line" size={24} color="red" />
+                <Text>Destination: {Destination}</Text>
+            </HStack>
+            <HStack space={2} alignItems="center">
+                <RemixIcon name="calendar-check-line" size={24} color="black" />
+                <Text>Date and Time: {Time}</Text>
+            </HStack>
+            <HStack space={2} alignItems="center">
+                <RemixIcon name="wallet-3-line" size={24} color="black" />
+                <Text>Price: {Price}</Text>
+            </HStack>
+            {showStatus && (
+                <Button variant="solid" colorScheme="blue">
+                    <Text>Status: {Status}</Text>
+                </Button>
+            )}
         </InfoBox>
     );
+
 
     const PaymentInfoBox = () => (
         <InfoBox title="Payment Information">
@@ -174,21 +172,22 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
         switch (Status) {
             case 'Pending':
                 return (
-                    <>
-                        {departureCoords && destinationCoords && <MapComponent />}
+                    <ScrollView style={styles.fullScreen}>
+                    {departureCoords && destinationCoords && <MapComponent />}
                         <OrderInfoBox showStatus={true} />
-                    </>
+                    </ScrollView>
                 );
             case 'Awaiting departure':
             case 'In transit':
                 return (
                     <>
                         {departureCoords && destinationCoords && (
-                            <>
+                            <ScrollView style={styles.fullScreen}>
                                 <MapComponent />
-                                <DriverInfoBox showBack={true} />
                                 <OrderInfoBox showStatus={false} />
-                            </>
+                                <DriverInfoBox showBack={true} />
+
+                            </ScrollView>
                         )}
                     </>
                 );
@@ -202,9 +201,9 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
                 );
             case 'Cancelled':
                 return (
-                    <>
+                    <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true} />
-                    </>
+                    </ScrollView>
                 );
             default:
                 return null;

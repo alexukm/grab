@@ -7,7 +7,6 @@ const OrderBox = ({ order, navigation }) => {
     const { Departure, Destination, Time, Price, Status } = order;
     const statusColors = { Pending: '#CCCC00', Completed: 'green', Cancel: 'red' };
 
-
     const handlePress = () => {
         navigation.navigate('SimpleOrderDetails', {
             screen: 'SimpleOrderDetailScreen',
@@ -21,8 +20,6 @@ const OrderBox = ({ order, navigation }) => {
             },
         });
     };
-
-
     return (
         <TouchableOpacity onPress={handlePress}>
             <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>

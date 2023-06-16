@@ -1,10 +1,10 @@
 import axios from "axios";
 import {getUserType, getUserID, getUserToken} from "../appUser/UserConstant";
 
-const defaultRequestAddress = "10.37.32.54"
+const defaultRequestAddress = "192.168.49.128"
 const defaultRequestPort = "8080"
 
-const contextPath = "/xfc";
+const contextPath = "/uniEase";
 
 const requestPrefix = {
     httpPrefix: "http://" + defaultRequestAddress + ":" + defaultRequestPort,
@@ -147,4 +147,8 @@ export class HttpUtil {
     getRequestURI(URI) {
         return this.requestBaseURL + URI;
     }
+}
+
+export const httpPrefix = (http) => {
+    return requestPrefix.get(http) + contextPath;
 }

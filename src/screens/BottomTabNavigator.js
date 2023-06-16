@@ -63,7 +63,7 @@ const BottomTabNavigator = () => {
             <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
             <Tab.Screen name="Activity" component={OrderListScreen} options={{ headerShown: false }}/>
             <Tab.Screen name="Messages" component={MessagesScreen} />
-            <Tab.Screen name="Account" component={AccountScreen} />
+            <Tab.Screen name="Account" component={AccountScreen} options={{ headerShown: false }} />
         </Tab.Navigator>
     );
 };

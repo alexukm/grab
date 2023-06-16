@@ -19,19 +19,33 @@ const HomeScreen = () => {
     };
 
     const Card = ({ imageUri, title, description }) => (
-        <Box>
+        <Box
+            bg="white"
+            style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
+            }}
+        >
             <AspectRatio w="100%" ratio={16 / 9}>
                 <Image source={{ uri: imageUri }} style={{ flex: 1 }} />
             </AspectRatio>
             <Center
-                bg="violet.500"
+                bg="white"
                 position="absolute"
                 bottom="0"
                 left="20%"
                 right="20%"
-                _text={{color: "warmGray.50", fontWeight: "700", fontSize: "md"}}
+                _text={{color: "black", fontWeight: "700", fontSize: "md"}}
                 px="3"
-                py="1.5">
+                py="1.5"
+                style={{ justifyContent: 'flex-end' }} // 将内容对齐到下方
+            >
                 <Text>
                     {title}
                 </Text>
@@ -41,18 +55,20 @@ const HomeScreen = () => {
             </Center>
         </Box>
     );
-
     const CardWithoutDescription = ({ imageUri }) => (
-        <Box
-            rounded="lg"
-            overflow="hidden"
-            borderColor="coolGray.200"
-            borderWidth="1"
-            backgroundColor="gray.50">
-            <AspectRatio w="100%" ratio={16 / 9}>
-                <Image source={{ uri: imageUri }} style={{ flex: 1 }} />
-            </AspectRatio>
-        </Box>
+        <View style={{ height: 200 }}>
+            <Box
+                rounded="lg"
+                overflow="hidden"
+                borderColor="coolGray.200"
+                borderWidth="1"
+                backgroundColor="gray.50"
+            >
+                <AspectRatio w="100%" ratio={2 / 3}>
+                    <Image source={{ uri: imageUri }} style={{ flex: 1 }} />
+                </AspectRatio>
+            </Box>
+        </View>
     );
 
     return (
@@ -63,15 +79,15 @@ const HomeScreen = () => {
             </View>
 
             <View style={{height: "40%", width: "100%"}}>
-                <Swiper showsButtons={true}>
+                <Swiper showsButtons={false}>
                     <Box>
-                        <Card imageUri="https://i.ibb.co/cyvcpfF/uberx.png" title="Advertisement 1" description="Advertisement 1 Description" />
+                        <Card imageUri="https://images.pexels.com/photos/5507250/pexels-photo-5507250.jpeg" title="Advertisement 1" description="Advertisement 2 Description" />
                     </Box>
                     <Box>
-                        <Card imageUri="https://i.ibb.co/n776JLm/bike.png" title="Advertisement 2" description="Advertisement 2 Description" />
+                        <Card imageUri="https://images.pexels.com/photos/16091030/pexels-photo-16091030.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" title="Advertisement 2" description="Advertisement 2 Description" />
                     </Box>
                     <Box>
-                        <Card imageUri="https://i.ibb.co/5RjchBg/uberschedule.png" title="Advertisement 3" description="Advertisement 3 Description" />
+                        <Card imageUri="https://images.pexels.com/photos/1205651/pexels-photo-1205651.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" title="Advertisement 3" description="Advertisement 3 Description" />
                     </Box>
                 </Swiper>
             </View>
@@ -79,15 +95,15 @@ const HomeScreen = () => {
             <View style={{flexDirection: "row", justifyContent: "space-between", width: "100%", marginTop: 5, paddingHorizontal: 5}}>
                 <TouchableOpacity onPress={() => handlePress('RideOrderScreen')} style={{width: "47%"}}>
                     <Box>
-                        <CardWithoutDescription imageUri="https://i.ibb.co/cyvcpfF/uberx.png" />
+                        <CardWithoutDescription imageUri="https://images.pexels.com/photos/4701604/pexels-photo-4701604.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
                     </Box>
-                    <Button onPress={() => handlePress('RideOrderScreen')}>Go to Ride</Button>
+                    <Button onPress={() => handlePress('RideOrderScreen')} style={{backgroundColor: '#3498db'}}>Go to Ride</Button>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handlePress('ServiceScreen')} style={{width: "47%"}}>
                     <Box>
-                        <CardWithoutDescription imageUri="https://i.ibb.co/n776JLm/bike.png" />
+                        <CardWithoutDescription imageUri="https://images.pexels.com/photos/518244/pexels-photo-518244.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
                     </Box>
-                    <Button onPress={() => handlePress('ServiceScreen')}>Go to Service</Button>
+                    <Button onPress={() => handlePress('ServiceScreen')} style={{backgroundColor: '#3498db'}}>Go to Service</Button>
                 </TouchableOpacity>
             </View>
         </View>

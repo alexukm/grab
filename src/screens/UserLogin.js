@@ -2,8 +2,8 @@ import { Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { MD5 } from "crypto-js";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { setUserToken } from "../com/studentlifestyle/common/appUser/UserConstant";
-import { userLogin, smsSend } from "../com/studentlifestyle/common/http/BizHttpUtil";
+import { setUserToken } from "../com/evotech/common/appUser/UserConstant";
+import { userLogin, smsSend } from "../com/evotech/common/http/BizHttpUtil";
 import {
     FormControl,
     Center,

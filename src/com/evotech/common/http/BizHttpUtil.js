@@ -40,8 +40,31 @@ const featureAndPath = {
     //刷新token
     ACCESS_TOKEN: {method: supportRequestMethod.POST, path: '/v1/auth/api/token/access_token'},
 
+    // 用户下单校验
+    ORDER_CHECK: {method: supportRequestMethod.GET, path: '/v1/oms/api/user/order/confirmCheck'},
+
+    // 计算价格
+    PRICE_CHECK: {method: supportRequestMethod.GET, path: '/v1/oms/api/user/order/calOrderPrice'},
+
+    USER_SUBMIT_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/submit'},
+
+
 }
 
+export function userSubmitOrder(params = {}) {
+    return request.post(featureAndPath.USER_SUBMIT_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+export function orderPriceCheck(travelTime, distance) {
+    const params = {
+        travelTime: travelTime,
+        distance: distance,
+    }
+    return request.get(featureAndPath.PRICE_CHECK.path, params);
+}
+
+export function userOrderCheck() {
+    return request.get(featureAndPath.ORDER_CHECK.path);
+}
 export function userRegistry(params = {}) {
     return request.post(featureAndPath.USER_REGISTER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }

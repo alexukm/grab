@@ -3,9 +3,9 @@ import {SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, ScrollView} fro
 import {Center, Box, VStack, Button, FormControl, NativeBaseProvider, Icon, Text} from 'native-base';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {launchImageLibrary} from 'react-native-image-picker';
-import {driverUpload} from "../com/studentlifestyle/common/http/BizHttpUtil";
-import {DriverImageType} from "../com/studentlifestyle/common/appUser/UserConstant";
-import {getUserInfoWithLocal} from "../com/studentlifestyle/common/appUser/UserInfo";
+import {driverUpload} from "../com/evotech/common/http/BizHttpUtil";
+import {DriverImageType} from "../com/evotech/common/appUser/UserConstant";
+import {getUserInfoWithLocal} from "../com/evotech/common/appUser/UserInfo";
 
 
 const ImageUploadPage = () => {

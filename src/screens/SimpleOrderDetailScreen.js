@@ -35,7 +35,7 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
         },
         map: {
             width: Dimensions.get('window').width,
-            height: Dimensions.get('window').height / 2,
+            height: Dimensions.get('window').height * 0.4, // 让地图占据40%的屏幕
         },
         box: {
             padding: 5,
@@ -46,13 +46,15 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
         },
-        fullScreen: StyleSheet.absoluteFillObject,
+        fullScreen: {
+            height: Dimensions.get('window').height * 0.6, // 让box占据60%的屏幕
+        },
     });
+
 
     const handleBack = () => {
         navigation.goBack('OrderListScreen');
     };
-
 
     const InfoBox = ({ title, children }) => (
         <Box bg="white" shadow={2} rounded="lg" p={4}>
@@ -62,8 +64,6 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
             </VStack>
         </Box>
     );
-
-
     const OrderInfoBox = ({ showStatus }) => (
         <InfoBox title="Order Information">
             <HStack space={2} alignItems="center">

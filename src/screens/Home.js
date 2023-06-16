@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { VStack, Box, Center, Button, Text } from "native-base";
 import { useNavigation } from "@react-navigation/native";
-import {getUserToken, getUserType} from "../com/studentlifestyle/common/appUser/UserConstant";
+import {getUserToken, getUserType} from "../com/evotech/common/appUser/UserConstant";
 // 创建用户类型上下文
 const UserTypeContext = createContext();
 

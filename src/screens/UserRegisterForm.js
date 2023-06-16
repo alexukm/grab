@@ -13,8 +13,8 @@ import {
     Text,
 } from 'native-base';
 import { MD5 } from 'crypto-js';
-import { smsSend, userRegistry } from "../com/studentlifestyle/common/http/BizHttpUtil";
-import { setUserToken } from "../com/studentlifestyle/common/appUser/UserConstant";
+import { smsSend, userRegistry } from "../com/evotech/common/http/BizHttpUtil";
+import { setUserToken } from "../com/evotech/common/appUser/UserConstant";
 
 const RegisterScreen = () => {
     const [firstName, setFirstName] = useState('');

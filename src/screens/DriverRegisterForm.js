@@ -13,10 +13,10 @@ import {
     Text,
 } from 'native-base';
 import {MD5} from 'crypto-js';
-import {smsSend, driverRegister} from "../com/studentlifestyle/common/http/BizHttpUtil";
-import {getUserID, setUserToken, userType} from "../com/studentlifestyle/common/appUser/UserConstant";
+import {smsSend, driverRegister} from "../com/evotech/common/http/BizHttpUtil";
+import {getUserID, setUserToken, userType} from "../com/evotech/common/appUser/UserConstant";
 import {useNavigation} from '@react-navigation/native';
-import {buildUserInfo} from "../com/studentlifestyle/common/appUser/UserInfo";
+import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 
 
 const RegisterScreen = () => {

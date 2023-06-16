@@ -5,7 +5,13 @@ import RemixIcon from 'react-native-remix-icon';
 
 const OrderBox = ({ order, navigation }) => {
     const { Departure, Destination, Time, Price, Status } = order;
-    const statusColors = { Pending: '#CCCC00', Completed: 'green', Cancel: 'red' };
+    const statusColors = {
+        'Pending': '#CCCC00',
+        'Awaiting departure': '#0099FF',
+        'Cancelled': '#FF0000',
+        'Arrived': '#00CC00',
+        'In transit': '#FF9900',
+    };
 
     const handlePress = () => {
         navigation.navigate('SimpleOrderDetails', {
@@ -23,7 +29,7 @@ const OrderBox = ({ order, navigation }) => {
     return (
         <TouchableOpacity onPress={handlePress}>
             <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
-                <Text style={{ color: statusColors[Status], alignSelf: 'flex-end' }}>{Status}</Text>
+                <Text color={statusColors[Status]} alignSelf='flex-end'>{Status}</Text>
                 <VStack space={4}>
                     <HStack space={2} alignItems="center">
                         <RemixIcon name="map-pin-line" size={20} color="blue" />

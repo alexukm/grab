@@ -5,13 +5,22 @@ import { View, Dimensions, ScrollView } from 'react-native';
 import { StyleSheet } from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
+import {userOrderInfo} from "../com/evotech/common/http/BizHttpUtil";
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
 
 const SimpleOrderDetailScreen = ({ route, navigation }) => {
-    const { Departure, Destination, Time, Price, Status } = route.params;
+    const { Departure, Destination, Time, Price, Status,orderId } = route.params;
     const [departureCoords, setDepartureCoords] = useState(null);
     const [destinationCoords, setDestinationCoords] = useState(null);
+
+        const queryOrderInfo = () =>{
+            const queryParam = {
+                orderId: orderId,
+
+            }
+            userOrderInfo()
+        }
 
     useEffect(() => {
         Geocoder.from(Departure)

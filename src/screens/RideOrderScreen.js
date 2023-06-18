@@ -1,9 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {PermissionsAndroid, Dimensions, Image, Pressable, View, Alert} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import {check, PERMISSIONS, RESULTS, request} from 'react-native-permissions';
 import {Box, Button, HStack, Input, NativeBaseProvider, Text, VStack, Modal} from 'native-base';
-// import MapView from 'react-native-maps';
 import RemixIcon from 'react-native-remix-icon';
 import DatePicker from 'react-native-date-picker';
 import Geocoder from 'react-native-geocoding';
@@ -16,7 +14,8 @@ import {
     userSubmitOrder
 } from "../com/evotech/common/http/BizHttpUtil";
 import {format} from 'date-fns';
-import {googleMapsApiKey} from "../com/evotech/common/googleMapsApiKey/mapsApiKey";
+import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
+import apiService from "../com/evotech/common/apiKey/apiService";
 
 // 初始化Geocoder库，这个库用于处理地址和地理坐标的相互转化
 Geocoder.init(googleMapsApiKey);
@@ -56,7 +55,6 @@ const RideOrderScreen = () => {
     //存储这个坐标数组
     const [coords, setCoords] = useState([]);
 
-
     const [estimatedDistance, setEstimatedDistance] = useState(null);
     const [estimatedDistanceOrder, setEstimatedDistanceOrder] = useState(null);
     const [estimatedDuration, setEstimatedDuration] = useState(null);
@@ -72,29 +70,37 @@ const RideOrderScreen = () => {
 
     // 从Google API获取地址建议
     const updateAddressSuggestions = async (input, setSuggestions) => {
-        const response = await fetch(`https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&components=country:my&key=${googleMapsApiKey}`);
-        const data = await response.json();
-        setSuggestions(data.predictions);
-    }
+        const predictions = await apiService.getAutocomplete(input);
+        setSuggestions(predictions);
+    };
 
     // 分别用于获取出发地和目的地的建议
     const fetchDepartureSuggestions = async (input) => {
         if (!showDepartureSuggestions) {
-            const response = await fetch(
-                `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&components=country:my&key=${googleMapsApiKey}`
-            );
-            const data = await response.json();
-            setDepartureSuggestions(data.predictions);
+            const predictions = await apiService.getAutocomplete(input);
+            setDepartureSuggestions(predictions);
         }
     };
 
     const fetchDestinationSuggestions = async (input) => {
         if (!showDestinationSuggestions) {
-            const response = await fetch(
-                `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${input}&components=country:my&key=${googleMapsApiKey}`
-            );
-            const data = await response.json();
-            setDestinationSuggestions(data.predictions);
+            const predictions = await apiService.getAutocomplete(input);
+            setDestinationSuggestions(predictions);
+        }
+    };
+
+    //获取经纬度，并将地图焦点移动到新的位置
+    const moveToLocation = async (placeId) => {
+        try {
+            const location = await apiService.getLocationDetails(placeId);
+            mapRef.current.animateToRegion({
+                latitude: location.lat,
+                longitude: location.lng,
+                latitudeDelta: 0.005,  // smaller value for a more zoomed in view
+                longitudeDelta: 0.005,  // smaller value for a more zoomed in view
+            }, 1000);
+        } catch (error) {
+            console.error(error);
         }
     };
 
@@ -119,26 +125,6 @@ const RideOrderScreen = () => {
         }
     }, [destination]);
 
-    //获取经纬度，并将地图焦点移动到新的位置
-    const moveToLocation = async (placeId) => {
-        try {
-            const response = await fetch(
-                `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${googleMapsApiKey}`
-            );
-            const data = await response.json();
-            const location = data.result.geometry.location;
-
-            mapRef.current.animateToRegion({
-                latitude: location.lat,
-                longitude: location.lng,
-                latitudeDelta: 0.005,  // smaller value for a more zoomed in view
-                longitudeDelta: 0.005,  // smaller value for a more zoomed in view
-            }, 1000);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     // 这个函数获取当前地理位置，并将地图中心移动到这个位置
     const getCurrentLocation = () => {
         Geolocation.getCurrentPosition(async info => {
@@ -162,7 +148,6 @@ const RideOrderScreen = () => {
             }
         });
     };
-
     // 这个函数请求地理位置权限
     const requestLocationPermission = async () => {
         try {
@@ -210,8 +195,6 @@ const RideOrderScreen = () => {
 
         return `${dateString} ${timeString}`;
     };
-
-
     const allowOrder = () => {
         userOrderCheck()
             .then(data => {
@@ -243,57 +226,6 @@ const RideOrderScreen = () => {
         });
 
     }
-
-    // const fillDescAddress = (orderSubmitParam) => {
-    //
-    //     const depLen = destinationAddress.length;
-    //     console.log(destinationAddress);
-    //     if (depLen > 0) {
-    //         orderSubmitParam['destinationCountry'] = destinationAddress[depLen - 1].value;
-    //     }
-    //
-    //     if (depLen > 1) {
-    //         orderSubmitParam['destinationState'] = destinationAddress[depLen - 2].value;
-    //     }
-    //
-    //     if (depLen === 3) {
-    //         orderSubmitParam['destinationAddress'] = destinationAddress[depLen - 3].value;
-    //     } else if (depLen >= 4) {
-    //         orderSubmitParam['destinationCity'] = destinationAddress[depLen - 3].value;
-    //         let address = "";
-    //         for (let i = depLen - 4; i >= 0; i--) {
-    //             address += destinationAddress[i].value + " ";
-    //         }
-    //         orderSubmitParam['destinationAddress'] = address;
-    //     }
-    //
-    //
-    // };
-    // const fillDepAddress = (orderSubmitParam) => {
-    //
-    //     const depLen = departureAddress.length;
-    //     console.log(departureAddress);
-    //     if (depLen > 0) {
-    //         orderSubmitParam['departureCountry'] = departureAddress[depLen - 1].value;
-    //     }
-    //
-    //     if (depLen > 1) {
-    //         orderSubmitParam['departureState'] = departureAddress[depLen - 2].value;
-    //     }
-    //
-    //     if (depLen === 3) {
-    //         orderSubmitParam['departureAddress'] = departureAddress[depLen - 3].value;
-    //     } else if (depLen > 3) {
-    //         orderSubmitParam['departureCity'] = departureAddress[depLen - 3].value;
-    //         let address = "";
-    //         for (let i = depLen - 4; i >= 0; i--) {
-    //             address += departureAddress[i].value + " ";
-    //         }
-    //         orderSubmitParam['departureAddress'] = address;
-    //     }
-    //
-    //
-    // };
     const fillAddress = (addressArray, prefix, orderSubmitParam) => {
         const len = addressArray.length;
         console.log(addressArray);
@@ -332,7 +264,7 @@ const RideOrderScreen = () => {
             'travelMode': "Private", // 乘车模式 Private 独享
             'passengersNumber': passengerCount,
             'estimatedFare': orderPrice,
-            'remark': "", //TODO 用户备注
+            'remark': remarks, //用户备注
             'paymentType': "Cash", // TODO 用户付款方式 "Cash", "现金" "E-wallet","电子钱包"
             'departureCountry': "",//出发地国家
             'departureState': "",// 出发地州属
@@ -371,11 +303,7 @@ const RideOrderScreen = () => {
             console.log(err);
             alert("Submit Order failed")
         });
-
-
-
     };
-
     // 处理下一步的逻辑，获取行程的距离和时间，如果已经确认预订，则跳转到订单详情页面
     const handleNextStep = () => {
         if (!departure || !destination || !date) {
@@ -436,20 +364,6 @@ const RideOrderScreen = () => {
                                     animated: true,
                                 });
                                 setIsBookingConfirmed(true);
-                                /* if (isBookingConfirmed) {
-                                     // Move to the OrderDetailScreen
-                                     navigation.navigate('OrderDetailScreen', {
-                                         departure,
-                                         destination,
-                                         date: date.toISOString(), // 将日期转换为字符串
-                                         passengerCount,
-                                         pickupWaiting,
-                                         coords
-                                     });
-                                 } else {
-                                     // Confirm the booking
-
-                                 }*/
                             } else {
                                 console.log(data.message)
                                 alert("Get price error, please try again later!")
@@ -544,8 +458,11 @@ const RideOrderScreen = () => {
                             <Text>Destination: {destination}</Text>
                             <Text>Date and Time: {date ? formatDate(date) : ''}</Text>
                             <Text>Number of Passengers: {passengerCount}</Text>
-                            <Button mt={4} onPress={handlePickupWaiting}>
+                            <Button mt={4}>
                                 {pickupWaiting}
+                            </Button>
+                            <Button mt={4} onPress={handlePickupWaiting}>
+                                Cancel
                             </Button>
                         </VStack>
                     </Box>

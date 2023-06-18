@@ -44,6 +44,6 @@ export function setUserToken(token) {
 
 
 export async function getUserToken() {
-    return "Bearer 11f19094cd287404f378872fe238810c";
+    return "Bearer 5b2b1073bdc9060e8560585eb7a65653";
     // await getValue(defaultHeaders.TOKEN)
 }

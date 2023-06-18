@@ -48,12 +48,31 @@ const featureAndPath = {
 
     USER_SUBMIT_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/submit'},
 
+    USER_CANCEL_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/cancel'},
+
+    USER_ORDER_PAGE: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/page'},
+
+    USER_ORDER_INFO: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/orderInfo'},
 
 }
+
+export function userOrderInfo(params = {}) {
+    return request.post(featureAndPath.USER_ORDER_INFO.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+
+export function userOrderPage(params = {}) {
+    return request.post(featureAndPath.USER_ORDER_PAGE.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+
+export function userCancelOrder(params = {}) {
+    return request.post(featureAndPath.USER_CANCEL_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+
 
 export function userSubmitOrder(params = {}) {
     return request.post(featureAndPath.USER_SUBMIT_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
+
 export function orderPriceCheck(travelTime, distance) {
     const params = {
         travelTime: travelTime,
@@ -65,6 +84,7 @@ export function orderPriceCheck(travelTime, distance) {
 export function userOrderCheck() {
     return request.get(featureAndPath.ORDER_CHECK.path);
 }
+
 export function userRegistry(params = {}) {
     return request.post(featureAndPath.USER_REGISTER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
@@ -110,9 +130,9 @@ export function accessToken(params = {}) {
 //     return request.postFromData(featureAndPath.DRIVER_UPLOAD.path, SupportContextType.MULTIPART_FROM, formData)
 // }
 
-export function driverUpload(file,params) {
+export function driverUpload(file, params) {
     // let formData = new FormData();
-  const  formData = new FormData();
+    const formData = new FormData();
     formData.append('file', {
         name: 'image.jpg',
         type: 'image/jpeg',

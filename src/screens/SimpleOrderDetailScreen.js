@@ -1,35 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { NativeBaseProvider, Box, VStack, HStack, Button, Text, Avatar } from 'native-base';
-import MapView, { Marker } from 'react-native-maps';
-import { View, Dimensions, ScrollView } from 'react-native';
-import { StyleSheet } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {NativeBaseProvider, Box, VStack, HStack, Button, Text, Avatar} from 'native-base';
+import MapView, {Marker} from 'react-native-maps';
+import {View, Dimensions, ScrollView} from 'react-native';
+import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
 import {userOrderInfo} from "../com/evotech/common/http/BizHttpUtil";
+import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
+import {tr} from "date-fns/locale";
+
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
 
-const SimpleOrderDetailScreen = ({ route, navigation }) => {
-    const { Departure, Destination, Time, Price, Status,orderId } = route.params;
+const SimpleOrderDetailScreen = ({route, navigation}) => {
+    const {Departure, Destination, Time, Price, Status, orderDetailInfo} = route.params;
     const [departureCoords, setDepartureCoords] = useState(null);
     const [destinationCoords, setDestinationCoords] = useState(null);
+    const [existDriverInfo, setExistDriverInfo] = useState(false);
 
-        const queryOrderInfo = () =>{
-            const queryParam = {
-                orderId: orderId,
-
-            }
-            userOrderInfo()
-        }
 
     useEffect(() => {
+        setExistDriverInfo(orderDetailInfo.driverOrderId !== '');
         Geocoder.from(Departure)
             .then(json => {
                 var location = json.results[0].geometry.location;
                 setDepartureCoords(location);
             })
             .catch(error => console.warn(error));
-
         Geocoder.from(Destination)
             .then(json => {
                 var location = json.results[0].geometry.location;
@@ -65,37 +62,46 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
         navigation.goBack('OrderListScreen');
     };
 
-    const InfoBox = ({ title, children }) => (
+    const InfoBox = ({title, children}) => (
         <Box bg="white" shadow={2} rounded="lg" p={4}>
-            <Text style={{ fontWeight: 'bold', fontSize: 18 }}>{title}</Text>
+            <Text style={{fontWeight: 'bold', fontSize: 18}}>{title}</Text>
             <VStack space={4} mt={3}>
                 {children}
             </VStack>
         </Box>
     );
-    const OrderInfoBox = ({ showStatus }) => (
+    const OrderInfoBox = ({showStatus}) => (
         <InfoBox title="Order Information">
             <HStack space={2} alignItems="center">
-                <RemixIcon name="map-pin-line" size={24} color="blue" />
+                <RemixIcon name="map-pin-line" size={24} color="blue"/>
                 <Text>Departure: {Departure}</Text>
             </HStack>
             <HStack space={2} alignItems="center">
-                <RemixIcon name="map-pin-line" size={24} color="red" />
+                <RemixIcon name="map-pin-line" size={24} color="red"/>
                 <Text>Destination: {Destination}</Text>
             </HStack>
             <HStack space={2} alignItems="center">
-                <RemixIcon name="calendar-check-line" size={24} color="black" />
+                <RemixIcon name="calendar-check-line" size={24} color="black"/>
                 <Text>Date and Time: {Time}</Text>
             </HStack>
             <HStack space={2} alignItems="center">
-                <RemixIcon name="wallet-3-line" size={24} color="black" />
+                <RemixIcon name="wallet-3-line" size={24} color="black"/>
                 <Text>Price: {Price}</Text>
             </HStack>
-            {showStatus && (
+            <HStack space={2} alignItems="center">
+                <RemixIcon name="wallet-3-line" size={24} color="black"/>
+                <Text>Passenger Number: {orderDetailInfo.passengersNumber}</Text>
+            </HStack>
+            {/*TODO 状态图标调整*/}
+            <HStack space={2} alignItems="center">
+                <RemixIcon name="wallet-3-line" size={24} color="black"/>
+                <Text>Status: {orderDetailInfo.orderState}</Text>
+            </HStack>
+            {/* {showStatus && (
                 <Button variant="solid" colorScheme="blue">
                     <Text>Status: {Status}</Text>
                 </Button>
-            )}
+            )}*/}
         </InfoBox>
     );
 
@@ -104,19 +110,19 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
         <InfoBox title="Payment Information">
             <VStack space={4} alignItems="stretch">
                 <HStack>
-                    <Text>Order No: 123456789</Text>
+                    <Text>Order No: {orderDetailInfo.orderId}</Text>
                 </HStack>
                 <HStack>
-                    <Text>Payment No: 987654321</Text>
+                    <Text>Payment No: {orderDetailInfo.payNo}</Text>
+                </HStack>
+                <HStack>paymentState
+                    <Text>Payment Method: {orderDetailInfo.paymentType}</Text>
                 </HStack>
                 <HStack>
-                    <Text>Payment Method: Credit Card</Text>
+                    <Text>Payment Amount: {orderDetailInfo.price}</Text>
                 </HStack>
                 <HStack>
-                    <Text>Payment Amount: {Price}</Text>
-                </HStack>
-                <HStack>
-                    <Text>Payment Status: Paid</Text>
+                    <Text>Payment Status: {orderDetailInfo.orderState}</Text>
                 </HStack>
                 <Button variant="solid" colorScheme="blue">
                     <Text>Status: {Status}</Text>
@@ -125,9 +131,9 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
         </InfoBox>
     );
 
-    const DriverInfoBox = ({ showBack }) => (
-        <InfoBox title="Driver Information" showBack={true}>
-        <VStack space={4} alignItems="stretch">
+    const DriverInfoBox = ({showBack}) => (
+        <InfoBox title="Driver Information" showBack={showBack}>
+            <VStack space={4} alignItems="stretch">
                 <HStack style={styles.driverInfo}>
                     <Avatar
                         size="lg"
@@ -136,22 +142,22 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
                         }}
                     />
                     <VStack>
-                        <Text>Driver Name: John Doe</Text>
-                        <Text>Car Model: Toyota</Text>
-                        <Text>License Plate: XYZ 1234</Text>
+                        <Text>Driver Name: {orderDetailInfo.userName}</Text>
+                        <Text>Car Model: {orderDetailInfo.carBrand}</Text>
+                        <Text>License Plate: {orderDetailInfo.licensePlate}</Text>
                     </VStack>
                     <VStack>
                         <Button
                             onPress={() => console.log('Call Driver')}
                             variant="ghost"
                         >
-                            <RemixIcon name="phone-line" size={24} color="black" />
+                            <RemixIcon name="phone-line" size={24} color="black"/>
                         </Button>
                         <Button
                             onPress={() => console.log('Chat with Driver')}
                             variant="ghost"
                         >
-                            <RemixIcon name="message-3-line" size={24} color="black" />
+                            <RemixIcon name="message-3-line" size={24} color="black"/>
                         </Button>
                     </VStack>
                 </HStack>
@@ -170,48 +176,59 @@ const SimpleOrderDetailScreen = ({ route, navigation }) => {
                     longitudeDelta: Math.abs(departureCoords.lng - destinationCoords.lng) * 2 * 1.8,
                 }}
             >
-                <Marker coordinate={{ latitude: departureCoords.lat, longitude: departureCoords.lng }} />
-                <Marker coordinate={{ latitude: destinationCoords.lat, longitude: destinationCoords.lng }} />
+                <Marker coordinate={{latitude: departureCoords.lat, longitude: departureCoords.lng}}/>
+                <Marker coordinate={{latitude: destinationCoords.lat, longitude: destinationCoords.lng}}/>
             </MapView>
         </>
     );
 
-
     const renderContentBasedOnStatus = () => {
         switch (Status) {
-            case 'Pending':
+            //待接单
+            case OrderStateEnum.AWAITING:
                 return (
                     <ScrollView style={styles.fullScreen}>
-                    {departureCoords && destinationCoords && <MapComponent />}
-                        <OrderInfoBox showStatus={true} />
+                        {departureCoords && destinationCoords && <MapComponent/>}
+                        <OrderInfoBox showStatus={true}/>
                     </ScrollView>
                 );
-            case 'Awaiting departure':
-            case 'In transit':
+            //待出行
+            case OrderStateEnum.PENDING:
+                return (
+                    <ScrollView style={styles.fullScreen}>
+                        {departureCoords && destinationCoords && <MapComponent/>}
+                        <OrderInfoBox showStatus={true}/>
+                        {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
+                    </ScrollView>
+                );
+            //旅途中r
+            case OrderStateEnum.IN_TRANSIT:
                 return (
                     <>
                         {departureCoords && destinationCoords && (
                             <ScrollView style={styles.fullScreen}>
-                                <MapComponent />
-                                <OrderInfoBox showStatus={false} />
-                                <DriverInfoBox showBack={true} />
-
+                                <MapComponent/>
+                                <OrderInfoBox showStatus={false}/>
+                                {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
                             </ScrollView>
                         )}
                     </>
                 );
-            case 'Arrived':
+            // 已送达
+            case OrderStateEnum.DELIVERED:
                 return (
                     <ScrollView style={styles.fullScreen}>
-                        <DriverInfoBox showBack={true} />
-                        <OrderInfoBox showStatus={false} />
-                        <PaymentInfoBox />
+                        {existDriverInfo && <DriverInfoBox showBack={true}/>}
+                        <OrderInfoBox showStatus={existDriverInfo}/>
+                        <PaymentInfoBox/>
                     </ScrollView>
                 );
-            case 'Cancelled':
+            //已取消
+            case OrderStateEnum.CANCELLED:
                 return (
                     <ScrollView style={styles.fullScreen}>
-                        <OrderInfoBox showStatus={true} />
+                        <OrderInfoBox showStatus={true}/>
+                        {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
                     </ScrollView>
                 );
             default:

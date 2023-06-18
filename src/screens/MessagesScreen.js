@@ -27,10 +27,32 @@
 
 
 import React from 'react';
-import { View, Text, FlatList, StyleSheet, Button, ScrollView } from 'react-native';
-import { TouchableOpacity, Image } from 'react-native';
+import {View, Text, FlatList, StyleSheet, Button, ScrollView} from 'react-native';
+import {TouchableOpacity, Image} from 'react-native';
+import {driverAcceptOrder} from "../com/evotech/common/http/BizHttpUtil";
 
 const DriverOrderListScreen = () => {
+
+    const acceptOrder = (orderId) => {
+        const acceptParam = {
+            userOrderId: 'passer202306181526408689',
+        }
+        driverAcceptOrder(acceptParam)
+            .then(data => {
+                if (data.code === 200) {
+                    //成功的操作
+                    console.log(data.code);
+                } else {
+                    //失败的操作
+                    console.log(data.message);
+                }
+
+            }).catch(err => {
+            //异常操作
+            alert("Accept order error: " + err.message);
+        })
+    }
+
     const data = [
         {
             time: '10/06 at 12:56',
@@ -74,7 +96,7 @@ const DriverOrderListScreen = () => {
         },
         // 添加更多的示例订单数据...
     ];
-    const renderItem = ({ item }) => (
+    const renderItem = ({item}) => (
         <View style={styles.itemContainer}>
             <View style={styles.orderInfoContainer}>
                 <Text style={styles.timeText}>{item.time}</Text>
@@ -87,8 +109,8 @@ const DriverOrderListScreen = () => {
                     <Text>{item.note}</Text>
                 </ScrollView>
             </View>
-            <TouchableOpacity onPress={() => console.log('Accepted')}>
-                <Image source={require('../picture/accept.png')} style={styles.buttonImage} />
+            <TouchableOpacity onPress={acceptOrder}>
+                <Image source={require('../picture/accept.png')} style={styles.buttonImage}/>
             </TouchableOpacity>
         </View>
     );
@@ -99,7 +121,7 @@ const DriverOrderListScreen = () => {
                 data={data}
                 renderItem={renderItem}
                 keyExtractor={item => item.id}
-                ItemSeparatorComponent={() => <View style={styles.divider} />}
+                ItemSeparatorComponent={() => <View style={styles.divider}/>}
             />
         </View>
     );

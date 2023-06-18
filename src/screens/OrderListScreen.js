@@ -1,24 +1,30 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, FlatList, TouchableOpacity} from 'react-native';
-import {Box, HStack, VStack, Text, Button} from 'native-base';
+import React, {useEffect, useState, useRef} from 'react';
+import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
+import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
+import RBSheet from "react-native-raw-bottom-sheet";
 import RemixIcon from 'react-native-remix-icon';
-import {userCancelOrder, userOrderPage} from "../com/evotech/common/http/BizHttpUtil";
+import {userCancelOrder, userOrderInfo, userOrderPage} from "../com/evotech/common/http/BizHttpUtil";
 import {format} from "date-fns";
+import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 
 const styles1 = StyleSheet.create({
     buttonStyle: {
-        backgroundColor: 'white', // 设置按钮的背景颜色
-        borderRadius: 0, // 设置按钮的边框圆角
-        padding: 10, // 设置按钮的内边距
+        backgroundColor: 'white',
+        borderRadius: 0,
+        padding: 10,
     },
     textStyle: {
-        color: 'black', // 设置文本颜色
-        fontSize: 16, // 设置文本大小
-        fontWeight: 'bold', // 设置文本粗细
+        color: 'black',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
-const OrderBox = ({order, navigation}) => {
-    const {departureAddress, destinationAddress, departureTime, price, orderState, orderId, Reason} = order;
+
+const OrderBox = ({order, navigation, openSheet}) => {
+    const {departureAddress, destinationAddress, departureTime, price, orderState, orderId,cancelButtonShow = (OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING)} = order;
+    // const [cancelButtonShow, setCancelButtonShow] = useState(false);
+
+    // setCancelButtonShow(OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING);
     const statusColors = {
         'Pending': '#CCCC00',
         'Awaiting': '#0099FF',
@@ -28,40 +34,37 @@ const OrderBox = ({order, navigation}) => {
     };
 
     const handlePress = () => {
-        navigation.navigate('SimpleOrderDetails', {
-            screen: 'SimpleOrderDetailScreen',
-            params: {
-                orderId: orderId,
-                Departure: departureAddress,
-                Destination: destinationAddress,
-                Time: departureTime,
-                Price: price,
-                Status: orderState,
-                // 需要添加其他参数，看OrderDetailScreen需要什么参数
-            },
-        });
-    };
-    const cancelOrder = (orderId, reason) => {
-        const cancelOrderParam = {
+        const queryParam = {
             orderId: orderId,
-            cancelReason: reason,
-            cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         }
-
-        userCancelOrder(cancelOrderParam)
+        userOrderInfo(queryParam)
             .then(data => {
                 if (data.code === 200) {
-                    alert("Cancelled Order Success")
-                    //TODO 刷新页面
+                    navigation.navigate('SimpleOrderDetails', {
+                        screen: 'SimpleOrderDetailScreen',
+                        params: {
+                            orderDetailInfo: data.data,
+                            Departure: departureAddress,
+                            Destination: destinationAddress,
+                            Time: departureTime,
+                            Price: price,
+                            Status: orderState,
+                            // 需要添加其他参数，看OrderDetailScreen需要什么参数
+                        },
+                    });
                 } else {
-                    console.log(data.message);
-                    alert("Cancel Order failed,Please try again later!")
+                    alert(data.message);
                 }
             }).catch(error => {
-            console.log(error);
-            alert("system error: " + error.message)
-        })
+            console.log("order info query failed " + error.message);
+            alert("order details query failed ,please try again later!")
+        });
     };
+
+    const handleCancel = () => {
+        openSheet(orderId);
+    };
+
     return (
         <TouchableOpacity onPress={handlePress}>
             <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
@@ -83,13 +86,11 @@ const OrderBox = ({order, navigation}) => {
                         <RemixIcon name="wallet-3-line" size={20} color="black"/>
                         <Text>Price: {price}</Text>
                     </HStack>
-                    <Box position="absolute" bottom={0} right={0}>
-                        <Button style={styles1.buttonStyle} onPress={() => {
-                            cancelOrder(orderId, Reason);
-                        }}>
-                            <Text style={styles1.textStyle}>test</Text>
+                    {cancelButtonShow &&  <Box position="absolute" bottom={0} right={0}>
+                        <Button style={styles1.buttonStyle} onPress={handleCancel}>
+                            <Text style={styles1.textStyle}>Cancel Order</Text>
                         </Button>
-                    </Box>
+                    </Box>}
                 </VStack>
             </Box>
         </TouchableOpacity>
@@ -98,21 +99,63 @@ const OrderBox = ({order, navigation}) => {
 
 const pageSize = 10;
 
-
 const OrderListScreen = ({navigation}) => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [orders, setOrders] = useState([]);
+    const [cancelReason, setCancelReason] = useState("");
+    const [cancelOrderId, setCancelOrderId] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+    const refRBSheet = useRef();
 
-    useEffect(()=>{
-        fetchMoreOrders().then();
-    },[])
+    const openSheet = (orderId) => {
+        setCancelOrderId(orderId);
+        refRBSheet.current.open();
+    };
+
+    const closeSheet = () => {
+        refRBSheet.current.close();
+    };
+
+    const handleConfirmCancel = () => {
+        const cancelOrderParam = {
+            orderId: cancelOrderId,
+            cancelReason: cancelReason,
+            cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+        };
+
+        userCancelOrder(cancelOrderParam)
+            .then(data => {
+                if (data.code === 200) {
+                    alert("Cancelled Order Success");
+                    //TODO 刷新页面
+                } else {
+                    console.log(data.message);
+                    alert("Cancel Order failed, Please try again later!")
+                }
+            }).catch(error => {
+            console.log(error);
+            alert("system error: " + error.message)
+        });
+
+        closeSheet();
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        console.log("handleRefresh................................")
+        const orderList = await queryOrderList(pageSize, 1);
+        setOrders(orderList.content);
+        setPage(2);
+        setRefreshing(false);
+    };
 
     const queryOrderList = async (pageSize, page) => {
+        console.log("queryOrderList................................")
         const queryOrderListParam = {
             pageSize: pageSize,
             page: page,
-        }
+        };
         return userOrderPage(queryOrderListParam)
             .then(data => {
                 if (data.code === 200) {
@@ -125,15 +168,14 @@ const OrderListScreen = ({navigation}) => {
                 console.log(error);
                 return [];
             })
-    }
+    };
 
     const fetchMoreOrders = async () => {
         if (loading) {
             return;
         }
-
+        console.log("fetchMoreOrders................................")
         setLoading(true);
-        console.log("page:---------------" + page);
         const orderList = await queryOrderList(pageSize, page);
         setOrders((oldData) => [...oldData, ...orderList.content]);
         setPage((prevPage) => prevPage + 1);
@@ -141,26 +183,60 @@ const OrderListScreen = ({navigation}) => {
     };
 
     const renderItem = ({item}) => {
-        console.log(JSON.stringify(item))
-        return <OrderBox key={item.id} order={item} navigation={navigation}/>;
+        console.log("renderItem................................")
+        return <OrderBox key={item.id} order={item} navigation={navigation} openSheet={openSheet}/>;
     };
 
     return (
-        <FlatList
-            contentContainerStyle={styles.container}
-            data={orders}
-            renderItem={renderItem}
-            onEndReached={fetchMoreOrders}
-            onEndReachedThreshold={0.5}
-            ListHeaderComponent={
-                <Box bg="white" shadow={2} rounded="lg" p={4} my={2} style={{marginTop: 10}}>
-                    <Text style={{fontWeight: 'bold', fontSize: 18}}>Order List</Text>
-                    <Text>This page displays a list of all orders with their status.</Text>
-                </Box>
-            }
-            ListFooterComponent={<Box height={20}/>}
-            keyExtractor={item => item.id}
-        />
+        <>
+            <FlatList
+                contentContainerStyle={styles.container}
+                data={orders}
+                renderItem={renderItem}
+                onEndReached={fetchMoreOrders}
+                onEndReachedThreshold={0.5}
+                windowSize={20}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                    />
+                }
+                ListHeaderComponent={
+                    <Box bg="white" shadow={2} rounded="lg" p={4} my={2} style={{marginTop: 10}}>
+                        <Text style={{fontWeight: 'bold', fontSize: 18}}>Order List</Text>
+                        <Text>This page displays a list of all orders with their status.</Text>
+                    </Box>
+                }
+                ListFooterComponent={<Box height={20}/>}
+                keyExtractor={item => item.id}
+            />
+            <RBSheet
+                ref={refRBSheet}
+                closeOnDragDown={true}
+                closeOnPressMask={false}
+                customStyles={{
+                    wrapper: {
+                        backgroundColor: "transparent"
+                    },
+                    draggableIcon: {
+                        backgroundColor: "#000"
+                    }
+                }}
+            >
+                <View style={styles.container}>
+                    <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
+                    <Input
+                        placeholder="Reason for cancellation"
+                        onChangeText={text => setCancelReason(text)}
+                        value={cancelReason}
+                    />
+                    <Button onPress={handleConfirmCancel}>
+                        <Text style={styles1.textStyle}>Confirm Cancel</Text>
+                    </Button>
+                </View>
+            </RBSheet>
+        </>
     );
 };
 

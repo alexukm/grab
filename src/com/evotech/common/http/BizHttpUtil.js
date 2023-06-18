@@ -54,6 +54,12 @@ const featureAndPath = {
 
     USER_ORDER_INFO: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/orderInfo'},
 
+    DRIVER_ACCEPT_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/accept'},
+
+}
+
+export function driverAcceptOrder(params = {}) {
+    return request.post(featureAndPath.DRIVER_ACCEPT_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
 
 export function userOrderInfo(params = {}) {

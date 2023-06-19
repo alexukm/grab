@@ -4,13 +4,14 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet } from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 
-import HomeScreen from './HomeScreen';
+import UserHomeScreen from './UserHomeScreen';
 import OrderListScreen from "./OrderListScreen";
 import MessagesScreen from './MessagesScreen';
 import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';
 import SimpleOrderDetailScreen from './SimpleOrderDetailScreen';
+
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -34,7 +35,7 @@ const SimpleOrderDetailStackScreen = () => (
     </SimpleOrderDetailStack.Navigator>
 );
 
-const BottomTabNavigator = () => {
+const UserBottomTabNavigator = () => {
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -60,7 +61,7 @@ const BottomTabNavigator = () => {
                 tabBarLabelStyle: styles.tabBarLabelStyle,
             })}
         >
-            <Tab.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+            <Tab.Screen name="Home" component={UserHomeScreen} options={{ headerShown: false }} />
             <Tab.Screen name="Activity" component={OrderListScreen} options={{ headerShown: false }}/>
             <Tab.Screen name="Messages" component={MessagesScreen} />
             <Tab.Screen name="Account" component={AccountScreen} options={{ headerShown: false }} />
@@ -70,7 +71,7 @@ const BottomTabNavigator = () => {
 
 const MainNavigator = () => (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
-        <HomeStack.Screen name="Tabs" component={BottomTabNavigator} />
+        <HomeStack.Screen name="Tabs" component={UserBottomTabNavigator} />
         <HomeStack.Screen name="Orders" component={OrderStackScreen} options={{ headerShown: false }} />
         <HomeStack.Screen name="SimpleOrderDetails" component={SimpleOrderDetailStackScreen} options={{ headerShown: false }} />
     </HomeStack.Navigator>

@@ -54,9 +54,6 @@ const OrderDetailScreen = ({ route, navigation }) => {
     const padding = 2.8; // 你可以调整这个值
     const latitudeDelta = (maxLatitude - minLatitude) * padding;
     const longitudeDelta = (maxLongitude - minLongitude) * padding;
-
-
-
     return (
         <NativeBaseProvider>
             <View style={styles.container}>

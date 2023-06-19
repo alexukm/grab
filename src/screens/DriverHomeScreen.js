@@ -4,18 +4,11 @@ import { Box, AspectRatio, Button, Center, Text } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 
-
-const HomeScreen = () => {
+const DriverHomeScreen = () => {
     const navigation = useNavigation();
 
     const handlePress = (screen) => {
-        if (screen === 'RideOrderScreen') {
-            navigation.navigate('Orders', { screen: 'RideOrderScreen' });
-        } else if (screen === 'OrderDetailScreen') {
-            navigation.navigate('Orders', { screen: 'OrderDetailScreen' });
-        } else {
-            navigation.navigate(screen);
-        }
+        navigation.navigate(screen);
     };
 
     const Card = ({ imageUri, title, description }) => (
@@ -44,7 +37,7 @@ const HomeScreen = () => {
                 _text={{color: "black", fontWeight: "700", fontSize: "md"}}
                 px="3"
                 py="1.5"
-                style={{ justifyContent: 'flex-end' }} // 将内容对齐到下方
+                style={{ justifyContent: 'flex-end' }}
             >
                 <Text>
                     {title}
@@ -55,6 +48,7 @@ const HomeScreen = () => {
             </Center>
         </Box>
     );
+
     const CardWithoutDescription = ({ imageUri }) => (
         <View style={{ height: 200 }}>
             <Box
@@ -72,7 +66,6 @@ const HomeScreen = () => {
     );
 
     return (
-
         <View style={{flex: 1, alignItems: 'center', backgroundColor: 'white'}}>
             <View style={{width: '100%', height: 120, justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'row', paddingLeft: 20}}>
                 <Image source={{ uri: "https://i.ibb.co/84stgjq/uber-technologies-new-20218114.jpg" }} style={{ width: 100, height: 100}} />
@@ -93,11 +86,11 @@ const HomeScreen = () => {
             </View>
 
             <View style={{flexDirection: "row", justifyContent: "space-between", width: "100%", marginTop: 5, paddingHorizontal: 5}}>
-                <TouchableOpacity onPress={() => handlePress('RideOrderScreen')} style={{width: "47%"}}>
+                <TouchableOpacity onPress={() => handlePress('DriverOrderListScreen')} style={{width: "47%"}}>
                     <Box>
                         <CardWithoutDescription imageUri="https://images.pexels.com/photos/4701604/pexels-photo-4701604.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" />
                     </Box>
-                    <Button onPress={() => handlePress('RideOrderScreen')} style={{backgroundColor: '#3498db'}}>Go to Ride</Button>
+                    <Button onPress={() => handlePress('DriverOrderListScreen')} style={{backgroundColor: '#3498db'}}>Go to Ride</Button>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handlePress('ServiceScreen')} style={{width: "47%"}}>
                     <Box>
@@ -110,4 +103,4 @@ const HomeScreen = () => {
     );
 };
 
-export default HomeScreen;
+export default DriverHomeScreen;

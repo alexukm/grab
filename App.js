@@ -40,13 +40,15 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { NativeBaseProvider } from 'native-base';
-import BottomTabNavigator from "./src/screens/BottomTabNavigator";
+import UserBottomTabNavigator from "./src/screens/UserBottomTabNavigator";
+// import DriveBottomTabNavigator from "./src/screens/DriveBottomTabNavigator";
+import DriverBottomTabNavigator from "./src/screens/DriverBottomTabNavigator";
 
 const App = () => {
     return (
         <NativeBaseProvider>
             <NavigationContainer>
-                <BottomTabNavigator />
+                <UserBottomTabNavigator />
             </NavigationContainer>
         </NativeBaseProvider>
     );

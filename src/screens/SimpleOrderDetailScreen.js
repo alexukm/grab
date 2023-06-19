@@ -24,24 +24,12 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
 
     const refRBSheet = useRef();  // 引用RBSheet
 
+    const refRBSheetPayment = useRef();  // 引用RBSheet for PaymentInfoBox
+    const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
+
 
     useEffect(() => {
         setExistDriverInfo(orderDetailInfo.driverOrderId !== '');
-
-        /*Geocoder.from(Departure)
-            .then(json => {
-                console.log(json)
-                var location = json.results[0].geometry.location;
-                setDepartureCoords(location);
-            })
-            .catch(error => console.warn(error));
-        Geocoder.from(Destination)
-            .then(json => {
-                // {"lat": 2.9448463, "lng": 101.784516}
-                var location = json.results[0].geometry.location;
-                setDestinationCoords(location);
-            })
-            .catch(error => console.warn(error));*/
     }, []);
 
     const styles = StyleSheet.create({
@@ -159,11 +147,11 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             <Text fontWeight="bold">RM {Price}.00</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <Text fontSize="xs">CASH </Text>
-                                <TouchableOpacity onPress={() => refRBSheet.current.open()}>
+                                <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
                                     <Image
                                         source={require('../picture/cash.png')}
                                         alt="cash"
-                                        style={{width: 20, height: 15}} // 调整图片尺寸
+                                        style={{width: 20, height: 15}}
                                     />
                                 </TouchableOpacity>
                             </View>
@@ -256,9 +244,9 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 ) : (
                     <Button
                         bg="#f0f0f0"
-                        onPress={() => refRBSheet.current.open()}
+                        onPress={() => refRBSheetReview.current.open()}
                         variant="ghost"
-                        style={{ height: 40, justifyContent: 'center', flex: 1 }} // 添加自定义样式
+                        style={{ height: 40, justifyContent: 'center', flex: 1 }}
                     >
                         <HStack space={2}>
                             <RemixIcon name="star-line" size={24} color="black"/>
@@ -296,6 +284,14 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                     <ScrollView style={styles.fullScreen}>
                         {DepartureCoords && DestinationCoords && <MapComponent/>}
                         <OrderInfoBox showStatus={true}/>
+                        <RBSheet
+                            ref={refRBSheetPayment}
+                            closeOnDragDown={true}
+                            closeOnPressMask={true}
+                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                        >
+                            <PaymentInfoBox/>
+                        </RBSheet>
                     </ScrollView>
                 );
             //待出行
@@ -335,10 +331,18 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                         <OrderInfoBox showStatus={true}/>
                         {existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}
                         <RBSheet
-                            ref={refRBSheet}
+                            ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.3}
+                        >
+                            <PaymentInfoBox/>
+                        </RBSheet>
+                        <RBSheet
+                            ref={refRBSheetReview} // 添加了一个新的RBSheet
+                            closeOnDragDown={true}
+                            closeOnPressMask={true}
+                            height={Dimensions.get('window').height * 0.3}
                         >
                             <ReviewBox/>
                         </RBSheet>
@@ -352,7 +356,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                         <OrderInfoBox showStatus={true}/>
                         {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
                         <RBSheet
-                            ref={refRBSheet}
+                            ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
                             height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度

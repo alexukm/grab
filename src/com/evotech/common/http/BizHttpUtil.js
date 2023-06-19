@@ -54,10 +54,17 @@ const featureAndPath = {
 
     USER_ORDER_INFO: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/orderInfo'},
 
+    USER_REVIEW_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/reviewOrder'},
+
     DRIVER_ACCEPT_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/accept'},
+
+
 
 }
 
+export function userReviewOrder(params = {}) {
+    return request.post(featureAndPath.USER_REVIEW_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
 export function driverAcceptOrder(params = {}) {
     return request.post(featureAndPath.DRIVER_ACCEPT_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }

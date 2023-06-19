@@ -9,7 +9,6 @@ import MapView, {Polyline} from 'react-native-maps';
 import {useNavigation} from '@react-navigation/native';
 import {
     orderPriceCheck,
-    submitOrder,
     userOrderCheck,
     userSubmitOrder
 } from "../com/evotech/common/http/BizHttpUtil";
@@ -241,7 +240,7 @@ const RideOrderScreen = () => {
             orderSubmitParam[`${prefix}City`] = addressArray[len - 3].value;
             let address = "";
             for (let i = len - 4; i >= 0; i--) {
-                address += addressArray[i].value + " ";
+                address += addressArray[i].value + ";";
             }
             orderSubmitParam[`${prefix}Address`] = address;
         }
@@ -310,14 +309,16 @@ const RideOrderScreen = () => {
             alert("Please fill in all fields!");
             return;
         }
+
         console.log(departure)
         console.log(destination)
-        fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${departure}&destination=${destination}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
+        fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(departure)}&destination=${encodeURIComponent(destination)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
             .then(response => response.json())
             .then(data => {
+                console.log(data);
                 if (data.routes.length) {
                     const legs = data.routes[0].legs[0];
-
+                    console.log("google map api response: "+data.routes.length);
                     const distance = legs.distance.text;
                     const duration = legs.duration.text;
 

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useCallback} from 'react';
 import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
 import RBSheet from "react-native-raw-bottom-sheet";
@@ -6,6 +6,8 @@ import RemixIcon from 'react-native-remix-icon';
 import {userCancelOrder, userOrderInfo, userOrderPage} from "../com/evotech/common/http/BizHttpUtil";
 import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
+import {useFocusEffect} from '@react-navigation/native';
+
 
 const styles1 = StyleSheet.create({
     buttonStyle: {
@@ -20,8 +22,20 @@ const styles1 = StyleSheet.create({
     },
 });
 
-const OrderBox = ({order, navigation, openSheet}) => {
-    const {departureAddress, destinationAddress, departureTime, price, orderState, orderId,cancelButtonShow = (OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING)} = order;
+const OrderBox = React.memo(({order, navigation, openSheet}) => {
+    const {
+        departureAddress,
+        destinationAddress,
+        departureTime,
+        price,
+        orderState,
+        orderId,
+        departureLatitude,
+        departureLongitude,
+        destinationLatitude,
+        destinationLongitude,
+        cancelButtonShow = (OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING)
+    } = order;
     // const [cancelButtonShow, setCancelButtonShow] = useState(false);
 
     // setCancelButtonShow(OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING);
@@ -29,7 +43,7 @@ const OrderBox = ({order, navigation, openSheet}) => {
         'Pending': '#CCCC00',
         'Awaiting': '#0099FF',
         'Cancelled': '#FF0000',
-        'Arrived': '#00CC00',
+        'Delivered': '#00CC00',
         'InTransit': '#FF9900',
     };
 
@@ -46,6 +60,14 @@ const OrderBox = ({order, navigation, openSheet}) => {
                             orderDetailInfo: data.data,
                             Departure: departureAddress,
                             Destination: destinationAddress,
+                            DepartureCoords: {
+                                "lat": departureLatitude,
+                                "lng": departureLongitude
+                            },
+                            DestinationCoords: {
+                                "lat": destinationLatitude,
+                                "lng": destinationLongitude
+                            },
                             Time: departureTime,
                             Price: price,
                             Status: orderState,
@@ -86,7 +108,7 @@ const OrderBox = ({order, navigation, openSheet}) => {
                         <RemixIcon name="wallet-3-line" size={20} color="black"/>
                         <Text>Price: {price}</Text>
                     </HStack>
-                    {cancelButtonShow &&  <Box position="absolute" bottom={0} right={0}>
+                    {cancelButtonShow && <Box position="absolute" bottom={0} right={0}>
                         <Button style={styles1.buttonStyle} onPress={handleCancel}>
                             <Text style={styles1.textStyle}>Cancel Order</Text>
                         </Button>
@@ -95,7 +117,7 @@ const OrderBox = ({order, navigation, openSheet}) => {
             </Box>
         </TouchableOpacity>
     );
-};
+});
 
 const pageSize = 10;
 
@@ -108,10 +130,16 @@ const OrderListScreen = ({navigation}) => {
     const [refreshing, setRefreshing] = useState(false);
     const refRBSheet = useRef();
 
-    const openSheet = (orderId) => {
+    useFocusEffect(
+        React.useCallback(() => {
+            handleRefresh();
+        }, [])
+    );
+
+    const openSheet = useCallback((orderId) => {
         setCancelOrderId(orderId);
         refRBSheet.current.open();
-    };
+    }, []);
 
     const closeSheet = () => {
         refRBSheet.current.close();
@@ -128,7 +156,7 @@ const OrderListScreen = ({navigation}) => {
             .then(data => {
                 if (data.code === 200) {
                     alert("Cancelled Order Success");
-                    //TODO 刷新页面
+                    handleRefresh(); //取消订单并刷新页面
                 } else {
                     console.log(data.message);
                     alert("Cancel Order failed, Please try again later!")
@@ -141,17 +169,15 @@ const OrderListScreen = ({navigation}) => {
         closeSheet();
     };
 
-    const handleRefresh = async () => {
+    const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        console.log("handleRefresh................................")
         const orderList = await queryOrderList(pageSize, 1);
         setOrders(orderList.content);
         setPage(2);
         setRefreshing(false);
-    };
+    }, []);
 
     const queryOrderList = async (pageSize, page) => {
-        console.log("queryOrderList................................")
         const queryOrderListParam = {
             pageSize: pageSize,
             page: page,
@@ -170,22 +196,22 @@ const OrderListScreen = ({navigation}) => {
             })
     };
 
-    const fetchMoreOrders = async () => {
+    const fetchMoreOrders = useCallback(async () => {
         if (loading) {
             return;
         }
-        console.log("fetchMoreOrders................................")
         setLoading(true);
         const orderList = await queryOrderList(pageSize, page);
-        setOrders((oldData) => [...oldData, ...orderList.content]);
-        setPage((prevPage) => prevPage + 1);
+        if (orderList.length > 0) {
+            setOrders((oldData) => [...oldData, ...orderList.content]);
+            setPage((prevPage) => prevPage + 1);
+        }
         setLoading(false);
-    };
+    }, [loading, page]);
 
-    const renderItem = ({item}) => {
-        console.log("renderItem................................")
-        return <OrderBox key={item.id} order={item} navigation={navigation} openSheet={openSheet}/>;
-    };
+    const renderItem = useCallback(({item}) => <OrderBox key={item.id} order={item} navigation={navigation}
+                                                         openSheet={openSheet}/>, [navigation, openSheet]);
+
 
     return (
         <>
@@ -196,6 +222,8 @@ const OrderListScreen = ({navigation}) => {
                 onEndReached={fetchMoreOrders}
                 onEndReachedThreshold={0.5}
                 windowSize={20}
+                initialNumToRender={10}
+                maxToRenderPerBatch={20}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}

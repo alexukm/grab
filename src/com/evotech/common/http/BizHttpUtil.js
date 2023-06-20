@@ -58,10 +58,18 @@ const featureAndPath = {
 
     DRIVER_ACCEPT_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/accept'},
 
+    CARPOOLING_ORDERS_QUERY: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/query'},
 
+    DRIVER_ORDER_PAGE: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/page'},
 
 }
+export function driverOrderPage(params = {}) {
+    return request.post(featureAndPath.DRIVER_ORDER_PAGE.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
 
+export function carpoolingOrdersQuery(params = {}) {
+    return request.post(featureAndPath.CARPOOLING_ORDERS_QUERY.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
 export function userReviewOrder(params = {}) {
     return request.post(featureAndPath.USER_REVIEW_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }

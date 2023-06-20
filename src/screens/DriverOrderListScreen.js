@@ -1,78 +1,125 @@
+import React, {useCallback, useState} from 'react';
+import {View, Text, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
+import {Box, HStack} from 'native-base';
+import defaultClient from "../com/evotech/common/websocket/WebSocketClient";
+import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
+import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
+import {carpoolingOrdersQuery, driverAcceptOrder} from "../com/evotech/common/http/BizHttpUtil";
+import {useFocusEffect} from "@react-navigation/native";
+import {err} from "react-native-svg/lib/typescript/xml";
 
-import React from 'react';
-import { View, Text, FlatList, StyleSheet, Button, ScrollView } from 'react-native';
-import { TouchableOpacity, Image } from 'react-native';
 
 const DriverOrderListScreen = () => {
-    const data = [
-        {
-            time: '10/06 at 12:56',
-            start: 'KIZ UKM SELANGOR',
-            destination: 'KLIA SEPANG MALAYSIA',
-            price: 'MYR 500',
-            note: 'This is a short note.',
-            id: '1',
-        },
-        {
-            time: '10/06 at 12:56',
-            start: 'KIZ UKM SELANGOR',
-            destination: 'KLIA SEPANG MALAYSIA',
-            price: 'MYR 500',
-            note: 'This is a long note that will be wrapped inside the ScrollView component.',
-            id: '2',
-        },
-        {
-            time: '10/06 at 12:56',
-            start: 'KIZ UKM SELANGOR',
-            destination: 'KLIA SEPANG MALAYSIA',
-            price: 'MYR 500',
-            note: 'This is a long note that will be wrapped inside the ScrollView component.',
-            id: '2',
-        },
-        {
-            time: '10/06 at 12:56',
-            start: 'KIZ UKM SELANGOR',
-            destination: 'KLIA SEPANG MALAYSIA',
-            price: 'MYR 500',
-            note: 'Null',
-            id: '2',
-        },
-        {
-            time: '10/06 at 12:56',
-            start: 'KIZ UKM SELANGOR',
-            destination: 'KLIA SEPANG MALAYSIA',
-            price: 'MYR 500',
-            note: '看见撒谎的雷克萨到了卡了大家埃里克森的距离喀什索拉卡离开洒家立刻撒旦老咔叽卡拉杀了开始就打卢克',
-            id: '2',
-        },
-        // 添加更多的示例订单数据...
-    ];
-    const renderItem = ({ item }) => (
-        <View style={styles.itemContainer}>
-            <View style={styles.orderInfoContainer}>
-                <Text style={styles.timeText}>{item.time}</Text>
-                <Text>{item.start}</Text>
-                <Text>{item.destination}</Text>
-                <Text style={styles.priceText}>{item.price}</Text>
-            </View>
-            <View style={styles.orderNoteContainer}>
-                <ScrollView>
-                    <Text>{item.note}</Text>
-                </ScrollView>
-            </View>
-            <TouchableOpacity onPress={() => console.log('Accepted')}>
-                <Image source={require('../picture/accept.png')} style={styles.buttonImage} />
-            </TouchableOpacity>
-        </View>
+    const [rideOrders, setRideOrders] = React.useState([]);
+    const [page, setPage] = React.useState(1);
+    const [pageSize, setPageSize] = React.useState(10);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const [updateFlag, setUpdateFlag] = useState(false); // 添加这个状态
+
+
+    const queryOrders = (pageSize, page) => {
+        const param = {
+            "pageSize": pageSize,
+            "page": page
+            // "passengersNumber": 0,
+            // "orderPlannedTime": "",
+            // "departureLatitude": 0,
+            // "departureLongitude": 0,
+            // "destinationLatitude": 0,
+            // "destinationLongitude": 0
+        }
+        return carpoolingOrdersQuery(param).then(data => {
+            if (data.code === 200) {
+                return data.data;
+            } else {
+                alert(data.message);
+                return [];
+            }
+        }).catch(err => {
+            alert('Query order failed');
+            console.error(err.message);
+            return [];
+        })
+    }
+
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        const orderList = await queryOrders(pageSize, 1);
+        setRideOrders(orderList.content);
+        setPage(page + 1);
+        setRefreshing(false);
+    }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            handleRefresh().then(() => {
+            });
+
+            setTimeout(async () => {
+
+                const token = defaultHeaders.getAuthentication(await getUserToken());
+                const client = defaultClient(token);
+                client.connect((frame) => {
+                    console.log('Connecting successfully');
+                    client.subscribe('/topic/refreshOrder', (body) => {
+                        console.log('Driver Order List:' + body);
+                        setRideOrders((old) => [body, ...old])
+                        setUpdateFlag(!updateFlag); // 当数据更新时改变 updateFlag 的值
+                    })
+                }, (err) => {
+                    alert("Connection error,please try again later! ")
+                    console.log('Connection error:' + JSON.stringify(err));
+                }, (close) => {
+                    alert("Connection close")
+                    console.log('Connection close:' + JSON.stringify(close));
+                });
+            }, 0)
+        }, [])
+    );
+
+
+    const acceptOrder = (orderId) => {
+        console.log('Accept Order:', orderId);
+        const params = {
+            userOrderId: orderId,
+        }
+        driverAcceptOrder(params).then(data => {
+            if (data.code === 200) {
+                alert("Accept Order Successful")
+            } else {
+                alert(data.message);
+            }
+        }).catch(err => {
+            console.error(err.message);
+            alert('Accept Order Failed');
+        })
+        //todo 刷新订单广场页
+    };
+    const renderItem = ({item}) => ((console.log(item) || true) &&
+        <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
+            <Text style={styles.timeText}>{item.plannedDepartureTime}</Text>
+            <Text>Departure: {item.departureAddress}</Text>
+            <Text>Destination: {item.destinationAddress}</Text>
+            <Text>Price: {item.expectedEarnings}</Text>
+            {item.remark && <Text>Comment: {item.remark}</Text>}
+            <HStack justifyContent="flex-end">
+                <TouchableOpacity onPress={() => acceptOrder(item.orderId)} style={styles.buttonContainer}>
+                    <Text style={styles.buttonText}>Accept</Text>
+                </TouchableOpacity>
+            </HStack>
+        </Box>
     );
 
     return (
         <View style={styles.container}>
             <FlatList
-                data={data}
+                data={rideOrders}
                 renderItem={renderItem}
-                keyExtractor={item => item.id}
-                ItemSeparatorComponent={() => <View style={styles.divider} />}
+                keyExtractor={(item) => item.id}
+                ItemSeparatorComponent={() => null}
+                extraData={updateFlag} // 把 updateFlag 传递给 extraData
             />
         </View>
     );
@@ -81,35 +128,20 @@ const DriverOrderListScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    itemContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 10,
-    },
-    orderInfoContainer: {
-        flex: 1,
-    },
-    orderNoteContainer: {
-        flex: 1,
-        marginLeft: 10,
-        paddingVertical: 5,
-        maxHeight: 100, // 设置订单备注容器的最大高度
-    },
-    divider: {
-        height: 1,
-        backgroundColor: 'gray',
-    },
-    buttonImage: {
-        width: 50,
-        height: 50,
+        paddingBottom: 60, // 调整底部导航栏高度
     },
     timeText: {
-        fontSize: 12, // 更改时间文本的字体大小
+        fontSize: 10,
+        marginBottom: 5,
     },
-    priceText: {
-        fontWeight: 'bold', // 将价格文本设置为粗体
+    buttonContainer: {
+        backgroundColor: 'green',
+        padding: 10,
+        borderRadius: 5,
+    },
+    buttonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });
 

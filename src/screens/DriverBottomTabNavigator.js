@@ -40,7 +40,7 @@ const DriverBottomTabNavigator = () => {
             })}
         >
             <Tab.Screen name="Home" component={DriverHomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Orders" component={OrderListScreen} options={{ headerShown: false }}/>
+            <Tab.Screen name="Orders" component={OrderListScreen} />
             <Tab.Screen name="Messages" component={MessagesScreen} />
             <Tab.Screen name="Account" component={AccountScreen} options={{ headerShown: false }} />
         </Tab.Navigator>

@@ -240,7 +240,7 @@ const RideOrderScreen = () => {
             orderSubmitParam[`${prefix}City`] = addressArray[len - 3].value;
             let address = "";
             for (let i = len - 4; i >= 0; i--) {
-                address += addressArray[i].value + ";";
+                address += addressArray[i].value + " ";
             }
             orderSubmitParam[`${prefix}Address`] = address;
         }

@@ -43,12 +43,16 @@ import { NativeBaseProvider } from 'native-base';
 import UserBottomTabNavigator from "./src/screens/UserBottomTabNavigator";
 // import DriveBottomTabNavigator from "./src/screens/DriveBottomTabNavigator";
 import DriverBottomTabNavigator from "./src/screens/DriverBottomTabNavigator";
+import { TextEncoder, TextDecoder } from 'text-encoding';
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 const App = () => {
     return (
         <NativeBaseProvider>
             <NavigationContainer>
-                <UserBottomTabNavigator />
+                <DriverBottomTabNavigator />
             </NavigationContainer>
         </NativeBaseProvider>
     );

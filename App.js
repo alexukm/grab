@@ -52,7 +52,7 @@ const App = () => {
     return (
         <NativeBaseProvider>
             <NavigationContainer>
-                <DriverBottomTabNavigator />
+                <UserBottomTabNavigator />
             </NavigationContainer>
         </NativeBaseProvider>
     );

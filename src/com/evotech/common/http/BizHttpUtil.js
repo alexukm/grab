@@ -62,6 +62,13 @@ const featureAndPath = {
 
     DRIVER_ORDER_PAGE: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/page'},
 
+    DRIVER_ORDER_INFO: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/orderInfo'},
+
+}
+
+export function driverOrderInfo(params = {}) {
+    return request.post(featureAndPath.DRIVER_ORDER_INFO.path, SupportContextType.APPLICATION_JSON, {params: params})
+
 }
 export function driverOrderPage(params = {}) {
     return request.post(featureAndPath.DRIVER_ORDER_PAGE.path, SupportContextType.APPLICATION_JSON, {params: params})

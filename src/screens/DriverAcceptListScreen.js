@@ -3,7 +3,13 @@ import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'reac
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
 import RBSheet from "react-native-raw-bottom-sheet";
 import RemixIcon from 'react-native-remix-icon';
-import {userCancelOrder, userOrderInfo, userOrderPage} from "../com/evotech/common/http/BizHttpUtil";
+import {
+    driverOrderInfo,
+    driverOrderPage,
+    userCancelOrder,
+    userOrderInfo,
+    userOrderPage
+} from "../com/evotech/common/http/BizHttpUtil";
 import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {useFocusEffect} from '@react-navigation/native';
@@ -24,17 +30,23 @@ const styles1 = StyleSheet.create({
 
 const OrderBox = React.memo(({order, navigation, openSheet}) => {
     const {
+        userOrderId,
+        driverOrderId,
+        distance,
+        orderState,
+        passengersNumber,
+        plannedDepartureTime,
+        actualDepartureTime,
         departureAddress,
         destinationAddress,
-        departureTime,
-        price,
-        orderState,
-        orderId,
+        expectedEarnings,
+        totalEarnings,
         departureLatitude,
         departureLongitude,
         destinationLatitude,
         destinationLongitude,
-        cancelButtonShow = (OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING)
+        showTotalEarnings = (orderState === OrderStateEnum.DELIVERED || orderState === OrderStateEnum.COMPLETED),
+        cancelButtonShow = (orderState === OrderStateEnum.PENDING)
     } = order;
     // const [cancelButtonShow, setCancelButtonShow] = useState(false);
 
@@ -49,12 +61,13 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
 
     const handlePress = () => {
         const queryParam = {
-            orderId: orderId,
+            driverOrderId: driverOrderId,
+            userOrderId: userOrderId
         }
-        userOrderInfo(queryParam)
+            driverOrderInfo(queryParam)
             .then(data => {
                 if (data.code === 200) {
-                    navigation.navigate('DriverAcceptDetailScreen', {
+                    navigation.navigate('DriverAcceptDetails', {
                         screen: 'DriverAcceptDetailScreen',
                         params: {
                             orderDetailInfo: data.data,
@@ -68,8 +81,8 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                                 "lat": destinationLatitude,
                                 "lng": destinationLongitude
                             },
-                            Time: departureTime,
-                            Price: price,
+                            Time: actualDepartureTime ? actualDepartureTime : plannedDepartureTime,
+                            Price: showTotalEarnings ? totalEarnings : expectedEarnings,
                             Status: orderState,
                             // 需要添加其他参数，看OrderDetailScreen需要什么参数
                         },
@@ -78,7 +91,7 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                     alert(data.message);
                 }
             }).catch(error => {
-            console.log("order info query failed " + error.message);
+            console.error("order info query failed " , error);
             alert("order details query failed ,please try again later!")
         });
     };
@@ -100,14 +113,22 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                         <RemixIcon name="map-pin-line" size={20} color="red"/>
                         <Text>Destination: {destinationAddress}</Text>
                     </HStack>
+                    {/*  <HStack space={2} alignItems="center">
+                        <RemixIcon name="calendar-check-line" size={20} color="black"/>
+                        <Text>Distance: {distance} KM</Text>
+                    </HStack>*/}
                     <HStack space={2} alignItems="center">
                         <RemixIcon name="calendar-check-line" size={20} color="black"/>
-                        <Text>Time: {departureTime}</Text>
+                        <Text>Time: {actualDepartureTime ? actualDepartureTime : plannedDepartureTime} · {passengersNumber} Pass</Text>
                     </HStack>
                     <HStack space={2} alignItems="center">
                         <RemixIcon name="wallet-3-line" size={20} color="black"/>
-                        <Text>Price: {price}</Text>
+                        <Text>Price: {showTotalEarnings ? totalEarnings : expectedEarnings}</Text>
                     </HStack>
+                    {/*<HStack space={2} alignItems="center">
+                        <RemixIcon name="wallet-3-line" size={20} color="black"/>
+                        <Text>PassengersNumber: {passengersNumber}</Text>
+                    </HStack>*/}
                     {cancelButtonShow && <Box position="absolute" bottom={0} right={0}>
                         <Button style={styles1.buttonStyle} onPress={handleCancel}>
                             <Text style={styles1.textStyle}>Cancel Order</Text>
@@ -182,7 +203,7 @@ const DriverAcceptListScreen = ({navigation}) => {
             pageSize: pageSize,
             page: page,
         };
-        return userOrderPage(queryOrderListParam)
+        return driverOrderPage(queryOrderListParam)
             .then(data => {
                 if (data.code === 200) {
                     return data.data;

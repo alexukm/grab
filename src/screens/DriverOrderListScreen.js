@@ -59,20 +59,19 @@ const DriverOrderListScreen = () => {
         React.useCallback(() => {
             handleRefresh().then(() => {
             });
-
+            let cancelSub;
             setTimeout(async () => {
                 const token = defaultHeaders.getAuthentication(await getUserToken());
                 const client = defaultClient(token);
 
-                clientRef.current = client; // 在 ref 中存储 client
+                // clientRef.current = client; // 在 ref 中存储 client
 
                 client.connect((frame) => {
                     console.log('Connecting successfully');
-                    client.subscribe('/topic/refreshOrder', (body) => {
-                        console.log('Driver Order List:' + body);
-                        setRideOrders((old) => [body, ...old])
+                  const cancelSub = client.subscribe('/topic/refreshOrder', (body) => {
+                        setRideOrders((old) => [JSON.parse(body), ...old])
                         setUpdateFlag(!updateFlag); // 当数据更新时改变 updateFlag 的值
-                    })
+                    });
                 }, (err) => {
                     // alert("Connection error,please try again later! ")
                     console.log('Connection error:' + JSON.stringify(err));
@@ -85,12 +84,13 @@ const DriverOrderListScreen = () => {
 
             // 返回一个清理函数，它将在页面失焦时运行
             return () => {
-                if (clientRef.current) {
-                    clientRef.current.disconnect(() => {
+                if (cancelSub) {
+                    cancelSub();
+                   /* clientRef.current.disconnect(() => {
                         console.log('Disconnected successfully');
                     }, (err) => {
                         console.error('Disconnect error:' + JSON.stringify(err));
-                    });
+                    });*/
                 }
             };
         }, [])

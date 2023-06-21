@@ -10,8 +10,7 @@ import DriverMessageScreen from "./DriverMessageScreen";
 import DriverAccountScreen  from "./DriverAccountScreen";
 import DriverOrderListScreen from './DriverOrderListScreen';  // 这是新导入的
 import DriverAcceptDetailScreen from "./DriverAcceptDetailScreen";
-import SimpleOrderDetailScreen from "./SimpleOrderDetailScreen";
-
+const DriverAcceptDetailNavigator = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 
@@ -53,14 +52,14 @@ const DriverMainNavigator = () => (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
         <HomeStack.Screen name="Tabs" component={DriverBottomTabNavigator} />
         <HomeStack.Screen name="DriverOrderListScreen" component={DriverOrderListScreen} />
-        <HomeStack.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailStackScreen} options={{ headerShown: false }} />
+        <HomeStack.Screen name="DriverAcceptDetails" component={DriverAcceptDetailStackScreen} options={{ headerShown: false }} />
     </HomeStack.Navigator>
 );
 
 const DriverAcceptDetailStackScreen = () => (
-    <DriverAcceptDetailScreen.Navigator>
-        <SimpleOrderDetailStack.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailScreen} />
-    </DriverAcceptDetailScreen.Navigator>
+    <DriverAcceptDetailNavigator.Navigator>
+        <DriverAcceptDetailNavigator.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailScreen} />
+    </DriverAcceptDetailNavigator.Navigator>
 );
 
 const styles = StyleSheet.create({

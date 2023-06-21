@@ -7,7 +7,6 @@ import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
 import {userOrderInfo, userReviewOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
-import {tr} from "date-fns/locale";
 import { Rating } from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
@@ -146,7 +145,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         <View>
                             <Text fontWeight="bold">RM {Price}.00</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text fontSize="xs">CASH </Text>
+                                <Text fontSize="xs">{orderDetailInfo.paymentType} </Text>
                                 <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
                                     <Image
                                         source={require('../picture/cash.png')}
@@ -169,6 +168,10 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         <RemixIcon name="team-fill" size={24} color="black"/>
                         <Text>Passenger Number: {orderDetailInfo.passengersNumber}</Text>
                     </HStack>
+                    {orderDetailInfo.orderCompletionTime && <HStack space={2} alignItems="center">
+                        <RemixIcon name="team-fill" size={24} color="black"/>
+                        <Text>Passenger Number: {orderDetailInfo.orderCompletionTime}</Text>
+                    </HStack>}
                 </VStack>
             </InfoBox>
 
@@ -178,20 +181,17 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         <InfoBox title="Payment Information">
             <VStack space={4} alignItems="stretch">
                 <HStack>
-                    <Text>Order No: {orderDetailInfo.orderId}</Text>
+                    <Text>Order No: {orderDetailInfo.driverOrderId}</Text>
                 </HStack>
                 <HStack>
-                    <Text>Payment No: {orderDetailInfo.payNo}</Text>
+                    <Text>Earnings: {orderDetailInfo.totalEarnings}</Text>
                 </HStack>
                 <HStack>
-                    <Text>Payment Method: {orderDetailInfo.paymentType}</Text>
+                    <Text>Settlement Status: {orderDetailInfo.settlementStatus}</Text>
                 </HStack>
-                <HStack>
-                    <Text>Payment Amount: {orderDetailInfo.price}</Text>
-                </HStack>
-                <HStack>
-                    <Text>Payment Status: {orderDetailInfo.orderState}</Text>
-                </HStack>
+                {(orderDetailInfo.settlementFailureReason !== '') && <HStack>
+                    <Text>Settlement Status: {orderDetailInfo.settlementFailureReason}</Text>
+                </HStack>}
             </VStack>
         </InfoBox>
     );
@@ -278,36 +278,18 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
 
     const renderContentBasedOnStatus = () => {
         switch (Status) {
-            //待接单
-            case OrderStateEnum.AWAITING:
-                return (
-                    <ScrollView style={styles.fullScreen}>
-                        {DepartureCoords && DestinationCoords && <MapComponent/>}
-                        <OrderInfoBox showStatus={true}/>
-                        <RBSheet
-                            ref={refRBSheetPayment}
-                            closeOnDragDown={true}
-                            closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
-                        >
-                            <PaymentInfoBox/>
-                        </RBSheet>
-                    </ScrollView>
-                );
             //待出行
             case OrderStateEnum.PENDING:
                 return (
                     <ScrollView style={styles.fullScreen}>
                         {DepartureCoords && DestinationCoords && <MapComponent/>}
                         <OrderInfoBox showStatus={true}/>
-                        {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
                         <RBSheet
                             ref={refRBSheet}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
                             height={Dimensions.get('window').height * 0.5} // 设置RBSheet占据50%的屏幕高度
                         >
-                            <PaymentInfoBox/>
                         </RBSheet>
                     </ScrollView>
                 );
@@ -319,7 +301,6 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             <ScrollView style={styles.fullScreen}>
                                 <MapComponent/>
                                 <OrderInfoBox showStatus={false}/>
-                                {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
                             </ScrollView>
                         )}
                     </>
@@ -329,7 +310,6 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}
                         <RBSheet
                             ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
                             closeOnDragDown={true}
@@ -361,7 +341,6 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             closeOnPressMask={true}
                             height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
                         >
-                            <PaymentInfoBox/>
                         </RBSheet>
                     </ScrollView>
                 );
@@ -378,6 +357,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         >
                             <ReviewBox/>
                         </RBSheet>
+                        <PaymentInfoBox/>
                     </ScrollView>
                 );
             default:

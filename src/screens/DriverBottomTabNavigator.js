@@ -5,10 +5,12 @@ import { StyleSheet } from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 
 import DriverHomeScreen from './DriverHomeScreen';
-import OrderListScreen from "./OrderListScreen";
-import MessagesScreen from './MessagesScreen';
-import AccountScreen from './AccountScreen';
+import DriverAcceptListScreen from './DriverAcceptListScreen';
+import DriverMessageScreen from "./DriverMessageScreen";
+import DriverAccountScreen  from "./DriverAccountScreen";
 import DriverOrderListScreen from './DriverOrderListScreen';  // 这是新导入的
+import DriverAcceptDetailScreen from "./DriverAcceptDetailScreen";
+import SimpleOrderDetailScreen from "./SimpleOrderDetailScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
@@ -23,7 +25,7 @@ const DriverBottomTabNavigator = () => {
                     if (route.name === 'Home') {
                         iconName = 'home-line';
                     } else if (route.name === 'Orders') {
-                        iconName = 'list-line';
+                        iconName = 'user-received-fill';
                     } else if (route.name === 'Messages') {
                         iconName = 'message-2-line';
                     } else if (route.name === 'Account') {
@@ -40,9 +42,9 @@ const DriverBottomTabNavigator = () => {
             })}
         >
             <Tab.Screen name="Home" component={DriverHomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Orders" component={OrderListScreen} />
-            <Tab.Screen name="Messages" component={MessagesScreen} />
-            <Tab.Screen name="Account" component={AccountScreen} options={{ headerShown: false }} />
+            <Tab.Screen name="Orders" component={DriverAcceptListScreen} />
+            <Tab.Screen name="Messages" component={DriverMessageScreen} />
+            <Tab.Screen name="Account" component={DriverAccountScreen} />
         </Tab.Navigator>
     );
 };
@@ -51,7 +53,14 @@ const DriverMainNavigator = () => (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
         <HomeStack.Screen name="Tabs" component={DriverBottomTabNavigator} />
         <HomeStack.Screen name="DriverOrderListScreen" component={DriverOrderListScreen} />
+        <HomeStack.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailStackScreen} options={{ headerShown: false }} />
     </HomeStack.Navigator>
+);
+
+const DriverAcceptDetailStackScreen = () => (
+    <DriverAcceptDetailScreen.Navigator>
+        <SimpleOrderDetailStack.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailScreen} />
+    </DriverAcceptDetailScreen.Navigator>
 );
 
 const styles = StyleSheet.create({

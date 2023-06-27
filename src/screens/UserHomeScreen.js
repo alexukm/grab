@@ -3,6 +3,9 @@ import {Image, TouchableOpacity, View} from 'react-native';
 import {Box, AspectRatio, Button, Center, Text} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
 
+// import PushNotification from 'react-native-push-notification';
+
+
 const UserHomeScreen = () => {
     const navigation = useNavigation();
 
@@ -16,6 +19,16 @@ const UserHomeScreen = () => {
                 client.subscribe('/user/topic/orderAccept', (body) => {
                     // console.log(body)
                     // todo  调用系统通知
+                    // PushNotification.orderSuccessNotification({
+                    //     /* Android Only Properties */
+                    //     channelId: "Driver picked your order up!", // (required) channelId, if the channel does not exist, notification will not trigger.
+                    //     /* iOS and Android properties */
+                    //     title: "Your order", // (optional)
+                    //     message: "Your order accepted", // (required)
+                    //     // playSound: true, // (optional) default: true
+                    //     // soundName: 'default', // (optional) See `soundName` parameter of `localNotification` function
+                    //     // number: '10', // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero)
+                    // });
                     alert("Your order accepted")
                 })
             }, (err) => {

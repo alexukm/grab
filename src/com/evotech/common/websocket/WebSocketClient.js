@@ -1,10 +1,13 @@
 import {Client} from "@stomp/stompjs";
+import {httpUrlPrefix} from "../http/HttpUtil";
 
+const wsUrlPrefix = httpUrlPrefix;
+export const defaultBrokerURL = "ws://10.59.50.56:8080/websocket/uniEase/ws-sfc";
 
-const brokerURL = "ws://192.168.49.128:8080/uniEase/ws-sfc";
+export const chatBrokerURL = "ws://10.59.50.56:8080/websocket/uniEase/ws-chat";
 
 class WebSocketClient {
-    constructor(headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) {
+    constructor(brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) {
         this.client = new Client({
             brokerURL: brokerURL,
             connectHeaders: headers,
@@ -47,6 +50,10 @@ class WebSocketClient {
         this.client.activate();
     }
 
+    publish(params={}) {
+        this.client.publish(params);
+    }
+
     subscribe(topic, handler) {
         // 不存在当前topic的handlers
         if (!this.handlers[topic]) {
@@ -87,16 +94,20 @@ class WebSocketClient {
 }
 
 export const defaultWebsocketClient = (headers) => {
-    return new WebSocketClient(headers, 0, 4000, 4000);
+    return new WebSocketClient(defaultBrokerURL,headers, 0, 4000, 4000);
 };
 
-export const websocketClient = (headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) => {
-    return new WebSocketClient(headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing).client;
+export const websocketClient = (brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) => {
+    return new WebSocketClient(brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing).client;
 };
 
 
 const defaultClient = (headers) => {
     return defaultWebsocketClient(headers);
+}
+
+export const defaultChatClient = (headers) => {
+    return new WebSocketClient(chatBrokerURL,headers, 0, 4000, 4000);
 }
 
 export default defaultClient;

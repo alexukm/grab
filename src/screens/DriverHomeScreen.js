@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {createContext, useCallback, useState} from 'react';
 import {Image, TouchableOpacity, View} from 'react-native';
 import {Box, AspectRatio, Button, Center, Text} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
@@ -14,6 +14,7 @@ import {carpoolingOrdersQuery} from "../com/evotech/common/http/BizHttpUtil";
 
 const DriverHomeScreen = () => {
     const navigation = useNavigation();
+    // const MyContext = createContext();
 
 
     const handlePress =  (screen) => {
@@ -58,6 +59,7 @@ const DriverHomeScreen = () => {
         </Box>
     );
 
+
     const CardWithoutDescription = ({imageUri}) => (
         <View style={{height: 200}}>
             <Box
@@ -73,6 +75,8 @@ const DriverHomeScreen = () => {
             </Box>
         </View>
     );
+
+
 
     return (
         <View style={{flex: 1, alignItems: 'center', backgroundColor: 'white'}}>

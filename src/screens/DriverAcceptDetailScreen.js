@@ -1,7 +1,16 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {NativeBaseProvider, Box, VStack, HStack, Button, Text, Avatar, Input, Image} from 'native-base';
 import MapView, {Marker} from 'react-native-maps';
-import {View, Dimensions, ScrollView, TouchableOpacity} from 'react-native';
+import {
+    View,
+    Dimensions,
+    ScrollView,
+    TouchableOpacity,
+    Linking,
+    TouchableWithoutFeedback,
+    Platform,
+    Animated
+} from 'react-native';
 import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
@@ -10,6 +19,10 @@ import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import { Rating } from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
+import ActionSheet from "@alessiocancian/react-native-actionsheet";
+// import ActionSheet from 'react-native-actionsheet';
+
+
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
@@ -27,9 +40,32 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
     const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
 
 
+    const handleOpenMaps = async (address) => {
+        const url = Platform.select({
+            ios: `http://maps.apple.com/?q=${address}`,
+            android: `geo:0,0?q=${address}`,
+        });
+        try {
+            const supported = await Linking.canOpenURL(url);
+
+            if (supported) {
+                await Linking.openURL(url);
+            } else {
+                // 如果用户的设备上没有导航应用，则抛出错误
+                alert("对不起，您的设备上没有找到导航应用");
+            }
+        } catch (error) {
+            // 如果其他错误发生，抛出错误
+            console.error('An error occurred', error);
+            alert("无法打开导航，发生了一个错误");
+        }
+    };
+
+
     useEffect(() => {
         setExistDriverInfo(orderDetailInfo.driverOrderId !== '');
     }, []);
+
 
     const styles = StyleSheet.create({
         container: {
@@ -37,7 +73,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         },
         map: {
             width: Dimensions.get('window').width,
-            height: Dimensions.get('window').height * 0.35, // 让地图占据40%的屏幕
+            height: Dimensions.get('window').height * 0.51, // 让地图占据40%的屏幕
         },
         box: {
             padding: 5,
@@ -49,7 +85,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             alignItems: 'center',
         },
         fullScreen: {
-            height: Dimensions.get('window').height * 0.65, // 让box占据60%的屏幕
+            height: Dimensions.get('window').height * 0.49, // 让box占据60%的屏幕
         },
         licensePlateText: {
             fontSize: 20, // 1.5 times the usual size, adjust as needed
@@ -108,7 +144,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 </Box>
             )}
             <Box bg="white" shadow={2} p={4}>
-                <VStack space={4} mt={3}>
+                <VStack space={4} mt={1}>
                     {children}
                 </VStack>
             </Box>
@@ -135,38 +171,132 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             default:
                 statusColor = '#808080'; // default to gray
         }
+
+        const actionSheet = useRef();
+
+        const [animatePress, setAnimatePress] = useState(new Animated.Value(1))
+
+        const animateIn = () => {
+            Animated.timing(animatePress, {
+                toValue: 0.5,
+                duration: 500,
+                useNativeDriver: true // Add This line
+            }).start();
+        }
+        const showActionSheet = () => {
+            actionSheet.current.show();
+        };
+
+        const handleActionSheetPress = (index) => {
+            switch (index) {
+                case 0:
+                    handleOpenMaps(Departure);
+                    break;
+                case 1:
+                    handleOpenMaps(Destination);
+                    break;
+                default:
+                    break;
+            }
+        };
+
         return (
             <InfoBox status={{color: statusColor, text: Status}}>
-                <VStack space={4}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <View>
-                            <Text fontSize="sm">{Time}</Text>
+                <VStack space={3}>
+                    {Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED && (
+                        <View style={{position: 'relative'}}>
+                            <Text>接受订单成功，等带出行</Text>
+                            <Text>请在 <Text fontWeight="bold" color="#0000FF">{Time} </Text> 前到达乘客起点</Text>
+                            <TouchableWithoutFeedback onPress={showActionSheet}>
+                                <Image
+                                    source={require('../picture/navigation.png')}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                        width: 20,
+                                        height: 20,
+                                    }}
+                                    alt="Navigation icon"
+                                />
+                            </TouchableWithoutFeedback>
+                            <ActionSheet
+                                ref={actionSheet}
+                                options={['出发地', '目的地', '取消']}
+                                cancelButtonIndex={2}
+                                onPress={handleActionSheetPress}
+                            />
                         </View>
+                    )}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                         <View>
-                            <Text fontWeight="bold">RM {Price}.00</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text fontSize="xs">{orderDetailInfo.paymentType} </Text>
-                                <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
-                                    <Image
-                                        source={require('../picture/cash.png')}
-                                        alt="cash"
-                                        style={{width: 20, height: 15}}
-                                    />
-                                </TouchableOpacity>
+                            <Text fontSize="sm">
+                                {orderDetailInfo.passengersNumber} {orderDetailInfo.passengersNumber > 1 ? "Passengers" : "Passenger"} · {orderDetailInfo.paymentType}
+                            </Text>
+                        </View>
+                        <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                <Text fontSize="xl" fontWeight="bold">RM {Price}</Text>
+                                <Text fontSize="xs"> {'>'} </Text>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                     </View>
-                    <HStack space={2} alignItems="center" style={{flexWrap: 'wrap'}}>
-                        <RemixIcon name="map-pin-line" size={24} color="blue"/>
-                        <Text style={{flex: 1}}>Departure: {Departure}</Text>
+
+                    {Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED && (
+                    <HStack justifyContent='space-between' alignItems='center' px={0}>
+                        <HStack space={4} alignItems='center'>
+                            <Avatar
+                                size="md"
+                                source={{
+                                    uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
+                                }}
+                            />
+                            <VStack>
+                                <Text fontWeight="bold">Ramalaan bin Abdur Rasheed</Text>
+                                <Text>I need a man driver</Text>
+                            </VStack>
+                        </HStack>
+                        <HStack alignItems='center' space={4}>
+                            <TouchableOpacity onPress={() => {
+                                console.log('Phone icon was pressed!');
+                            }}>
+                                <View style={{
+                                    borderWidth: 1,
+                                    borderColor: 'black',
+                                    borderRadius: 50,
+                                    padding: 5,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}>
+                                    <RemixIcon name="phone-line" size={20} color="black"/>
+                                </View>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={() => {
+                                console.log('Message icon was pressed!');
+                            }}>
+                                <View style={{
+                                    borderWidth: 1,
+                                    borderColor: 'black',
+                                    borderRadius: 50,
+                                    padding: 5,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}>
+                                    <RemixIcon name="message-3-line" size={20} color="black"/>
+                                </View>
+                            </TouchableOpacity>
+                        </HStack>
                     </HStack>
-                    <HStack space={2} alignItems="center" style={{flexWrap: 'wrap'}}>
-                        <RemixIcon name="map-pin-line" size={24} color="red"/>
-                        <Text style={{flex: 1}}>Destination: {Destination}</Text>
+                    )}
+
+                    <HStack space={2} alignItems="flex-start" style={{flexWrap: 'wrap'}}>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue" style={{marginTop: 5}}/>
+                        <Text style={{flex: 1}}>{Departure}</Text>
                     </HStack>
-                    <HStack space={2} alignItems="center">
-                        <RemixIcon name="team-fill" size={24} color="black"/>
-                        <Text>Passenger Number: {orderDetailInfo.passengersNumber}</Text>
+                    <HStack space={2} alignItems="flex-start" style={{flexWrap: 'wrap'}}>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange" style={{marginTop: 5}}/>
+                        <Text style={{flex: 1}}>{Destination}</Text>
                     </HStack>
                     {orderDetailInfo.orderCompletionTime && <HStack space={2} alignItems="center">
                         <RemixIcon name="team-fill" size={24} color="black"/>
@@ -174,9 +304,9 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                     </HStack>}
                 </VStack>
             </InfoBox>
-
         );
     };
+
     const PaymentInfoBox = () => (
         <InfoBox title="Payment Information">
             <VStack space={4} alignItems="stretch">
@@ -266,16 +396,15 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 region={{
                     latitude: (DepartureCoords.lat + DestinationCoords.lat) / 2,
                     longitude: (DepartureCoords.lng + DestinationCoords.lng) / 2,
-                    latitudeDelta: Math.abs(DepartureCoords.lat - DestinationCoords.lat) * 2 * 1.8,
-                    longitudeDelta: Math.abs(DepartureCoords.lng - DestinationCoords.lng) * 2 * 1.8,
+                    latitudeDelta: Math.abs(DepartureCoords.lat - DestinationCoords.lat) * 2 * 0.7,
+                    longitudeDelta: Math.abs(DepartureCoords.lng - DestinationCoords.lng) * 2 * 0.7,
                 }}
             >
-                <Marker coordinate={{latitude: DepartureCoords.lat, longitude: DepartureCoords.lng}}/>
+                <Marker pinColor="blue" coordinate={{latitude: DepartureCoords.lat, longitude: DepartureCoords.lng}}/>
                 <Marker coordinate={{latitude: DestinationCoords.lat, longitude: DestinationCoords.lng}}/>
             </MapView>
         </>
     );
-
     const renderContentBasedOnStatus = () => {
         switch (Status) {
             //待出行
@@ -285,7 +414,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         {DepartureCoords && DestinationCoords && <MapComponent/>}
                         <OrderInfoBox showStatus={true}/>
                         <RBSheet
-                            ref={refRBSheet}
+                            ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
                             height={Dimensions.get('window').height * 0.5} // 设置RBSheet占据50%的屏幕高度
@@ -334,7 +463,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
+                        {/*{existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}*/}
                         <RBSheet
                             ref={refRBSheetPayment}
                             closeOnDragDown={true}
@@ -344,6 +473,8 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         </RBSheet>
                     </ScrollView>
                 );
+
+            //已完成
             case OrderStateEnum.COMPLETED:
                 return (
                     <ScrollView style={styles.fullScreen}>
@@ -369,9 +500,30 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         <NativeBaseProvider>
             <View style={styles.container}>
                 {renderContentBasedOnStatus()}
+                {
+                    Status === OrderStateEnum.PENDING &&
+                    <Button
+                        onPress={() => console.log('Arrived at the passenger starting point')}
+                        style={{width: '90%', alignSelf: 'center', marginTop: 20, marginBottom: 20, backgroundColor: '#0000FF'}}
+                    >
+                        Arrived at the passenger starting point
+                    </Button>
+                }
+                {
+                    Status === OrderStateEnum.IN_TRANSIT &&
+                    <Button
+                        onPress={() => console.log('Order completed')}
+                        style={{width: '90%', alignSelf: 'center', marginTop: 20, marginBottom: 20, backgroundColor: '#0000FF'}}
+                    >
+                        Order completed
+                    </Button>
+                }
             </View>
         </NativeBaseProvider>
     );
+
+
+
 };
 
 export default DriverAcceptDetailScreen;

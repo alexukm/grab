@@ -46,7 +46,7 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
         destinationLatitude,
         destinationLongitude,
         showTotalEarnings = (orderState === OrderStateEnum.DELIVERED || orderState === OrderStateEnum.COMPLETED),
-        cancelButtonShow = (orderState === OrderStateEnum.PENDING)
+        cancelButtonShow = (orderState === OrderStateEnum.PENDING || orderState === OrderStateEnum.AWAITING)
     } = order;
     // const [cancelButtonShow, setCancelButtonShow] = useState(false);
 
@@ -106,32 +106,33 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                 <Text color={statusColors[orderState]} alignSelf='flex-end'>{orderState}</Text>
                 <VStack space={4}>
                     <HStack space={2} alignItems="center">
-                        <RemixIcon name="map-pin-line" size={20} color="blue"/>
-                        <Text>Departure: {departureAddress}</Text>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue" style={{marginTop: 5}}/>
+                        <Text>{departureAddress}</Text>
                     </HStack>
                     <HStack space={2} alignItems="center">
-                        <RemixIcon name="map-pin-line" size={20} color="red"/>
-                        <Text>Destination: {destinationAddress}</Text>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange" style={{marginTop: 5}}/>
+                        <Text>{destinationAddress}</Text>
                     </HStack>
                     {/*  <HStack space={2} alignItems="center">
                         <RemixIcon name="calendar-check-line" size={20} color="black"/>
                         <Text>Distance: {distance} KM</Text>
                     </HStack>*/}
                     <HStack space={2} alignItems="center">
-                        <RemixIcon name="calendar-check-line" size={20} color="black"/>
-                        <Text>Time: {actualDepartureTime ? actualDepartureTime : plannedDepartureTime} · {passengersNumber} Pass</Text>
+                        <RemixIcon name="time-fill" size={15} color="black"/>
+                        <Text>{actualDepartureTime ? actualDepartureTime : plannedDepartureTime} · {passengersNumber} {passengersNumber > 1 ? "Passengers" : "Passenger"}</Text>
+
                     </HStack>
-                    <HStack space={2} alignItems="center">
-                        <RemixIcon name="wallet-3-line" size={20} color="black"/>
-                        <Text>Price: {showTotalEarnings ? totalEarnings : expectedEarnings}</Text>
-                    </HStack>
+                    {/*<HStack space={2} alignItems="center">*/}
+                    {/*    <RemixIcon name="wallet-3-line" size={20} color="black"/>*/}
+                    {/*    <Text>Price: {showTotalEarnings ? totalEarnings : expectedEarnings}</Text>*/}
+                    {/*</HStack>*/}
                     {/*<HStack space={2} alignItems="center">
                         <RemixIcon name="wallet-3-line" size={20} color="black"/>
                         <Text>PassengersNumber: {passengersNumber}</Text>
                     </HStack>*/}
                     {cancelButtonShow && <Box position="absolute" bottom={0} right={0}>
                         <Button style={styles1.buttonStyle} onPress={handleCancel}>
-                            <Text style={styles1.textStyle}>Cancel Order</Text>
+                            <Text style={styles1.textStyle}>Cancel</Text>
                         </Button>
                     </Box>}
                 </VStack>

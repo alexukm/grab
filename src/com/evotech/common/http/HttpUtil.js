@@ -1,7 +1,7 @@
 import axios from "axios";
 import {getUserType, getUserID, getUserToken} from "../appUser/UserConstant";
 
-const defaultRequestAddress = "10.59.50.56"
+const defaultRequestAddress = "10.37.32.54"
 const defaultRequestPort = "8080"
 
 const contextPath = "/uniEase";

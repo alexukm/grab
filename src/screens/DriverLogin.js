@@ -132,6 +132,9 @@ function DriverScreen() {
                     setUserToken(data.data)
                     alert("Niubi, 登陆成功")
                     // 导航到下一个页面
+
+
+
                     navigation.navigate("Driver");
                 } else {
                     console.log("登录失败" + data.message);

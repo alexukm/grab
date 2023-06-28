@@ -1,54 +1,16 @@
-import React, {useContext, useEffect} from 'react';
+import React  from 'react';
 import {View, Text, Image, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
-import uuid from "react-native-uuid";
+import { useSelector} from "react-redux";
+import {selectChatList} from "../com/evotech/common/redux/chatSlice";
 
 
 export default function ChatList({navigation}) {
-
-    const chats = [
-        {
-            id: '1',
-            // sendUserCode: '',
-            // userName: '',
-            title: '聊天 1',
-            message: 'Hello',
-            time: '18:30',
-            unread: 2,
-            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80'
-        }
-    ];
-
-  /*  const repBody = null;
-
-    map.put('sendUserCode', chats);
-    const userCode = repBody.requestUserCode;
-
-    const chatsContext = map.get(userCode);
-    // 如果存在
-    if (chatsContext) {
-        //获取聊天内容
-        const context = chatsContext.context;
-        if (context) {
-            //将当前的消息 追加到context
-        } else {
-            chatsContext.context = [];
-        }
-
-    } else {
-        //第一次聊天
-        // 构建chats
-        map.put(userCode, chats);
-    }*/
-
-    //发布事件  聊天信息更新的事件
-
-    // 订阅 更新聊天列表 和 聊天窗口信息
+    const chatList = useSelector(selectChatList);
 
     const openChat = (item) => {
         navigation.navigate('ChatRoom', {
-            startName: '',
-            responseUserCode: '',
-            context: '',
+            receiverName: item.title,
+            receiverUserCode: item.userCode,
         });
     };
     return (
@@ -57,7 +19,7 @@ export default function ChatList({navigation}) {
                 <Text style={styles.headerText}>Chats</Text>
             </View>
             <FlatList
-                data={chats}
+                data={Object.values(chatList)}
                 keyExtractor={(item) => item.id}
                 renderItem={({item}) => (
                     <TouchableOpacity

@@ -48,3 +48,28 @@ export async function getUserToken() {
     return "Bearer c2bed56d816fe9500391a86212e548c6";
     // await getValue(denfaultHeaders.TOKEN)
 }
+
+
+export async function setChatMessages(messages) {
+    const token = await getUserToken();
+    setKeyValue('@chatMessages:'+token, JSON.stringify(messages)).then();
+}
+
+export async function setChatList(chatList) {
+    const token = await getUserToken();
+    setKeyValue('@chatList:'+token, JSON.stringify(chatList)).then();
+}
+
+export async function getChatMessages() {
+    const token = await getUserToken();
+    return getValue('@chatMessages:'+token).then(data => {
+        return data ? JSON.parse(data) : null;
+    });
+}
+
+export async function getChatList() {
+    const token = await getUserToken();
+    return getValue('@chatList:'+token).then(data => {
+        return data ? JSON.parse(data) : null;
+    });
+}

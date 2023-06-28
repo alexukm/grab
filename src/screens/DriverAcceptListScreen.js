@@ -70,6 +70,7 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                     navigation.navigate('DriverAcceptDetails', {
                         screen: 'DriverAcceptDetailScreen',
                         params: {
+                            userOrderId: userOrderId,
                             orderDetailInfo: data.data,
                             Departure: departureAddress,
                             Destination: destinationAddress,

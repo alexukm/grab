@@ -14,23 +14,31 @@ import {
 import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
-import {userOrderInfo, userReviewOrder} from "../com/evotech/common/http/BizHttpUtil";
+import {driverGetPasserCode, userOrderInfo, userReviewOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
-import { Rating } from 'react-native-ratings';
+import {Rating} from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
+import {err} from "react-native-svg/lib/typescript/xml";
 // import ActionSheet from 'react-native-actionsheet';
-
-
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
 
 const DriverAcceptDetailScreen = ({route, navigation}) => {
-    const {Departure, Destination, Time, Price, Status, orderDetailInfo,DepartureCoords,DestinationCoords} = route.params;
+    const {
+        Departure,
+        Destination,
+        Time,
+        Price,
+        Status,
+        orderDetailInfo,
+        userOrderId,
+        DepartureCoords,
+        DestinationCoords
+    } = route.params;
     const [existDriverInfo, setExistDriverInfo] = useState(false);
-
     const [rating, setRating] = useState(5);
     const [review, setReview] = useState("");
 
@@ -38,6 +46,27 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
 
     const refRBSheetPayment = useRef();  // 引用RBSheet for PaymentInfoBox
     const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
+
+    const startChat = (userOrderId) => {
+        console.log(userOrderId)
+        const params = {
+            orderId: userOrderId,
+        }
+        driverGetPasserCode(params)
+            .then(data => {
+                if (data.code !== 200) {
+                    alert(data.message);
+                    return;
+                }
+                navigation.navigate('ChatRoom', {
+                    receiverName: data.data.userName,
+                    receiverUserCode: data.data.userCode,
+                });
+            }).catch(err => {
+            console.error(err.message);
+            alert("get user info failed,please try again later!");
+        });
+    }
 
 
     const handleOpenMaps = async (address) => {
@@ -95,22 +124,22 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         },
     });
 
-    const reviewOrder = (satisfaction,reviewContent)=>{
+    const reviewOrder = (satisfaction, reviewContent) => {
         console.log("user review")
         console.log(orderDetailInfo.orderId)
 
-        const param ={
+        const param = {
             orderId: orderDetailInfo.orderId,
             reviewContent: reviewContent,
             satisfaction: satisfaction,
             reviewTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         }
-        userReviewOrder(param).then(data=>{
+        userReviewOrder(param).then(data => {
             console.log(data)
             if (data.code !== 200) {
                 alert("submit review failed,please try again later!");
             }
-        }).catch(err=>{
+        }).catch(err => {
             console.error(err.message);
             alert("submit review failed,please try again later!");
         });
@@ -122,14 +151,14 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 <Rating
                     // showRating
                     onFinishRating={value => setRating(value)}
-                    style={{ paddingVertical: 10 }}
+                    style={{paddingVertical: 10}}
                 />
                 <Input
                     placeholder="Write your review here..."
                     multiline
                     onChangeText={value => setReview(value)}
                 />
-                <Button onPress={()=>reviewOrder(5,"太棒了")}>
+                <Button onPress={() => reviewOrder(5, "太棒了")}>
                     Submit
                 </Button>
             </VStack>
@@ -243,51 +272,51 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                     </View>
 
                     {Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED && (
-                    <HStack justifyContent='space-between' alignItems='center' px={0}>
-                        <HStack space={4} alignItems='center'>
-                            <Avatar
-                                size="md"
-                                source={{
-                                    uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
-                                }}
-                            />
-                            <VStack>
-                                <Text fontWeight="bold">Ramalaan bin Abdur Rasheed</Text>
-                                <Text>I need a man driver</Text>
-                            </VStack>
-                        </HStack>
-                        <HStack alignItems='center' space={4}>
-                            <TouchableOpacity onPress={() => {
-                                console.log('Phone icon was pressed!');
-                            }}>
-                                <View style={{
-                                    borderWidth: 1,
-                                    borderColor: 'black',
-                                    borderRadius: 50,
-                                    padding: 5,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
+                        <HStack justifyContent='space-between' alignItems='center' px={0}>
+                            <HStack space={4} alignItems='center'>
+                                <Avatar
+                                    size="md"
+                                    source={{
+                                        uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
+                                    }}
+                                />
+                                <VStack>
+                                    <Text fontWeight="bold">Ramalaan bin Abdur Rasheed</Text>
+                                    <Text>I need a man driver</Text>
+                                </VStack>
+                            </HStack>
+                            <HStack alignItems='center' space={4}>
+                                <TouchableOpacity onPress={() => {
+                                    console.log('Phone icon was pressed!');
                                 }}>
-                                    <RemixIcon name="phone-line" size={20} color="black"/>
-                                </View>
-                            </TouchableOpacity>
+                                    <View style={{
+                                        borderWidth: 1,
+                                        borderColor: 'black',
+                                        borderRadius: 50,
+                                        padding: 5,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}>
+                                        <RemixIcon name="phone-line" size={20} color="black"/>
+                                    </View>
+                                </TouchableOpacity>
 
-                            <TouchableOpacity onPress={() => {
-                                console.log('Message icon was pressed!');
-                            }}>
-                                <View style={{
-                                    borderWidth: 1,
-                                    borderColor: 'black',
-                                    borderRadius: 50,
-                                    padding: 5,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
+                                <TouchableOpacity onPress={() => {
+                                    startChat(userOrderId);
                                 }}>
-                                    <RemixIcon name="message-3-line" size={20} color="black"/>
-                                </View>
-                            </TouchableOpacity>
+                                    <View style={{
+                                        borderWidth: 1,
+                                        borderColor: 'black',
+                                        borderRadius: 50,
+                                        padding: 5,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}>
+                                        <RemixIcon name="message-3-line" size={20} color="black"/>
+                                    </View>
+                                </TouchableOpacity>
+                            </HStack>
                         </HStack>
-                    </HStack>
                     )}
 
                     <HStack space={2} alignItems="flex-start" style={{flexWrap: 'wrap'}}>
@@ -353,7 +382,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             bg="#f0f0f0"
                             onPress={() => console.log('Chat with Driver')}
                             variant="ghost"
-                            style={{ height: 40, justifyContent: 'center', flex: 8 }} // 添加自定义样式
+                            style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
                         >
                             <HStack space={2}>
                                 <RemixIcon name="message-3-line" size={24} color="black"/>
@@ -364,7 +393,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             bg="#e0e0e0"
                             onPress={() => console.log('Call Driver')}
                             variant="ghost"
-                            style={{ height: 40, justifyContent: 'center', flex: 2 }} // 添加自定义样式
+                            style={{height: 40, justifyContent: 'center', flex: 2}} // 添加自定义样式
                         >
                             <HStack space={2}>
                                 <RemixIcon name="phone-line" size={24} color="black"/>
@@ -376,7 +405,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         bg="#f0f0f0"
                         onPress={() => refRBSheetReview.current.open()}
                         variant="ghost"
-                        style={{ height: 40, justifyContent: 'center', flex: 1 }}
+                        style={{height: 40, justifyContent: 'center', flex: 1}}
                     >
                         <HStack space={2}>
                             <RemixIcon name="star-line" size={24} color="black"/>
@@ -504,7 +533,13 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                     Status === OrderStateEnum.PENDING &&
                     <Button
                         onPress={() => console.log('Arrived at the passenger starting point')}
-                        style={{width: '90%', alignSelf: 'center', marginTop: 20, marginBottom: 20, backgroundColor: '#0000FF'}}
+                        style={{
+                            width: '90%',
+                            alignSelf: 'center',
+                            marginTop: 20,
+                            marginBottom: 20,
+                            backgroundColor: '#0000FF'
+                        }}
                     >
                         Arrived at the passenger starting point
                     </Button>
@@ -513,7 +548,13 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                     Status === OrderStateEnum.IN_TRANSIT &&
                     <Button
                         onPress={() => console.log('Order completed')}
-                        style={{width: '90%', alignSelf: 'center', marginTop: 20, marginBottom: 20, backgroundColor: '#0000FF'}}
+                        style={{
+                            width: '90%',
+                            alignSelf: 'center',
+                            marginTop: 20,
+                            marginBottom: 20,
+                            backgroundColor: '#0000FF'
+                        }}
                     >
                         Order completed
                     </Button>
@@ -521,7 +562,6 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             </View>
         </NativeBaseProvider>
     );
-
 
 
 };

@@ -64,12 +64,18 @@ const featureAndPath = {
 
     DRIVER_ORDER_INFO: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/orderInfo'},
 
+    DRIVER_GET_PASSER_CODE: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/queryUserCode'},
 }
 
 export function driverOrderInfo(params = {}) {
     return request.post(featureAndPath.DRIVER_ORDER_INFO.path, SupportContextType.APPLICATION_JSON, {params: params})
 
 }
+export function driverGetPasserCode(params = {}) {
+    return request.post(featureAndPath.DRIVER_GET_PASSER_CODE.path, SupportContextType.APPLICATION_JSON, {params: params})
+
+}
+
 export function driverOrderPage(params = {}) {
     return request.post(featureAndPath.DRIVER_ORDER_PAGE.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
@@ -77,9 +83,11 @@ export function driverOrderPage(params = {}) {
 export function carpoolingOrdersQuery(params = {}) {
     return request.post(featureAndPath.CARPOOLING_ORDERS_QUERY.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
+
 export function userReviewOrder(params = {}) {
     return request.post(featureAndPath.USER_REVIEW_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
+
 export function driverAcceptOrder(params = {}) {
     return request.post(featureAndPath.DRIVER_ACCEPT_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }

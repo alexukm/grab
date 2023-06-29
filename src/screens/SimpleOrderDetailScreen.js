@@ -27,6 +27,21 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
     const refRBSheetPayment = useRef();  // 引用RBSheet for PaymentInfoBox
     const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
 
+// 这是返回按钮的组件
+    const BackButton = () => (
+        <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{
+                position: 'absolute', // 使用绝对定位
+                top: 20, // 顶部距离
+                left: 20, // 左边距离
+                zIndex: 1, // z-index 属性设定了元素的堆叠顺序
+            }}
+        >
+            <RemixIcon name="arrow-left-circle-line" size={35} color="black"/>
+        </TouchableOpacity>
+    );
+
 
     useEffect(() => {
         setExistDriverInfo(orderDetailInfo.driverOrderId !== '');
@@ -38,7 +53,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         },
         map: {
             width: Dimensions.get('window').width,
-            height: Dimensions.get('window').height * 0.35, // 让地图占据40%的屏幕
+            height: Dimensions.get('window').height * 0.55, // 让地图占据40%的屏幕
         },
         box: {
             padding: 5,
@@ -50,7 +65,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
             alignItems: 'center',
         },
         fullScreen: {
-            height: Dimensions.get('window').height * 0.65, // 让box占据60%的屏幕
+            height: Dimensions.get('window').height * 0.45, // 让box占据60%的屏幕
         },
         licensePlateText: {
             fontSize: 20, // 1.5 times the usual size, adjust as needed
@@ -141,33 +156,28 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 <VStack space={4}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <View>
-                            <Text fontSize="sm">{Time}</Text>
+                            <Text fontSize="sm">{Time} · {orderDetailInfo.passengersNumber} {orderDetailInfo.passengersNumber > 1 ? "Passengers" : "Passenger"}</Text>
                         </View>
                         <View>
-                            <Text fontWeight="bold">RM {Price}.00</Text>
+                            {/*<Text fontWeight="bold">RM {Price}.00</Text>*/}
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text fontSize="xs">CASH </Text>
+                                {/*<Text fontSize="xs">CASH </Text>*/}
                                 <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
-                                    <Image
-                                        source={require('../picture/cash.png')}
-                                        alt="cash"
-                                        style={{width: 20, height: 15}}
-                                    />
+                                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                                        <Text fontSize="xl" fontWeight="bold">RM {Price}</Text>
+                                        <Text fontSize="xs"> {'>'} </Text>
+                                    </View>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </View>
                     <HStack space={2} alignItems="center" style={{flexWrap: 'wrap'}}>
-                        <RemixIcon name="map-pin-line" size={24} color="blue"/>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue"/>
                         <Text style={{flex: 1}}>Departure: {Departure}</Text>
                     </HStack>
                     <HStack space={2} alignItems="center" style={{flexWrap: 'wrap'}}>
-                        <RemixIcon name="map-pin-line" size={24} color="red"/>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange"/>
                         <Text style={{flex: 1}}>Destination: {Destination}</Text>
-                    </HStack>
-                    <HStack space={2} alignItems="center">
-                        <RemixIcon name="team-fill" size={24} color="black"/>
-                        <Text>Passenger Number: {orderDetailInfo.passengersNumber}</Text>
                     </HStack>
                 </VStack>
             </InfoBox>
@@ -266,11 +276,11 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 region={{
                     latitude: (DepartureCoords.lat + DestinationCoords.lat) / 2,
                     longitude: (DepartureCoords.lng + DestinationCoords.lng) / 2,
-                    latitudeDelta: Math.abs(DepartureCoords.lat - DestinationCoords.lat) * 2 * 1.8,
-                    longitudeDelta: Math.abs(DepartureCoords.lng - DestinationCoords.lng) * 2 * 1.8,
+                    latitudeDelta: Math.abs(DepartureCoords.lat - DestinationCoords.lat) * 2 * 0.65,
+                    longitudeDelta: Math.abs(DepartureCoords.lng - DestinationCoords.lng) * 2 * 0.65,
                 }}
             >
-                <Marker coordinate={{latitude: DepartureCoords.lat, longitude: DepartureCoords.lng}}/>
+                <Marker pinColor="blue" coordinate={{latitude: DepartureCoords.lat, longitude: DepartureCoords.lng}}/>
                 <Marker coordinate={{latitude: DestinationCoords.lat, longitude: DestinationCoords.lng}}/>
             </MapView>
         </>
@@ -388,6 +398,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
     return (
         <NativeBaseProvider>
             <View style={styles.container}>
+                <BackButton/>
                 {renderContentBasedOnStatus()}
             </View>
         </NativeBaseProvider>

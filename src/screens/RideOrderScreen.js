@@ -34,7 +34,7 @@ const RideOrderScreen = () => {
 
     // 更多的状态，主要与地图、路线和建议的显示有关
     const [isSuccessScreen, setIsSuccessScreen] = useState(false);
-    const [pickupWaiting, setPickupWaiting] = useState("Waiting for pick up");
+    const [pickupWaiting, setPickupWaiting] = useState("Check the Status");
 
     //save departure location
     const [departureSuggestions, setDepartureSuggestions] = useState([]);
@@ -391,18 +391,6 @@ const RideOrderScreen = () => {
         }
     };
 
-    const handlePickupWaiting = () => {
-        Alert.alert(
-            'Do you want cancel your order?',
-            '',
-            [
-                {text: 'No'},
-                {text: 'Yes', onPress: () => setPickupWaiting('Cancel')}
-            ]
-        );
-    };
-
-
     const styles = {
         container: {
             flex: 1,
@@ -438,36 +426,7 @@ const RideOrderScreen = () => {
                     </Button>
                 )}
 
-                {isSuccessScreen ? (
-                    <Box
-                        bg="white"
-                        p={4}
-                        w="100%"
-                        h={Dimensions.get('window').height / 2}
-                        position="absolute"
-                        bottom={0}
-                        borderTopRadius={10}
-                    >
-                        {/* Content for Success Screen */}
-                        <VStack space={4} alignItems="stretch">
-                            <HStack justifyContent="space-between" alignItems="center">
-                                <Button variant="unstyled" onPress={handleBack}>
-                                    <Text>Back</Text>
-                                </Button>
-                            </HStack>
-                            <Text>Departure: {departure}</Text>
-                            <Text>Destination: {destination}</Text>
-                            <Text>Date and Time: {date ? formatDate(date) : ''}</Text>
-                            <Text>Number of Passengers: {passengerCount}</Text>
-                            <Button mt={4}>
-                                {pickupWaiting}
-                            </Button>
-                            <Button mt={4} onPress={handlePickupWaiting}>
-                                Cancel
-                            </Button>
-                        </VStack>
-                    </Box>
-                ) : isBookingConfirmed ? (
+                {isBookingConfirmed ? (
                     <Box
                         bg="white"
                         p={4}

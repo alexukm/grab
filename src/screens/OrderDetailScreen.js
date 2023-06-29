@@ -2,14 +2,18 @@ import { NativeBaseProvider, Box, VStack, HStack, Button, Text } from 'native-ba
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { View, Dimensions, Alert } from 'react-native';
 import { StyleSheet } from 'react-native';
+import RemixIcon from "react-native-remix-icon";
+import React from "react";
 
 const OrderDetailScreen = ({ route, navigation }) => {
     const { departure, destination, date, passengerCount, pickupWaiting, coords } = route.params;
     const dateObj = new Date(date); // 将字符串转换回 Date 对象
 
+    const mapHeightPercentage = 0.7;  // 地图组件高度比例
+    const boxHeightPercentage = 1 - mapHeightPercentage;  // Box组件高度比例
 
     const handleBack = () => {
-        navigation.navigate('Home');
+        navigation.navigate('Activity');
     };
 
     const styles = StyleSheet.create({
@@ -23,17 +27,6 @@ const OrderDetailScreen = ({ route, navigation }) => {
             height: Dimensions.get('window').height,
         },
     });
-
-    const handlePickupWaiting = () => {
-        Alert.alert(
-            'Do you want cancel your order?',
-            '',
-            [
-                { text: 'No' },
-                { text: 'Yes', onPress: () => setPickupWaiting('Cancel') }
-            ]
-        );
-    };
 
     const formatDate = (date) => {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -51,14 +44,15 @@ const OrderDetailScreen = ({ route, navigation }) => {
     const maxLongitude = Math.max(...coords.map(c => c.longitude));
     const centerLatitude = (minLatitude + maxLatitude) / 2;
     const centerLongitude = (minLongitude + maxLongitude) / 2;
-    const padding = 2.8; // 你可以调整这个值
+    const padding = 1.8; // 你可以调整这个值
     const latitudeDelta = (maxLatitude - minLatitude) * padding;
     const longitudeDelta = (maxLongitude - minLongitude) * padding;
+
     return (
         <NativeBaseProvider>
             <View style={styles.container}>
                 <MapView
-                    style={{ ...styles.map, marginBottom: Dimensions.get('window').height / 2 }}
+                    style={{ ...styles.map, marginBottom: Dimensions.get('window').height * boxHeightPercentage }}
                     initialRegion={{
                         latitude: centerLatitude,
                         longitude: centerLongitude,
@@ -66,7 +60,6 @@ const OrderDetailScreen = ({ route, navigation }) => {
                         longitudeDelta,
                     }}
                 >
-
                     <Polyline
                         coordinates={coords}
                         strokeWidth={4}
@@ -77,22 +70,25 @@ const OrderDetailScreen = ({ route, navigation }) => {
                     bg="white"
                     p={4}
                     w="100%"
-                    h={Dimensions.get('window').height / 2}
+                    h={Dimensions.get('window').height * boxHeightPercentage}
                     position="absolute"
                     bottom={0}
                     borderTopRadius={10}
                 >
                     <VStack space={4} alignItems="stretch">
-                        <HStack justifyContent="space-between" alignItems="center">
-                            <Button variant="unstyled" onPress={handleBack}>
-                                <Text>Back</Text>
-                            </Button>
+                        <HStack space={2} alignItems="center">
+                            <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue" style={{marginTop: 5}}/>
+                            <Text>{departure}</Text>
                         </HStack>
-                        <Text>Departure: {departure}</Text>
-                        <Text>Destination: {destination}</Text>
-                        <Text>Date and Time: {dateObj ? formatDate(dateObj) : ''}</Text>
-                        <Text>Number of Passengers: {passengerCount}</Text>
-                        <Button mt={4} onPress={handlePickupWaiting}>
+                        <HStack space={2} alignItems="center">
+                            <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange" style={{marginTop: 5}}/>
+                            <Text>{destination}</Text>
+                        </HStack>
+                        <HStack space={2} alignItems="center">
+                            <RemixIcon name="time-fill" size={15} color="black"/>
+                            <Text>{dateObj ? formatDate(dateObj) : ''} · {passengerCount} Passenger</Text>
+                        </HStack>
+                        <Button mt={4} onPress={handleBack}>
                             {pickupWaiting}
                         </Button>
                     </VStack>

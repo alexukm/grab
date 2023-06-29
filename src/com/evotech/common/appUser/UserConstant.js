@@ -1,6 +1,5 @@
 import {getValue, setKeyValue} from "./LocalStorageUtil";
-import {defaultHeaders} from "../http/HttpUtil";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {defaultHeaders as denfaultHeaders, defaultHeaders} from "../http/HttpUtil";
 
 export const UserOrigin = {APP: 0}
 export const UserPlatform = {Android: 1, IOS: 2,}
@@ -39,37 +38,37 @@ export function getUserType() {
 }
 
 export function setUserToken(token) {
-    setKeyValue(defaultHeaders.TOKEN, token);
+    setKeyValue(defaultHeaders.TOKEN, token).then();
 }
 
 
 export async function getUserToken() {
     // return "Bearer 5b2b1073bdc9060e8560585eb7a65653";
-    return "Bearer c2bed56d816fe9500391a86212e548c6";
-    // await getValue(denfaultHeaders.TOKEN)
+    // return "Bearer c2bed56d816fe9500391a86212e548c6";
+    return await getValue(denfaultHeaders.TOKEN);
 }
 
 
 export async function setChatMessages(messages) {
     const token = await getUserToken();
-    setKeyValue('@chatMessages:'+token, JSON.stringify(messages)).then();
+    setKeyValue('@chatMessages:' + token, JSON.stringify(messages)).then();
 }
 
 export async function setChatList(chatList) {
     const token = await getUserToken();
-    setKeyValue('@chatList:'+token, JSON.stringify(chatList)).then();
+    setKeyValue('@chatList:' + token, JSON.stringify(chatList)).then();
 }
 
 export async function getChatMessages() {
     const token = await getUserToken();
-    return getValue('@chatMessages:'+token).then(data => {
+    return getValue('@chatMessages:' + token).then(data => {
         return data ? JSON.parse(data) : null;
     });
 }
 
 export async function getChatList() {
     const token = await getUserToken();
-    return getValue('@chatList:'+token).then(data => {
+    return getValue('@chatList:' + token).then(data => {
         return data ? JSON.parse(data) : null;
     });
 }

@@ -93,20 +93,19 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                 <Text color={statusColors[orderState]} alignSelf='flex-end'>{orderState}</Text>
                 <VStack space={4}>
                     <HStack space={2} alignItems="center">
-                        <RemixIcon name="map-pin-line" size={20} color="blue"/>
-                        <Text>Departure: {departureAddress}</Text>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue"/>
+                        <Text>{departureAddress}</Text>
                     </HStack>
                     <HStack space={2} alignItems="center">
-                        <RemixIcon name="map-pin-line" size={20} color="red"/>
-                        <Text>Destination: {destinationAddress}</Text>
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange"/>
+                        <Text>{destinationAddress}</Text>
                     </HStack>
                     <HStack space={2} alignItems="center">
-                        <RemixIcon name="calendar-check-line" size={20} color="black"/>
-                        <Text>Time: {departureTime}</Text>
-                    </HStack>
-                    <HStack space={2} alignItems="center">
-                        <RemixIcon name="wallet-3-line" size={20} color="black"/>
-                        <Text>Price: {price}</Text>
+                        <RemixIcon name="time-fill" size={15} color="black"/>
+                        <Text>
+                            {departureTime} ·
+                            <Text style={{ fontWeight: 'bold' }}>RM {price}</Text>
+                        </Text>
                     </HStack>
                     {cancelButtonShow && <Box position="absolute" bottom={0} right={0}>
                         <Button style={styles1.buttonStyle} onPress={handleCancel}>

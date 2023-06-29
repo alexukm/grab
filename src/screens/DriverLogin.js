@@ -3,7 +3,7 @@ import { MD5 } from "crypto-js";
 import React, { useState, useEffect } from "react";
 import { driverLogin, smsSend} from "../com/evotech/common/http/BizHttpUtil";
 import { useNavigation } from "@react-navigation/native";
-import { setUserToken } from "../com/evotech/common/appUser/UserConstant";
+import {setUserToken, userType} from "../com/evotech/common/appUser/UserConstant";
 import {
     FormControl,
     Select,
@@ -16,6 +16,7 @@ import {
     Text,
     HStack,
 } from "native-base";
+import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 
 const countryCodes = {
     my: "60",
@@ -128,17 +129,12 @@ function DriverScreen() {
         driverLogin(loginParams)
             .then(data => {
                 if (data.code === 200) {
-                    console.log("登录成功：" + data.data)
                     setUserToken(data.data)
-                    alert("Niubi, 登陆成功")
+                    buildUserInfo(data.data, userType.DRIVER, userPhone).saveWithLocal();
                     // 导航到下一个页面
-
-
-
                     navigation.navigate("Driver");
                 } else {
-                    console.log("登录失败" + data.message);
-                    alert("Login failed");
+                    alert("Login failed"+data.message);
                 }
             })
             .catch(error => {

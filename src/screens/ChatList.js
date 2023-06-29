@@ -1,11 +1,25 @@
-import React  from 'react';
-import {View, Text, Image, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
-import { useSelector} from "react-redux";
+import React, {useEffect} from 'react';
+import {View, Text, Image, FlatList, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import { useSelector, useDispatch } from "react-redux";
 import {selectChatList} from "../com/evotech/common/redux/chatSlice";
+import { deleteChat } from '../com/evotech/common/redux/chatSlice';
 
 
 export default function ChatList({navigation}) {
     const chatList = useSelector(selectChatList);
+
+    const dispatch = useDispatch();
+
+
+    useEffect(() => {
+        // 检查每个聊天，如果它的创建时间距离现在超过三天，那么就删除它
+        for (const chatKey in chatList) {
+            if (new Date().getTime() - chatList[chatKey].createdAt > 3 * 24 * 60 * 60 * 1000) {
+                dispatch(deleteChat(chatKey));
+            }
+        }
+    }, []);
+
 
     const openChat = (item) => {
         navigation.navigate('ChatRoom', {
@@ -25,6 +39,24 @@ export default function ChatList({navigation}) {
                     <TouchableOpacity
                         style={styles.chatItem}
                         onPress={() => openChat(item)}
+                        onLongPress={() => {
+                            Alert.alert(
+                                'Delete chat',
+                                'Are you sure you want to delete this chat?',
+                                [
+                                    {
+                                        text: 'Cancel',
+                                        style: 'cancel',
+                                    },
+                                    {
+                                        text: 'OK',
+                                        onPress: () => {
+                                            dispatch(deleteChat(item.userCode));
+                                        }
+                                    }
+                                ],
+                            );
+                        }}
                     >
                         <Image source={{uri: item.avatar}} style={styles.avatar}/>
                         <View style={styles.chatInfo}>

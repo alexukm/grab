@@ -6,7 +6,7 @@ const defaultRequestPort = "8080"
 
 const contextPath = "/uniEase";
 
-export const httpUrlPrefix = defaultRequestAddress+":"+defaultRequestPort;
+export const httpUrlPrefix = defaultRequestAddress + ":" + defaultRequestPort;
 
 const requestPrefix = {
     httpPrefix: "http://" + defaultRequestAddress + ":" + defaultRequestPort,

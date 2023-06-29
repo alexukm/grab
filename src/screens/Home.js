@@ -28,13 +28,13 @@ function Home() {
     };
 
     const handleUserButtonPress = () => {
-        saveUserType(getUserType().USER); // 调用getUserType接口中的USER值
-        navigation.navigate("User");
+       // 调用getUserType接口中的USER值
+        navigation.navigate("UserLogin");
     };
 
     const handleDriverButtonPress = () => {
-        saveUserType(getUserType().DRIVER); // 调用getUserType接口中的DRIVER值
-        navigation.navigate("Driver");
+        // 调用getUserType接口中的DRIVER值
+        navigation.navigate("DriverLogin");
     };
 
     return (

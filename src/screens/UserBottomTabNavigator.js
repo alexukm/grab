@@ -11,69 +11,66 @@ import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';
 import SimpleOrderDetailScreen from './SimpleOrderDetailScreen';
+import ChatList from "./ChatList";
 
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
-const OrderStack = createStackNavigator();  // 创建一个新的 StackNavigator
+const OrderStack = createStackNavigator();
 const SimpleOrderDetailStack = createStackNavigator();
 
-
-// 创建 OrderStack
-const OrderStackScreen = () => {
-    return (
-        <OrderStack.Navigator screenOptions={{ headerShown: false }}>
-            <OrderStack.Screen name="RideOrderScreen" component={RideOrderScreen} />
-            <OrderStack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
-        </OrderStack.Navigator>
-    );
-};
+const OrderStackScreen = () => (
+    <OrderStack.Navigator screenOptions={{ headerShown: false }}>
+        <OrderStack.Screen name="RideOrderScreen" component={RideOrderScreen} />
+        <OrderStack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
+    </OrderStack.Navigator>
+);
 
 const SimpleOrderDetailStackScreen = () => (
-    <SimpleOrderDetailStack.Navigator>
+    <SimpleOrderDetailStack.Navigator screenOptions={{ headerShown: false }}>
         <SimpleOrderDetailStack.Screen name="SimpleOrderDetailScreen" component={SimpleOrderDetailScreen} />
     </SimpleOrderDetailStack.Navigator>
 );
 
-const UserBottomTabNavigator = () => {
-    return (
-        <Tab.Navigator
-            screenOptions={({ route }) => ({
-                tabBarIcon: ({ color, size }) => {
-                    let iconName;
+const UserBottomTabNavigator = () => (
+    <Tab.Navigator
+        screenOptions={({ route }) => ({
+            tabBarIcon: ({ color, size }) => {
+                let iconName;
 
-                    if (route.name === 'Home') {
-                        iconName = 'home-line';
-                    } else if (route.name === 'Activity') {
-                        iconName = 'car-line';
-                    } else if (route.name === 'Messages') {
-                        iconName = 'message-2-line';
-                    } else if (route.name === 'Account') {
-                        iconName = 'account-circle-line';
-                    }
+                if (route.name === 'Home') {
+                    iconName = 'home-line';
+                } else if (route.name === 'Activity') {
+                    iconName = 'car-line';
+                } else if (route.name === 'Messages') {
+                    iconName = 'message-2-line';
+                } else if (route.name === 'Account') {
+                    iconName = 'account-circle-line';
+                }
 
-                    return <RemixIcon name={iconName} size={size} color={color} />;
-                },
-                tabBarActiveTintColor: 'orange',
-                tabBarInactiveTintColor: 'gray',
-                tabBarStyle: styles.tabBarStyle,
-                tabBarItemStyle: styles.tabBarItemStyle,
-                tabBarLabelStyle: styles.tabBarLabelStyle,
-            })}
-        >
-            <Tab.Screen name="Home" component={UserHomeScreen} options={{ headerShown: false }} />
-            <Tab.Screen name="Activity" component={OrderListScreen} options={{ headerShown: false }}/>
-            <Tab.Screen name="Messages" component={MessagesScreen} />
-            <Tab.Screen name="Account" component={AccountScreen} options={{ headerShown: false }} />
-        </Tab.Navigator>
-    );
-};
+                return <RemixIcon name={iconName} size={size} color={color} />;
+            },
+            tabBarActiveTintColor: 'orange',
+            tabBarInactiveTintColor: 'gray',
+            tabBarStyle: styles.tabBarStyle,
+            tabBarItemStyle: styles.tabBarItemStyle,
+            tabBarLabelStyle: styles.tabBarLabelStyle,
+            headerShown: false,
+        })}
+    >
+        <Tab.Screen name="Home" component={UserHomeScreen} />
+        <Tab.Screen name="Activity" component={OrderListScreen} />
+        {/*<Tab.Screen name="Messages" component={MessagesScreen} />*/}
+        <Tab.Screen name="Messages" component={ChatList}/>
+        <Tab.Screen name="Account" component={AccountScreen} />
+    </Tab.Navigator>
+);
 
 const MainNavigator = () => (
     <HomeStack.Navigator screenOptions={{ headerShown: false }}>
         <HomeStack.Screen name="Tabs" component={UserBottomTabNavigator} />
-        <HomeStack.Screen name="Orders" component={OrderStackScreen} options={{ headerShown: false }} />
-        <HomeStack.Screen name="SimpleOrderDetails" component={SimpleOrderDetailStackScreen} options={{ headerShown: false }} />
+        <HomeStack.Screen name="Orders" component={OrderStackScreen} />
+        <HomeStack.Screen name="SimpleOrderDetails" component={SimpleOrderDetailStackScreen} />
     </HomeStack.Navigator>
 );
 

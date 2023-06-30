@@ -142,29 +142,12 @@ export function smsSend(userPhone) {
 }
 
 export function driverLogout() {
-    return request.post(featureAndPath.DRIVER_LOGOUT.path)
+    return request.post(featureAndPath.DRIVER_LOGOUT.path,SupportContextType.APPLICATION_JSON,{})
 }
 
 export function accessToken(params = {}) {
     return request.post(featureAndPath.ACCESS_TOKEN.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
-
-// export function driverUpload(params = {}) {
-//     const formData = new FormData();
-//     const fileContent = [
-//         "const message = 'Hello, World!';",
-//         "",
-//         "function greet() {",
-//         "  console.log(message);",
-//         "}",
-//         "",
-//         "greet();"
-//     ];
-//     formData.append('file', fileContent);
-//     formData.append('uploadType', '0');
-//     formData.append('userPhone', '13515265477');
-//     return request.postFromData(featureAndPath.DRIVER_UPLOAD.path, SupportContextType.MULTIPART_FROM, formData)
-// }
 
 export function driverUpload(file, params) {
     // let formData = new FormData();

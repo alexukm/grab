@@ -1,31 +1,14 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { VStack, Box, Center, Button, Text } from "native-base";
+import { VStack, Box,  Button, Text } from "native-base";
 import { useNavigation } from "@react-navigation/native";
-import {getUserToken, getUserType} from "../com/evotech/common/appUser/UserConstant";
 // 创建用户类型上下文
 const UserTypeContext = createContext();
 
 function Home() {
     const navigation = useNavigation();
-    const [userType, setUserType] = useState(null);
 
     useEffect(() => {
-        // 检查本地存储是否有保存的用户类型
-        retrieveUserType();
     }, []);
-
-    const saveUserType = (type) => {
-        setUserType(type);
-        // 这里可以将用户类型保存到本地存储，以便后续获取
-    };
-
-    const retrieveUserType = () => {
-        // 这里可以从本地存储中获取用户类型
-        const savedUserType = getUserType(); // 调用getUserType接口
-        if (savedUserType !== null) {
-            setUserType(savedUserType);
-        }
-    };
 
     const handleUserButtonPress = () => {
        // 调用getUserType接口中的USER值

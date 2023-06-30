@@ -82,7 +82,6 @@ export const SupportContextType = {
 async function headerMap({supportContextType = null, header = {}},) {
     const token = await getUserToken()
     header = Object.assign(header,
-        defaultHeaders.getUserType(getUserType()),
         defaultHeaders.getUserIdentifier(getUserID()),
         defaultHeaders.getAuthentication(token));
     if (supportContextType) {
@@ -149,8 +148,4 @@ export class HttpUtil {
     getRequestURI(URI) {
         return this.requestBaseURL + URI;
     }
-}
-
-export const httpPrefix = (http) => {
-    return requestPrefix.get(http) + contextPath;
 }

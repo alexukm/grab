@@ -1,14 +1,10 @@
-import React, {createContext, useCallback, useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {Image, TouchableOpacity, View} from 'react-native';
 import {Box, AspectRatio, Button, Center, Text} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
-import defaultClient from "../com/evotech/common/websocket/WebSocketClient";
-import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
-import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
+import {UserChat, initLocalChat, saveLocalChat} from "../com/evotech/common/redux/UserChat";
 
-import  {UserChat,initLocalChat, saveLocalChat} from "../com/evotech/common/redux/UserChat";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const DriverHomeScreen = () => {
     const navigation = useNavigation();
@@ -16,18 +12,13 @@ const DriverHomeScreen = () => {
     useEffect(() => {
         setTimeout(() => {
             initLocalChat().then();
-            UserChat((chatWebsocket, frame)=>{
+            UserChat((chatWebsocket, frame) => {
                 console.log("drive chat websocket connected");
-                alert("websocket connected")
             }).then();
         }, 0);
 
         setInterval(() => {
-            try {
-                saveLocalChat().then();
-            } catch (e) {
-                alert("聊天保存错误"+e.message);
-            }
+            saveLocalChat().then();
         }, 30000);
 
     }, []);

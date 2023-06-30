@@ -1,4 +1,3 @@
-import {useDispatch} from "react-redux";
 
 import {addChatList, addMessage, initChatList, initMessage, selectChatList} from "./chatSlice";
 import uuid from "react-native-uuid";
@@ -74,7 +73,6 @@ export async function saveLocalChat() {
     if (!chatList) {
         return;
     }
-    alert("保存聊天记录列表" + chatList);
     setChatList(chatList).then();
     const chatMessage = store.getState().chat.chatMessage;
     if (!chatMessage) {

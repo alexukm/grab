@@ -6,7 +6,8 @@ import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
 import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {carpoolingOrdersQuery, driverAcceptOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {useFocusEffect} from "@react-navigation/native";
-import {err} from "react-native-svg/lib/typescript/xml";
+import ActionSheet from "@alessiocancian/react-native-actionsheet";
+
 
 
 const DriverOrderListScreen = () => {
@@ -19,18 +20,22 @@ const DriverOrderListScreen = () => {
 
     const clientRef = useRef(); // 添加一个 ref 用来存储 client
 
+    let actionSheetRef;
+
+    const openMaps = (address) => {
+        const url = Platform.select({
+            ios: `http://maps.apple.com/?q=${address}`,
+            android: `geo:0,0?q=${address}`,
+        });
+        Linking.openURL(url);
+    }
+
 
 
     const queryOrders = (pageSize, page) => {
         const param = {
             "pageSize": pageSize,
             "page": page
-            // "passengersNumber": 0,
-            // "orderPlannedTime": "",
-            // "departureLatitude": 0,
-            // "departureLongitude": 0,
-            // "destinationLatitude": 0,
-            // "destinationLongitude": 0
         }
         return carpoolingOrdersQuery(param).then(data => {
             if (data.code === 200) {
@@ -117,33 +122,17 @@ const DriverOrderListScreen = () => {
     };
     const renderItem = ({item}) => ((console.log(item) || true) &&
         <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
+            <View style={styles.floatingIconContainer}>
+                <TouchableWithoutFeedback onPress={() => {
+                    // 弹出 ActionSheet，让用户选择要打开的地址
+                    actionSheetRef.show();
+                }}>
+                    <Image source={require('../picture/navigation.png')} style={styles.iconStyle} />
+                </TouchableWithoutFeedback>
+            </View>
             <Text style={styles.timeText}>{item.plannedDepartureTime}</Text>
-            <View style={styles.row}>
-                <Text>Departure: {item.departureAddress}</Text>
-                <TouchableWithoutFeedback onPress={() => {
-                    const address = item.departureAddress;
-                    const url = Platform.select({
-                        ios: `http://maps.apple.com/?q=${address}`,
-                        android: `geo:0,0?q=${address}`,
-                    });
-                    Linking.openURL(url);
-                }}>
-                    <Image source={require('../picture/navigation.png')} style={styles.iconStyle} />
-                </TouchableWithoutFeedback>
-            </View>
-            <View style={styles.row}>
-                <Text>Destination: {item.destinationAddress}</Text>
-                <TouchableWithoutFeedback onPress={() => {
-                    const address = item.destinationAddress;
-                    const url = Platform.select({
-                        ios: `http://maps.apple.com/?q=${address}`,
-                        android: `geo:0,0?q=${address}`,
-                    });
-                    Linking.openURL(url);
-                }}>
-                    <Image source={require('../picture/navigation.png')} style={styles.iconStyle} />
-                </TouchableWithoutFeedback>
-            </View>
+            <Text>Departure: {item.departureAddress}</Text>
+            <Text>Destination: {item.destinationAddress}</Text>
             <Text>
                 Expected Earnings:
                 <Text style={{fontWeight: 'bold'}}>RM {item.expectedEarnings}.00</Text>
@@ -166,6 +155,20 @@ const DriverOrderListScreen = () => {
                 ItemSeparatorComponent={() => null}
                 extraData={updateFlag} // 把 updateFlag 传递给 extraData
             />
+            <ActionSheet
+                ref={o => actionSheetRef = o}
+                options={['Departure', 'Destination', 'Cancel']}
+                cancelButtonIndex={2}
+                destructiveButtonIndex={2}
+                onPress={(index) => {
+                    // 添加点击事件，分别处理两个选项
+                    switch(index) {
+                        case 0: openMaps(rideOrders[0].departureAddress); break;
+                        case 1: openMaps(rideOrders[0].destinationAddress); break;
+                        default: break;
+                    }
+                }}
+            />
         </View>
     );
 };
@@ -173,7 +176,6 @@ const DriverOrderListScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingBottom: 60, // 调整底部导航栏高度
     },
     timeText: {
         fontSize: 10,
@@ -197,6 +199,11 @@ const styles = StyleSheet.create({
         height: 20,
         marginLeft: 5,
         transform: [{ rotate: '30deg' }] // 这行会将图标旋转30度
+    },
+    floatingIconContainer: {
+        position: 'absolute',
+        right: 10,
+        top: 10,
     },
 });
 

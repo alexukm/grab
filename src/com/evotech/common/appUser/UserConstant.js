@@ -1,5 +1,6 @@
-import {getValue, setKeyValue} from "./LocalStorageUtil";
+import {asyncDelKey, getValue, setKeyValue} from "./LocalStorageUtil";
 import {defaultHeaders as denfaultHeaders, defaultHeaders} from "../http/HttpUtil";
+import {removeUserInfo} from "./UserInfo";
 
 export const UserOrigin = {APP: 0}
 export const UserPlatform = {Android: 1, IOS: 2,}
@@ -41,10 +42,14 @@ export function setUserToken(token) {
     setKeyValue(defaultHeaders.TOKEN, token).then();
 }
 
+export function userLogOut() {
+    //删除token
+    asyncDelKey(defaultHeaders.TOKEN).then();
+    //删除用户信息
+    removeUserInfo();
+}
 
 export async function getUserToken() {
-    // return "Bearer 5b2b1073bdc9060e8560585eb7a65653";
-    // return "Bearer c2bed56d816fe9500391a86212e548c6";
     return await getValue(denfaultHeaders.TOKEN);
 }
 

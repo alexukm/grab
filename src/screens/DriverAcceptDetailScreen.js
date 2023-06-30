@@ -20,8 +20,6 @@ import {Rating} from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
-import {err} from "react-native-svg/lib/typescript/xml";
-// import ActionSheet from 'react-native-actionsheet';
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');

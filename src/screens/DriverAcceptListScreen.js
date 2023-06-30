@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, { useState, useRef, useCallback} from 'react';
 import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
 import RBSheet from "react-native-raw-bottom-sheet";
@@ -7,8 +7,6 @@ import {
     driverOrderInfo,
     driverOrderPage,
     userCancelOrder,
-    userOrderInfo,
-    userOrderPage
 } from "../com/evotech/common/http/BizHttpUtil";
 import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
@@ -194,7 +192,7 @@ const DriverAcceptListScreen = ({navigation}) => {
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        const orderList = await queryOrderList(pageSize, 1);
+        const orderList = await queryOrderList(pageSize, 0);
         setOrders(orderList.content);
         setPage(2);
         setRefreshing(false);

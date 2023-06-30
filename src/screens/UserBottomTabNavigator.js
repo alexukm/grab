@@ -6,7 +6,6 @@ import RemixIcon from 'react-native-remix-icon';
 
 import UserHomeScreen from './UserHomeScreen';
 import OrderListScreen from "./OrderListScreen";
-import MessagesScreen from './MessagesScreen';
 import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';

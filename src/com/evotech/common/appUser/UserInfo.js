@@ -1,4 +1,4 @@
-import {getValue, setKeyValue} from "./LocalStorageUtil";
+import {asyncDelKey, getValue, setKeyValue} from "./LocalStorageUtil";
 import {getUserID, userType} from "./UserConstant";
 import {accessToken} from "../http/BizHttpUtil";
 
@@ -50,6 +50,10 @@ export async function userSkipLogin(setInitialRoute, tokenCheck) {
     }
     console.log("校验用户信息2")
     return await tokenCheck(userInfo);
+}
+
+export function removeUserInfo() {
+    asyncDelKey(userInfoKey).then();
 }
 
 async function tokenCheck(userInfo, setInitialRoute) {

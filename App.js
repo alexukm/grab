@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {NativeBaseProvider, Box} from 'native-base';
-import {getUserToken, getUserType, setUserToken} from "./src/com/evotech/common/appUser/UserConstant";
+import {getUserToken,  setUserToken} from "./src/com/evotech/common/appUser/UserConstant";
 import UserBottomTabNavigator from "./src/screens/UserBottomTabNavigator";
 import DriverBottomTabNavigator from "./src/screens/DriverBottomTabNavigator";
 import store from "./src/com/evotech/common/redux/store";

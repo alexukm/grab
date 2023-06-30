@@ -1,27 +1,27 @@
-import React, {createContext, useContext, useState} from 'react';
+import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createStackNavigator} from '@react-navigation/stack';
 import {StyleSheet} from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 
-import DriverHomeScreen, {MyContext} from './DriverHomeScreen';
+import DriverHomeScreen from './DriverHomeScreen';
 import DriverAcceptListScreen from './DriverAcceptListScreen';
-import DriverMessageScreen from "./DriverMessageScreen";
 import DriverAccountScreen from "./DriverAccountScreen";
-import DriverOrderListScreen from './DriverOrderListScreen';  // 这是新导入的
+import DriverOrderListScreen from './DriverOrderListScreen';
 import DriverAcceptDetailScreen from "./DriverAcceptDetailScreen";
-import ChatList from "./ChatList";  // 修改为ChatList
+import ChatList from "./ChatList";
 import ChatRoom from "./ChatRoom";
 
 const DriverAcceptDetailNavigator = createStackNavigator();
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
-
+const MainStack = createStackNavigator();  // 新增
 
 const DriverBottomTabNavigator = () => {
     return (
         <Tab.Navigator
             screenOptions={({route}) => ({
+                headerShown: false,
                 tabBarIcon: ({color, size}) => {
                     let iconName;
 
@@ -44,50 +44,37 @@ const DriverBottomTabNavigator = () => {
                 tabBarLabelStyle: styles.tabBarLabelStyle,
             })}
         >
-            <Tab.Screen name="Home" component={DriverHomeScreen} options={{headerShown: false}}/>
+            <Tab.Screen name="Home" component={DriverHomeScreen} />
             <Tab.Screen name="Orders" component={DriverAcceptListScreen}/>
-            {/*<Tab.Screen name="Messages" component={DriverMessageScreen} />*/}
-            <Tab.Screen name="Messages" component={ChatList} options={{headerShown: false}}/>
+            <Tab.Screen name="Messages" component={ChatList}/>
             <Tab.Screen name="Account" component={DriverAccountScreen}/>
         </Tab.Navigator>
-
-
     );
 };
 
-
-
-const DriverMainNavigatorApp = (
+const HomeNavigator = () => (
     <HomeStack.Navigator screenOptions={{headerShown: false}}>
         <HomeStack.Screen name="Tabs" component={DriverBottomTabNavigator}/>
-        <HomeStack.Screen name="DriverOrderListScreen" component={DriverOrderListScreen}
-                          options={{headerShown: false}}/>
-        <HomeStack.Screen name="DriverAcceptDetails" component={DriverAcceptDetailStackScreen}
-                          options={{headerShown: false}}/>
-        <HomeStack.Screen name="ChatRoom" component={ChatRoom} options={{headerShown: false}}/>
+        <HomeStack.Screen name="DriverAcceptDetails" component={DriverAcceptDetailStackScreen}/>
+        <HomeStack.Screen name="ChatRoom" component={ChatRoom}/>
     </HomeStack.Navigator>
 );
+
 const DriverMainNavigator = () => {
-
     return (
-        <HomeStack.Navigator screenOptions={{headerShown: false}}>
-            <HomeStack.Screen name="Tabs" component={DriverBottomTabNavigator}/>
-            <HomeStack.Screen name="DriverOrderListScreen" component={DriverOrderListScreen}
-                              options={{headerShown: false}}/>
-            <HomeStack.Screen name="DriverAcceptDetails" component={DriverAcceptDetailStackScreen}
-                              options={{headerShown: false}}/>
-            <HomeStack.Screen name="ChatRoom" component={ChatRoom} options={{headerShown: false}}/>
-        </HomeStack.Navigator>
+        <MainStack.Navigator screenOptions={{headerShown: false}}>
+            <MainStack.Screen name="Home" component={HomeNavigator}/>
+            <MainStack.Screen name="DriverOrderListScreen" component={DriverOrderListScreen}/>
+        </MainStack.Navigator>
     );
-
 };
 
 const DriverAcceptDetailStackScreen = () => (
-    <DriverAcceptDetailNavigator.Navigator>
-        <DriverAcceptDetailNavigator.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailScreen}
-                                            options={{headerShown: false}}/>
+    <DriverAcceptDetailNavigator.Navigator screenOptions={{headerShown: false}}>
+        <DriverAcceptDetailNavigator.Screen name="DriverAcceptDetailScreen" component={DriverAcceptDetailScreen}/>
     </DriverAcceptDetailNavigator.Navigator>
 );
+
 
 const styles = StyleSheet.create({
     tabBarStyle: {

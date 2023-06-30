@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {PermissionsAndroid, Dimensions, Image, Pressable, View, Alert} from 'react-native';
+import {PermissionsAndroid, Dimensions, Image, Pressable, View, Alert, ActivityIndicator} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
 import {Box, Button, HStack, Input, NativeBaseProvider, Text, VStack, Modal} from 'native-base';
 import RemixIcon from 'react-native-remix-icon';
@@ -66,6 +66,14 @@ const RideOrderScreen = () => {
     const mapRef = useRef(null);
 
     const [departureCoords, setDepartureCoords] = useState(null);
+
+    const [isLoading, setIsLoading] = useState(false);
+    const isLoadingRef = useRef(isLoading);
+
+    useEffect(() => {
+        isLoadingRef.current = isLoading;
+    }, [isLoading]);
+
 
     // 从Google API获取地址建议
     const updateAddressSuggestions = async (input, setSuggestions) => {
@@ -195,6 +203,7 @@ const RideOrderScreen = () => {
         return `${dateString} ${timeString}`;
     };
     const allowOrder = () => {
+        setIsLoading(true);  // 添加这行，点击按钮时触发 spinner
         userOrderCheck()
             .then(data => {
                 if (data.code === 600) {
@@ -222,9 +231,16 @@ const RideOrderScreen = () => {
             }).catch(err => {
             console.log("user order check fail" + err.message);
             alert("System error,Please try again later!");
+            setIsLoading(false);  // 处理失败，停止 spinner
         });
+    };
 
-    }
+    const closeModal = () => {
+        setIsLoading(true);
+        setModalVisible(false);
+        setIsLoading(false);
+    };
+
     const fillAddress = (addressArray, prefix, orderSubmitParam) => {
         const len = addressArray.length;
         console.log(addressArray);
@@ -312,6 +328,7 @@ const RideOrderScreen = () => {
 
         console.log(departure)
         console.log(destination)
+        setIsLoading(true); // 开始显示加载动画
         fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(departure)}&destination=${encodeURIComponent(destination)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
             .then(response => response.json())
             .then(data => {
@@ -365,22 +382,31 @@ const RideOrderScreen = () => {
                                     animated: true,
                                 });
                                 setIsBookingConfirmed(true);
+                                setTimeout(() => {
+                                    // 延迟结束加载动画
+                                    if (isLoadingRef.current) {
+                                        setIsLoading(false);
+                                    }
+                                }, 1000); // 这是延迟的时间，你可以根据你的应用调整
                             } else {
                                 console.log(data.message)
                                 alert("Get price error, please try again later!")
                                 // setIsBookingConfirmed(false);
+                                setIsLoading(false); // 立即停止加载动画
 
                             }
                         }).catch(err => {
                         console.error(err);
                         setIsBookingConfirmed(false);
                         alert("Get price error, please try again later!")
+                        setIsLoading(false); // 立即停止加载动画
                     })
 
                 }
             });
 
     };
+
 
     // 处理返回的逻辑，根据当前的状态，取消预订或返回到主页
     const handleBack = () => {
@@ -566,17 +592,22 @@ const RideOrderScreen = () => {
                                     </Box>
                                 </HStack>
                             </Pressable>
-                            <Button
-                                mt={4}
-                                onPress={allowOrder}
-                                style={{
-                                    paddingVertical: 15,
-                                    paddingHorizontal: 20,
-                                    borderRadius: 10
-                                }}
-                            >
-                                Next Step
-                            </Button>
+                            {isLoading ? (
+                                <ActivityIndicator size="large" color="#0000ff" />
+                            ) : (
+                                <Button
+                                    mt={4}
+                                    onPress={allowOrder}
+                                    style={{
+                                        paddingVertical: 15,
+                                        paddingHorizontal: 20,
+                                        borderRadius: 10
+                                    }}
+                                >
+                                    Next Step
+                                </Button>
+                            )}
+
                             <DatePicker
                                 modal
                                 open={open}
@@ -630,14 +661,16 @@ const RideOrderScreen = () => {
                                         </VStack>
                                     </Modal.Body>
                                     <Modal.Footer>
-                                        <Button
-                                            flex="1"
-                                            onPress={() => {
-                                                setModalVisible(false);
-                                            }}
-                                        >
-                                            Done
-                                        </Button>
+                                        {isLoading ? (
+                                            <ActivityIndicator size="large" color="#0000ff" />
+                                        ) : (
+                                            <Button
+                                                flex="1"
+                                                onPress={closeModal}
+                                            >
+                                                Done
+                                            </Button>
+                                        )}
                                     </Modal.Footer>
                                 </Modal.Content>
                             </Modal>

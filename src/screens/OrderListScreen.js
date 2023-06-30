@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, useCallback} from 'react';
+import React, { useState, useRef, useCallback} from 'react';
 import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
 import RBSheet from "react-native-raw-bottom-sheet";

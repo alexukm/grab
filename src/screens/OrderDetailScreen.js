@@ -1,6 +1,6 @@
 import { NativeBaseProvider, Box, VStack, HStack, Button, Text } from 'native-base';
-import MapView, { Marker, Polyline } from 'react-native-maps';
-import { View, Dimensions, Alert } from 'react-native';
+import MapView, {  Polyline } from 'react-native-maps';
+import { View, Dimensions } from 'react-native';
 import { StyleSheet } from 'react-native';
 import RemixIcon from "react-native-remix-icon";
 import React from "react";

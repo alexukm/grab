@@ -5,15 +5,17 @@ import {View, Dimensions, ScrollView, TouchableOpacity} from 'react-native';
 import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
-import {userOrderInfo, userReviewOrder} from "../com/evotech/common/http/BizHttpUtil";
+import {userOrderInfo, userReviewOrder, userCancelOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {tr} from "date-fns/locale";
 import { Rating } from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
+import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
 
 
-Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
+
+Geocoder.init(googleMapsApiKey);
 
 const SimpleOrderDetailScreen = ({route, navigation}) => {
     const {Departure, Destination, Time, Price, Status, orderDetailInfo,DepartureCoords,DestinationCoords} = route.params;
@@ -26,6 +28,37 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
 
     const refRBSheetPayment = useRef();  // 引用RBSheet for PaymentInfoBox
     const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
+
+
+    const [cancelReason, setCancelReason] = useState("");
+
+    const handleCancel = () => {
+        refRBSheet.current.open();
+    };
+
+    const handleConfirmCancel = () => {
+        const cancelOrderParam = {
+            orderId: orderDetailInfo.orderId,
+            cancelReason: cancelReason.trim() === "" ? 'No Reason' : cancelReason,
+            cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+        };
+
+        userCancelOrder(cancelOrderParam)
+            .then(data => {
+                if (data.code === 200) {
+                    alert("Cancelled Order Success");
+                    navigation.goBack(); // After canceling the order, return to the previous screen.
+                } else {
+                    console.log(data.message);
+                    alert("Cancel Order failed, Please try again later!")
+                }
+            }).catch(error => {
+            console.log(error);
+            alert("system error: " + error.message)
+        });
+
+        refRBSheet.current.close();
+    };
 
 // 这是返回按钮的组件
     const BackButton = () => (
@@ -72,6 +105,19 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
             fontWeight: 'bold',
             alignSelf: 'flex-start',
             right: -93,
+        },
+    });
+
+    const styles1 = StyleSheet.create({
+        buttonStyle: {
+            backgroundColor: 'white',
+            borderRadius: 0,
+            padding: 10,
+        },
+        textStyle: {
+            color: 'black',
+            fontSize: 16,
+            fontWeight: 'bold',
         },
     });
 
@@ -124,7 +170,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 </Box>
             )}
             <Box bg="white" shadow={2} p={4}>
-                <VStack space={4} mt={3}>
+                <VStack space={4} mt={1.2}>
                     {children}
                 </VStack>
             </Box>
@@ -157,11 +203,44 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <View>
                             <Text fontSize="sm">{Time} · {orderDetailInfo.passengersNumber} {orderDetailInfo.passengersNumber > 1 ? "Passengers" : "Passenger"}</Text>
+                            {(Status === OrderStateEnum.AWAITING || Status === OrderStateEnum.PENDING) && (
+                                <TouchableOpacity onPress={handleCancel}>
+                                    <Text fontSize="sm" style={{color: 'blue', fontWeight: 'bold'}}>Cancel Order?</Text>
+                                </TouchableOpacity>
+                            )}
+                            <RBSheet
+                                ref={refRBSheet}
+                                height={200}
+                                closeOnDragDown={true}
+                                closeOnPressMask={false}
+                                customStyles={{
+                                    wrapper: {
+                                        backgroundColor: "transparent"
+                                    },
+                                    draggableIcon: {
+                                        backgroundColor: "#000"
+                                    }
+                                }}
+                            >
+                                <View style={styles.container}>
+                                    <View style={{ padding: 10 }}>
+                                        <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
+                                        <Input
+                                            mt={4}  // Add margin to the top
+                                            mb={4}  // Add margin to the bottom
+                                            placeholder="Reason for cancellation (OPTIONAL)"
+                                            onChangeText={text => setCancelReason(text)}
+                                            value={cancelReason}
+                                        />
+                                        <Button onPress={handleConfirmCancel}>
+                                            <Text style={styles1.textStyle}>Confirm Cancel</Text>
+                                        </Button>
+                                    </View>
+                                </View>
+                            </RBSheet>
                         </View>
                         <View>
-                            {/*<Text fontWeight="bold">RM {Price}.00</Text>*/}
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                {/*<Text fontSize="xs">CASH </Text>*/}
                                 <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
                                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                         <Text fontSize="xl" fontWeight="bold">RM {Price}</Text>
@@ -171,17 +250,17 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             </View>
                         </View>
                     </View>
+
                     <HStack space={2} alignItems="center" style={{flexWrap: 'wrap'}}>
                         <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue"/>
-                        <Text style={{flex: 1}}>Departure: {Departure}</Text>
+                        <Text style={{flex: 1}}>{Departure}</Text>
                     </HStack>
                     <HStack space={2} alignItems="center" style={{flexWrap: 'wrap'}}>
                         <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange"/>
-                        <Text style={{flex: 1}}>Destination: {Destination}</Text>
+                        <Text style={{flex: 1}}>{Destination}</Text>
                     </HStack>
                 </VStack>
             </InfoBox>
-
         );
     };
     const PaymentInfoBox = () => (
@@ -288,7 +367,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
 
     const renderContentBasedOnStatus = () => {
         switch (Status) {
-            //待接单
+            //待接单AWAITING
             case OrderStateEnum.AWAITING:
                 return (
                     <ScrollView style={styles.fullScreen}>
@@ -298,7 +377,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.265} // 设置RBSheet占据50%的屏幕高度
                         >
                             <PaymentInfoBox/>
                         </RBSheet>
@@ -312,10 +391,10 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                         <OrderInfoBox showStatus={true}/>
                         {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
                         <RBSheet
-                            ref={refRBSheet}
+                            ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.5} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.265} // 设置RBSheet占据50%的屏幕高度
                         >
                             <PaymentInfoBox/>
                         </RBSheet>
@@ -369,7 +448,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.265} // 设置RBSheet占据50%的屏幕高度
                         >
                             <PaymentInfoBox/>
                         </RBSheet>
@@ -379,12 +458,12 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {/*{existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}*/}
+                        {existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}
                         <RBSheet
-                            ref={refRBSheet}
+                            ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.278} // 设置RBSheet占据50%的屏幕高度
                         >
                             <ReviewBox/>
                         </RBSheet>

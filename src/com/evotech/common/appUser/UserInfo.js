@@ -32,23 +32,24 @@ export class UserInfo {
 }
 
 export async function getUserInfoWithLocal() {
-    const userInfoJson = await getValue(userInfoKey);
+    const userInfoJson = await getUserInfo();
     const userInfo = JSON.parse(userInfoJson);
-    return new UserInfo(userInfo.token, userInfo.userType, userInfo.userPhone, userInfo.identifier)
+    return userInfo ? new UserInfo(userInfo.token, userInfo.userType, userInfo.userPhone, userInfo.identifier) : userInfo;
 }
 
+export async function getUserInfo() {
+    return await getValue(userInfoKey);
+}
 export function buildUserInfo(token, userType, userPhone) {
     return new UserInfo(token, userType, userPhone, getUserID());
 }
 
 export async function userSkipLogin(setInitialRoute, tokenCheck) {
     const userInfo = await getUserInfoWithLocal()
-    console.log(userInfo)
     if (!isAccessToken(userInfo)) {
         console.log("校验用户信息完整性失败")
         return setInitialRoute("Home");
     }
-    console.log("校验用户信息2")
     return await tokenCheck(userInfo);
 }
 

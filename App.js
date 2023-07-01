@@ -52,6 +52,7 @@ const App = () => {
             });
     }
     useEffect(() => {
+        // AsyncStorage.clear();
         const checkTokenAndUserType = async () => {
             await userSkipLogin(setInitialRoute, (userInfo) => tokenCheck(userInfo));
         };

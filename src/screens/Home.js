@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { VStack, Box,  Button, Text } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 // 创建用户类型上下文
-const UserTypeContext = createContext();
+// const UserTypeContext = createContext();
 
 function Home() {
     const navigation = useNavigation();
@@ -21,27 +21,25 @@ function Home() {
     };
 
     return (
-        <UserTypeContext.Provider value={userType}>
-            <VStack flex={1} space={4} alignItems="center">
-                <Box flex={0.6} w="full" bg="blue.500" mt="5%" roundedBottom="md" shadow={3}></Box>
-                <VStack flex={0.2} w="full" space={1} alignItems="center">
-                    <Text fontWeight="bold">Welcome to my App</Text>
-                    <Text textAlign="center">
-                        This is a very good app that you can share your ride with other person, and for drivers, they can earn a lot of money.
-                    </Text>
-                </VStack>
-                <VStack flex={0.2} w="full" justifyContent="flex-end" pb="15%" alignItems="center">
-                    <Box flexDirection="row" justifyContent="space-between" width="100%">
-                        <Button size="lg" colorScheme="primary" flexGrow={1} marginRight={2} onPress={handleUserButtonPress}>
-                            User
-                        </Button>
-                        <Button size="lg" colorScheme="secondary" flexGrow={1} marginLeft={2} onPress={handleDriverButtonPress}>
-                            Driver
-                        </Button>
-                    </Box>
-                </VStack>
+        <VStack flex={1} space={4} alignItems="center">
+            <Box flex={0.6} w="full" bg="blue.500" mt="5%" roundedBottom="md" shadow={3}></Box>
+            <VStack flex={0.2} w="full" space={1} alignItems="center">
+                <Text fontWeight="bold">Welcome to my App</Text>
+                <Text textAlign="center">
+                    This is a very good app that you can share your ride with other person, and for drivers, they can earn a lot of money.
+                </Text>
             </VStack>
-        </UserTypeContext.Provider>
+            <VStack flex={0.2} w="full" justifyContent="flex-end" pb="15%" alignItems="center">
+                <Box flexDirection="row" justifyContent="space-between" width="100%">
+                    <Button size="lg" colorScheme="primary" flexGrow={1} marginRight={2} onPress={handleUserButtonPress}>
+                        User
+                    </Button>
+                    <Button size="lg" colorScheme="secondary" flexGrow={1} marginLeft={2} onPress={handleDriverButtonPress}>
+                        Driver
+                    </Button>
+                </Box>
+            </VStack>
+        </VStack>
     );
 }
 

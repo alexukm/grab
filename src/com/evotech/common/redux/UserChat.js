@@ -54,7 +54,6 @@ export function UserChat(connect) {
 export async function initLocalChat() {
     //加载本地聊天信息
     const chatList = await getChatList();
-
     if (!chatList) {
         return;
     }

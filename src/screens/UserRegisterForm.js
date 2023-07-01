@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Keyboard, TouchableWithoutFeedback, SafeAreaView } from 'react-native';
+import {Keyboard, TouchableWithoutFeedback, SafeAreaView, View} from 'react-native';
 import {
     Box,
     Button,
@@ -15,6 +15,11 @@ import {
 import { MD5 } from 'crypto-js';
 import { smsSend, userRegistry } from "../com/evotech/common/http/BizHttpUtil";
 import { setUserToken } from "../com/evotech/common/appUser/UserConstant";
+import {NavigationActions as navigation} from "react-navigation";
+import { Picker } from '@react-native-picker/picker';
+import { useNavigation } from '@react-navigation/native';
+
+
 
 const RegisterScreen = () => {
     const [firstName, setFirstName] = useState('');
@@ -28,6 +33,11 @@ const RegisterScreen = () => {
     const [secondsRemaining, setSecondsRemaining] = useState(0);
     //验证码获取之前灰度
     const [isCodeRequested, setIsCodeRequested] = useState(false);
+
+    const [isCodeInputVisible, setIsCodeInputVisible] = useState(false);
+
+    const navigation = useNavigation();
+
 
     const countryData = [
         { code: 'MY', label: '60' },
@@ -65,7 +75,7 @@ const RegisterScreen = () => {
         // 根据选择的国家代码，验证电话号码
         let phonePattern;
         if (selectedValue === '60') {
-            phonePattern = /^\d{9}$/;
+            phonePattern = /^\d{9,10}$/;
         } else if (selectedValue === '86') {
             phonePattern = /^\d{11}$/;
         }
@@ -85,6 +95,7 @@ const RegisterScreen = () => {
                     setIsResendOtpActive(false);
                     //当验证码发送成功后，把 isCodeRequested 设为 true
                     setIsCodeRequested(true);
+                    setIsCodeInputVisible(true);
                     let counter = 30;
                     setSecondsRemaining(counter);
                     const timer = setInterval(() => {
@@ -161,8 +172,7 @@ const RegisterScreen = () => {
                 if (data.code === 200) {
                     console.log('注册成功', data);
                     setUserToken(data.data);
-                    navigation.navigate("Example");
-                    // 注册成功后的操作，如跳转到其他页面
+                    navigation.navigate("User");
                 } else {
                     console.log('注册失败', data.message);
                 }
@@ -243,48 +253,49 @@ const RegisterScreen = () => {
                             <FormControl width="100%">
                                 <FormControl.Label>Phone Number</FormControl.Label>
                                 <HStack space={2} width="100%">
-                                    <Select
-                                        size="lg"
-                                        selectedValue={selectedValue}
-                                        minWidth={120}
-                                        accessibilityLabel="Choose Country Code"
-                                        onValueChange={itemValue => {
-                                            setSelectedValue(itemValue);
-                                        }}
-                                        flex={1}
-                                    >
-                                        {countryData.map(item => (
-                                            <Select.Item
-                                                key={item.code}
-                                                label={`${item.code} +${item.label}`}
-                                                value={item.label}
-                                            />
-                                        ))}
-                                    </Select>
-
+                                    <View style={{flex: 0.4}}>
+                                        <View style={{ borderWidth: 1, borderColor: '#d3d3d3', borderRadius: 4, overflow: 'hidden' }}>
+                                            <Picker
+                                                selectedValue={selectedValue}
+                                                style={{ height: 50 }}
+                                                onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
+                                            >
+                                                {countryData.map(item => (
+                                                    <Picker.Item
+                                                        key={item.code}
+                                                        label={`${item.code} +${item.label}`}
+                                                        value={item.label}
+                                                    />
+                                                ))}
+                                            </Picker>
+                                        </View>
+                                    </View>
                                     <Input
-                                        placeholder={selectedValue === '60' ? 'Enter 9 digit number' : 'Enter 11 digit number'}
+                                        placeholder={selectedValue === '60' ? 'Enter 9 or 10 digit number' : 'Enter 11 digit number'}
                                         value={phoneNumber}
                                         onChangeText={setPhoneNumber}
                                         keyboardType="numeric"
-                                        flex={1}
+                                        flex={0.6}
                                         size="lg"
                                     />
                                 </HStack>
                             </FormControl>
-                            <FormControl width="100%">
-                                <FormControl.Label>Verification Code</FormControl.Label>
-                                <Input
-                                    size="lg"
-                                    placeholder="Enter verification code"
-                                    value={verificationCode}
-                                    onChangeText={setVerificationCode}
-                                    keyboardType="numeric"
-                                    maxLength={4}
-                                    isDisabled={!isCodeRequested} // 当 isCodeRequested 为 false 时，输入框被禁用
-                                />
-                            </FormControl>
-
+                            {
+                                isCodeInputVisible && (
+                                    <FormControl width="100%">
+                                        <FormControl.Label>Verification Code</FormControl.Label>
+                                        <Input
+                                            size="lg"
+                                            placeholder="Enter verification code"
+                                            value={verificationCode}
+                                            onChangeText={setVerificationCode}
+                                            keyboardType="numeric"
+                                            maxLength={4}
+                                            isDisabled={!isCodeRequested} // 当 isCodeRequested 为 false 时，输入框被禁用
+                                        />
+                                    </FormControl>
+                                )
+                            }
                             {renderButton()}
                         </VStack>
                     </Box>

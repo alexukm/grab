@@ -8,21 +8,7 @@ import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {useFocusEffect} from '@react-navigation/native';
 
-
-const styles1 = StyleSheet.create({
-    buttonStyle: {
-        backgroundColor: 'white',
-        borderRadius: 0,
-        padding: 10,
-    },
-    textStyle: {
-        color: 'black',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});
-
-const OrderBox = React.memo(({order, navigation, openSheet}) => {
+const OrderBox = React.memo(({order, navigation}) => {
     const {
         departureAddress,
         destinationAddress,
@@ -83,9 +69,6 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
         });
     };
 
-    const handleCancel = () => {
-        openSheet(orderId);
-    };
 
     return (
         <TouchableOpacity onPress={handlePress}>
@@ -107,11 +90,6 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                             <Text style={{ fontWeight: 'bold' }}>RM {price}</Text>
                         </Text>
                     </HStack>
-                    {cancelButtonShow && <Box position="absolute" bottom={0} right={0}>
-                        <Button style={styles1.buttonStyle} onPress={handleCancel}>
-                            <Text style={styles1.textStyle}>Cancel Order</Text>
-                        </Button>
-                    </Box>}
                 </VStack>
             </Box>
         </TouchableOpacity>
@@ -124,49 +102,13 @@ const OrderListScreen = ({navigation}) => {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false);
     const [orders, setOrders] = useState([]);
-    const [cancelReason, setCancelReason] = useState("");
-    const [cancelOrderId, setCancelOrderId] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
-    const refRBSheet = useRef();
 
     useFocusEffect(
         React.useCallback(() => {
             handleRefresh();
         }, [])
     );
-
-    const openSheet = useCallback((orderId) => {
-        setCancelOrderId(orderId);
-        refRBSheet.current.open();
-    }, []);
-
-    const closeSheet = () => {
-        refRBSheet.current.close();
-    };
-
-    const handleConfirmCancel = () => {
-        const cancelOrderParam = {
-            orderId: cancelOrderId,
-            cancelReason: cancelReason,
-            cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
-        };
-
-        userCancelOrder(cancelOrderParam)
-            .then(data => {
-                if (data.code === 200) {
-                    alert("Cancelled Order Success");
-                    handleRefresh(); //取消订单并刷新页面
-                } else {
-                    console.log(data.message);
-                    alert("Cancel Order failed, Please try again later!")
-                }
-            }).catch(error => {
-            console.log(error);
-            alert("system error: " + error.message)
-        });
-
-        closeSheet();
-    };
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -209,7 +151,7 @@ const OrderListScreen = ({navigation}) => {
     }, [loading, page]);
 
     const renderItem = useCallback(({item}) => <OrderBox key={item.id} order={item} navigation={navigation}
-                                                         openSheet={openSheet}/>, [navigation, openSheet]);
+                                                         />, [navigation]);
 
 
     return (
@@ -238,31 +180,6 @@ const OrderListScreen = ({navigation}) => {
                 ListFooterComponent={<Box height={20}/>}
                 keyExtractor={item => item.id}
             />
-            <RBSheet
-                ref={refRBSheet}
-                closeOnDragDown={true}
-                closeOnPressMask={false}
-                customStyles={{
-                    wrapper: {
-                        backgroundColor: "transparent"
-                    },
-                    draggableIcon: {
-                        backgroundColor: "#000"
-                    }
-                }}
-            >
-                <View style={styles.container}>
-                    <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
-                    <Input
-                        placeholder="Reason for cancellation"
-                        onChangeText={text => setCancelReason(text)}
-                        value={cancelReason}
-                    />
-                    <Button onPress={handleConfirmCancel}>
-                        <Text style={styles1.textStyle}>Confirm Cancel</Text>
-                    </Button>
-                </View>
-            </RBSheet>
         </>
     );
 };

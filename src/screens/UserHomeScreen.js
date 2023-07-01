@@ -9,6 +9,7 @@ import {useNavigation} from '@react-navigation/native';
 const UserHomeScreen = () => {
     const navigation = useNavigation();
 
+
     const subscriptionOrderAccept = () => {
         setTimeout(async () => {
             const token = defaultHeaders.getAuthentication(await getUserToken());
@@ -17,20 +18,10 @@ const UserHomeScreen = () => {
             client.connect((frame) => {
                 console.log('Connecting successfully');
                 client.subscribe('/user/topic/orderAccept', (body) => {
-                    // console.log(body)
                     // todo  调用系统通知
-                    // PushNotification.orderSuccessNotification({
-                    //     /* Android Only Properties */
-                    //     channelId: "Driver picked your order up!", // (required) channelId, if the channel does not exist, notification will not trigger.
-                    //     /* iOS and Android properties */
-                    //     title: "Your order", // (optional)
-                    //     message: "Your order accepted", // (required)
-                    //     // playSound: true, // (optional) default: true
-                    //     // soundName: 'default', // (optional) See `soundName` parameter of `localNotification` function
-                    //     // number: '10', // (optional) Valid 32 bit integer specified as string. default: none (Cannot be zero)
-                    // });
                     alert("Your order accepted")
                 })
+
             }, (err) => {
                 // alert("Connection error,please try again later! ")
                 console.log('Connection error:' + JSON.stringify(err));
@@ -43,7 +34,18 @@ const UserHomeScreen = () => {
     }
 
     useEffect(() => {
-        subscriptionOrderAccept()
+        // subscriptionOrderAccept()
+        setTimeout(() => {
+            initLocalChat().then();
+            UserChat((chatWebsocket, frame) => {
+                console.log("User chat websocket connected");
+            }).then();
+        }, 0);
+
+        setInterval(() => {
+            saveLocalChat().then();
+            // console.log("保存聊天记录")
+        }, 10000);
     }, []);
 
     const handlePress = (screen) => {
@@ -176,5 +178,6 @@ import Swiper from 'react-native-swiper';
 import defaultClient, {defaultWebsocketClient} from "../com/evotech/common/websocket/WebSocketClient";
 import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
 import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
+import {initLocalChat, saveLocalChat, UserChat} from "../com/evotech/common/redux/UserChat";
 
 export default UserHomeScreen;

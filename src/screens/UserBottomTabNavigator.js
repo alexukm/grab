@@ -11,6 +11,7 @@ import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';
 import SimpleOrderDetailScreen from './SimpleOrderDetailScreen';
 import ChatList from "./ChatList";
+import ChatRoom from "./ChatRoom";
 
 
 const Tab = createBottomTabNavigator();
@@ -70,19 +71,27 @@ const MainNavigator = () => (
         <HomeStack.Screen name="Tabs" component={UserBottomTabNavigator} />
         <HomeStack.Screen name="Orders" component={OrderStackScreen} />
         <HomeStack.Screen name="SimpleOrderDetails" component={SimpleOrderDetailStackScreen} />
+        <HomeStack.Screen name="ChatRoom" component={ChatRoom}/>
     </HomeStack.Navigator>
 );
 
 const styles = StyleSheet.create({
     tabBarStyle: {
         borderTopWidth: 0,
-        elevation: 0,
-        shadowOpacity: 0,
+        elevation: 10, // 用于 Android
+        shadowOpacity: 0.1, // 用于 iOS
+        shadowRadius: 10, // 用于 iOS
+        shadowColor: "#000", // 用于 iOS
+        shadowOffset: {
+            width: 0,
+            height: -10
+        }, // 用于 iOS
         position: 'absolute',
-        height: 60,
+        height: 65,
     },
     tabBarItemStyle: {
         marginTop: 8,
+        marginBottom: 15,
     },
     tabBarLabelStyle: {
         fontSize: 12,

@@ -96,7 +96,7 @@ function UserScreen() {
         }
 
         if (selectedValue === "my") {
-            if (text.length !== 9) {
+            if (text.length < 9 || text.length > 10) {
                 setIsPhoneNumberValid(false);
                 return;
             }
@@ -237,7 +237,7 @@ function UserScreen() {
                 </FormControl>
                 {!isPhoneNumberValid && (
                     <Text color="red.500" mt="1" fontSize="sm">
-                        {selectedValue === "cn" ? "Please enter a valid 11-digit phone number for China" : "Please enter a valid 9-digit phone number for Malaysia"}
+                        {selectedValue === "cn" ? "Enter 11-digit phone number for China" : "Enter 9 or 11 digit phone number for Malaysia"}
                     </Text>
                 )}
                 <Input

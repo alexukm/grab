@@ -1,8 +1,10 @@
 import axios from "axios";
-import {getUserType, getUserID, getUserToken} from "../appUser/UserConstant";
+import { getUserID, getUserToken} from "../appUser/UserConstant";
 
-const defaultRequestAddress = "10.37.32.54"
-const defaultRequestPort = "8080"
+
+// const defaultRequestAddress = "10.37.32.54"
+const defaultRequestAddress = "34.143.189.188"
+const defaultRequestPort = "80"
 
 const contextPath = "/uniEase";
 
@@ -96,7 +98,7 @@ export class HttpUtil {
         this.http = http;
         this.instance = axios.create({
             baseURL: this.requestBaseURL,
-            timeout: timeOut,
+            timeout: timeOut
         });
     }
 
@@ -125,6 +127,7 @@ export class HttpUtil {
                     resolve(response.data)
                 })
                 .catch(e => {
+                    console.log(e)
                     catchException(e)
                 })
         });

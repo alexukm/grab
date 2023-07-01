@@ -1,8 +1,8 @@
 import {Client} from "@stomp/stompjs";
 
-export const defaultBrokerURL = "ws://10.37.32.54:8080/websocket/uniEase/ws-sfc";
+export const defaultBrokerURL = "ws://34.143.189.188/uniEase/ws-sfc";
 
-export const chatBrokerURL = "ws://10.37.32.54:8080/websocket/uniEase/ws-chat";
+export const chatBrokerURL = "ws://34.143.189.188/uniEase/ws-chat";
 
 class WebSocketClient {
     constructor(brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) {
@@ -31,6 +31,14 @@ class WebSocketClient {
                     this.handlers[topic].forEach((handler) => handler(message.body));
                 });
             });
+
+            this.subscribe('/user/topic/ping', (body) => {
+                console.log(JSON.stringify(body))
+            })
+
+            setInterval(() => {
+                this.publish({destination: '/uniEase/v1/heart/ping', body: JSON.stringify({message: 'ping'})})
+            }, 60000);
             if (onConnect) {
                 onConnect(frame);
             }
@@ -105,7 +113,7 @@ const defaultClient = (headers) => {
 }
 
 export const defaultChatClient = (headers) => {
-    return new WebSocketClient(chatBrokerURL,headers, 0, 4000, 4000);
+    return new WebSocketClient(chatBrokerURL,headers, 0, 60000, 60000);
 }
 
 export default defaultClient;

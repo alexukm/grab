@@ -1,6 +1,6 @@
 import {asyncDelKey, getValue, setKeyValue} from "./LocalStorageUtil";
 import {defaultHeaders as denfaultHeaders, defaultHeaders} from "../http/HttpUtil";
-import {removeUserInfo} from "./UserInfo";
+import {getUserInfo, getUserInfoWithLocal, removeUserInfo} from "./UserInfo";
 
 export const UserOrigin = {APP: 0}
 export const UserPlatform = {Android: 1, IOS: 2,}
@@ -55,25 +55,27 @@ export async function getUserToken() {
 
 
 export async function setChatMessages(messages) {
-    const token = await getUserToken();
-    setKeyValue('@chatMessages:' + token, JSON.stringify(messages)).then();
+    const userInfo = await getUserInfoWithLocal();
+    setKeyValue('@chatMessages:' + userInfo.userPhone, JSON.stringify(messages)).then();
 }
 
 export async function setChatList(chatList) {
-    const token = await getUserToken();
-    setKeyValue('@chatList:' + token, JSON.stringify(chatList)).then();
+    const userInfo = await getUserInfoWithLocal();
+    setKeyValue('@chatList:' + userInfo.userPhone, JSON.stringify(chatList)).then();
 }
 
 export async function getChatMessages() {
-    const token = await getUserToken();
-    return getValue('@chatMessages:' + token).then(data => {
+    const userInfo = await getUserInfoWithLocal();
+    return getValue('@chatMessages:' + userInfo.userPhone).then(data => {
         return data ? JSON.parse(data) : null;
     });
 }
 
 export async function getChatList() {
-    const token = await getUserToken();
-    return getValue('@chatList:' + token).then(data => {
+    const userInfo = await getUserInfoWithLocal();
+    return userInfo ? getValue('@chatList:' + userInfo.userPhone).then(data => {
         return data ? JSON.parse(data) : null;
-    });
+    }) : userInfo;
+
 }
+

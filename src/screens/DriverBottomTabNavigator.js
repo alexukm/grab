@@ -79,13 +79,20 @@ const DriverAcceptDetailStackScreen = () => (
 const styles = StyleSheet.create({
     tabBarStyle: {
         borderTopWidth: 0,
-        elevation: 0,
-        shadowOpacity: 0,
+        elevation: 10, // 用于 Android
+        shadowOpacity: 0.1, // 用于 iOS
+        shadowRadius: 10, // 用于 iOS
+        shadowColor: "#000", // 用于 iOS
+        shadowOffset: {
+            width: 0,
+            height: -10
+        }, // 用于 iOS
         position: 'absolute',
-        height: 60,
+        height: 65,
     },
     tabBarItemStyle: {
         marginTop: 8,
+        marginBottom: 15,
     },
     tabBarLabelStyle: {
         fontSize: 12,

@@ -17,6 +17,7 @@ import {
     HStack,
 } from "native-base";
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
+import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
 
 const countryCodes = {
     my: "60",
@@ -69,7 +70,7 @@ function DriverScreen() {
 
         const prefix = countryCodes[selectedValue];
         const phoneNumber = prefix ? prefix + value : value;
-        smsSend(phoneNumber)
+        smsSend(phoneNumber,UserTypeEnum.DRIVER)
             .then(data => {
                 if (data.code === 200) {
                     setIsTimerActive(true);

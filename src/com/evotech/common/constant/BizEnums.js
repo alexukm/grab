@@ -9,3 +9,5 @@ export const OrderStateEnum ={
 }
 
 
+export const UserTypeEnum = {PASSER: "passer", DRIVER: "passer"}
+

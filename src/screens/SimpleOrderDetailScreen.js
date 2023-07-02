@@ -8,17 +8,25 @@ import RemixIcon from 'react-native-remix-icon';
 import {userOrderInfo, userReviewOrder, userCancelOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {tr} from "date-fns/locale";
-import { Rating } from 'react-native-ratings';
+import {Rating} from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
 
 
-
 Geocoder.init(googleMapsApiKey);
 
 const SimpleOrderDetailScreen = ({route, navigation}) => {
-    const {Departure, Destination, Time, Price, Status, orderDetailInfo,DepartureCoords,DestinationCoords} = route.params;
+    const {
+        Departure,
+        Destination,
+        Time,
+        Price,
+        Status,
+        orderDetailInfo,
+        DepartureCoords,
+        DestinationCoords
+    } = route.params;
     const [existDriverInfo, setExistDriverInfo] = useState(false);
 
     const [rating, setRating] = useState(5);
@@ -26,11 +34,12 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
 
     const refRBSheet = useRef();  // 引用RBSheet
 
+    const reviewRef = useRef('');
+
     const refRBSheetPayment = useRef();  // 引用RBSheet for PaymentInfoBox
     const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
 
-
-    const [cancelReason, setCancelReason] = useState("");
+    const cancelReasonRef = useRef('');
 
     const handleCancel = () => {
         refRBSheet.current.open();
@@ -39,7 +48,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
     const handleConfirmCancel = () => {
         const cancelOrderParam = {
             orderId: orderDetailInfo.orderId,
-            cancelReason: cancelReason.trim() === "" ? 'No Reason' : cancelReason,
+            cancelReason: cancelReasonRef.current.trim() === "" ? 'No Reason' : cancelReasonRef.current,
             cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         };
 
@@ -56,7 +65,6 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
             console.log(error);
             alert("system error: " + error.message)
         });
-
         refRBSheet.current.close();
     };
 
@@ -121,22 +129,22 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         },
     });
 
-    const reviewOrder = (satisfaction,reviewContent)=>{
+    const reviewOrder = (satisfaction, reviewContent) => {
         console.log("user review")
         console.log(orderDetailInfo.orderId)
 
-        const param ={
+        const param = {
             orderId: orderDetailInfo.orderId,
             reviewContent: reviewContent,
             satisfaction: satisfaction,
             reviewTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         }
-        userReviewOrder(param).then(data=>{
+        userReviewOrder(param).then(data => {
             console.log(data)
             if (data.code !== 200) {
                 alert("submit review failed,please try again later!");
             }
-        }).catch(err=>{
+        }).catch(err => {
             console.error(err.message);
             alert("submit review failed,please try again later!");
         });
@@ -146,16 +154,19 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         <InfoBox title="Comment your driver">
             <VStack space={4} alignItems="stretch">
                 <Rating
-                    // showRating
-                    onFinishRating={value => setRating(value)}
-                    style={{ paddingVertical: 10 }}
+                    type='star'
+                    ratingCount={5}
+                    imageSize={40}
+                    // fractions={1}
+                    startingValue={5}
+                    onFinishRating={(rating) => console.log('Rating is ' + rating)}
                 />
                 <Input
                     placeholder="Write your review here..."
                     multiline
-                    onChangeText={value => setReview(value)}
+                    onChangeText={value => reviewRef.current = value}
                 />
-                <Button onPress={()=>reviewOrder(5,"太棒了")}>
+                <Button onPress={() => reviewOrder(5, "太棒了")}>
                     Submit
                 </Button>
             </VStack>
@@ -200,9 +211,10 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         return (
             <InfoBox status={{color: statusColor, text: Status}}>
                 <VStack space={4}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
                         <View>
-                            <Text fontSize="sm">{Time} · {orderDetailInfo.passengersNumber} {orderDetailInfo.passengersNumber > 1 ? "Passengers" : "Passenger"}</Text>
+                            <Text
+                                fontSize="sm">{Time} · {orderDetailInfo.passengersNumber} {orderDetailInfo.passengersNumber > 1 ? "Passengers" : "Passenger"}</Text>
                             {(Status === OrderStateEnum.AWAITING || Status === OrderStateEnum.PENDING) && (
                                 <TouchableOpacity onPress={handleCancel}>
                                     <Text fontSize="sm" style={{color: 'blue', fontWeight: 'bold'}}>Cancel Order?</Text>
@@ -223,14 +235,15 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                                 }}
                             >
                                 <View style={styles.container}>
-                                    <View style={{ padding: 10 }}>
-                                        <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
+                                    <View style={{padding: 10}}>
+                                        <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the
+                                            order?</Text>
                                         <Input
                                             mt={4}  // Add margin to the top
                                             mb={4}  // Add margin to the bottom
                                             placeholder="Reason for cancellation (OPTIONAL)"
-                                            onChangeText={text => setCancelReason(text)}
-                                            value={cancelReason}
+                                            onChangeText={text => cancelReasonRef.current = text}
+                                            // value={cancelReason}
                                         />
                                         <Button onPress={handleConfirmCancel}>
                                             <Text style={styles1.textStyle}>Confirm Cancel</Text>
@@ -240,7 +253,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             </RBSheet>
                         </View>
                         <View>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                 <TouchableOpacity onPress={() => refRBSheetPayment.current.open()}>
                                     <View style={{flexDirection: 'row', alignItems: 'center'}}>
                                         <Text fontSize="xl" fontWeight="bold">RM {Price}</Text>
@@ -312,7 +325,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             bg="#f0f0f0"
                             onPress={() => console.log('Chat with Driver')}
                             variant="ghost"
-                            style={{ height: 40, justifyContent: 'center', flex: 8 }} // 添加自定义样式
+                            style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
                         >
                             <HStack space={2}>
                                 <RemixIcon name="message-3-line" size={24} color="black"/>
@@ -323,7 +336,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                             bg="#e0e0e0"
                             onPress={() => console.log('Call Driver')}
                             variant="ghost"
-                            style={{ height: 40, justifyContent: 'center', flex: 2 }} // 添加自定义样式
+                            style={{height: 40, justifyContent: 'center', flex: 2}} // 添加自定义样式
                         >
                             <HStack space={2}>
                                 <RemixIcon name="phone-line" size={24} color="black"/>
@@ -335,7 +348,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                         bg="#f0f0f0"
                         onPress={() => refRBSheetReview.current.open()}
                         variant="ghost"
-                        style={{ height: 40, justifyContent: 'center', flex: 1 }}
+                        style={{height: 40, justifyContent: 'center', flex: 1}}
                     >
                         <HStack space={2}>
                             <RemixIcon name="star-line" size={24} color="black"/>
@@ -418,7 +431,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}
+                        <DriverInfoBox showBack={true} status={Status}/>
                         <RBSheet
                             ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
                             closeOnDragDown={true}

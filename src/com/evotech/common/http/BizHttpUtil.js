@@ -35,7 +35,7 @@ const featureAndPath = {
     DRIVER_LOGOUT: {method: supportRequestMethod.POST, path: '/v1/ums/api/driver/logOut'},
 
     //发送短信验证码
-    SMS_SEND: {method: supportRequestMethod.GET, path: '/v1/sys/api/sms/send'},
+    SMS_SEND: {method: supportRequestMethod.POST, path: '/v1/sys/api/sms/send'},
 
     //刷新token
     ACCESS_TOKEN: {method: supportRequestMethod.POST, path: '/v1/auth/api/token/access_token'},
@@ -65,12 +65,36 @@ const featureAndPath = {
     DRIVER_ORDER_INFO: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/orderInfo'},
 
     DRIVER_GET_PASSER_CODE: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/queryUserCode'},
+
+    DRIVER_ORDER_START: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/start'},
+
+    DRIVER_ORDER_COMPLETED: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/traveled'},
+
+    DRIVER_CANCEL_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/cancel'},
+
+    DRIVER_REVIEW_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/reviewOrder'},
+}
+
+export function driverReviewOrder(params = {}) {
+    return request.post(featureAndPath.DRIVER_REVIEW_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+
+export function driverCancelOrder(params = {}) {
+    return request.post(featureAndPath.DRIVER_CANCEL_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+
+export function driverOrderCompleted(params = {}) {
+    return request.post(featureAndPath.DRIVER_ORDER_COMPLETED.path, SupportContextType.APPLICATION_JSON, {params: params})
+}
+
+export function driverOrderStart(params = {}) {
+    return request.post(featureAndPath.DRIVER_ORDER_START.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
 
 export function driverOrderInfo(params = {}) {
     return request.post(featureAndPath.DRIVER_ORDER_INFO.path, SupportContextType.APPLICATION_JSON, {params: params})
-
 }
+
 export function driverGetPasserCode(params = {}) {
     return request.post(featureAndPath.DRIVER_GET_PASSER_CODE.path, SupportContextType.APPLICATION_JSON, {params: params})
 
@@ -134,15 +158,16 @@ export function userLogin(params = {}) {
 }
 
 
-export function smsSend(userPhone) {
+export function smsSend(userPhone, userType) {
     const params = {
-        phoneNumber: userPhone
+        userPhone: userPhone,
+        userType: userType,
     }
-    return request.get(featureAndPath.SMS_SEND.path, params)
+    return request.post(featureAndPath.SMS_SEND.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
 
 export function driverLogout() {
-    return request.post(featureAndPath.DRIVER_LOGOUT.path,SupportContextType.APPLICATION_JSON,{})
+    return request.post(featureAndPath.DRIVER_LOGOUT.path, SupportContextType.APPLICATION_JSON, {})
 }
 
 export function accessToken(params = {}) {

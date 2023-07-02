@@ -1,8 +1,8 @@
 import {Client} from "@stomp/stompjs";
 
-export const defaultBrokerURL = "ws://34.143.189.188/uniEase/ws-sfc";
+export const defaultBrokerURL = "wss://unieaseapp.com/uniEase/ws-sfc";
 
-export const chatBrokerURL = "ws://34.143.189.188/uniEase/ws-chat";
+export const chatBrokerURL = "wss://unieaseapp.com/uniEase/ws-chat";
 
 class WebSocketClient {
     constructor(brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { VStack, Box,  Button, Text } from "native-base";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // 创建用户类型上下文
 // const UserTypeContext = createContext();
 
@@ -8,6 +9,7 @@ function Home() {
     const navigation = useNavigation();
 
     useEffect(() => {
+        // AsyncStorage.clear()
     }, []);
 
     const handleUserButtonPress = () => {

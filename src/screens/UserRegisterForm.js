@@ -14,10 +14,12 @@ import {
 } from 'native-base';
 import { MD5 } from 'crypto-js';
 import { smsSend, userRegistry } from "../com/evotech/common/http/BizHttpUtil";
-import { setUserToken } from "../com/evotech/common/appUser/UserConstant";
+import {setUserToken, userType} from "../com/evotech/common/appUser/UserConstant";
 import {NavigationActions as navigation} from "react-navigation";
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
+import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
+import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
 
 
 
@@ -87,8 +89,8 @@ const RegisterScreen = () => {
 
         // 调用后端函数发送验证码
         const userPhone = selectedValue + phoneNumber;
-
-        smsSend(userPhone)
+        console.log(userPhone);
+        smsSend(userPhone,UserTypeEnum.PASSER)
             .then(data => {
                 if (data.code === 200) {
                     setIsTimerActive(true);
@@ -120,7 +122,7 @@ const RegisterScreen = () => {
     const handleResendOtp = () => {
         // 再次发送验证码
         const userPhone = selectedValue + phoneNumber;
-        smsSend(userPhone)
+        smsSend(userPhone,UserTypeEnum.PASSER)
             .then(data => {
                 if (data.code === 200) {
                     setIsTimerActive(true);
@@ -172,6 +174,7 @@ const RegisterScreen = () => {
                 if (data.code === 200) {
                     console.log('注册成功', data);
                     setUserToken(data.data);
+                    buildUserInfo(data.data, userType.USER, userPhone).saveWithLocal();
                     navigation.navigate("User");
                 } else {
                     console.log('注册失败', data.message);

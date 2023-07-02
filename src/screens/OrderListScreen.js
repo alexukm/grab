@@ -68,8 +68,6 @@ const OrderBox = React.memo(({order, navigation}) => {
             alert("order details query failed ,please try again later!")
         });
     };
-
-
     return (
         <TouchableOpacity onPress={handlePress}>
             <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>

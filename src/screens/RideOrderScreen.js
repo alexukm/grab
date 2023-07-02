@@ -298,7 +298,7 @@ const RideOrderScreen = () => {
         fillDepAddress(orderSubmitParam);
         fillDescAddress(orderSubmitParam);
 
-        console.log(orderSubmitParam)
+        // console.log(orderSubmitParam)
 
         userSubmitOrder(orderSubmitParam)
             .then(data => {

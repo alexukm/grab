@@ -1,12 +1,13 @@
 import React, {useCallback, useState, useRef} from 'react';
 import {View, Text, FlatList, StyleSheet, TouchableOpacity, Image, TouchableWithoutFeedback, Linking, Platform} from 'react-native';
-import {Box, HStack} from 'native-base';
+import {Box, HStack, VStack} from 'native-base';
 import defaultClient from "../com/evotech/common/websocket/WebSocketClient";
 import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
 import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {carpoolingOrdersQuery, driverAcceptOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {useFocusEffect} from "@react-navigation/native";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
+import RemixIcon from "react-native-remix-icon";
 
 
 
@@ -20,7 +21,21 @@ const DriverOrderListScreen = () => {
 
     const clientRef = useRef(); // 添加一个 ref 用来存储 client
 
-    let actionSheetRef;
+    const formatText = (text) => {
+        const maxLength = 50; // 可以根据需要设置这个值
+        const words = text.split(" ");
+        let currentLength = 0;
+        let lines = [''];
+        for (let word of words) {
+            if (currentLength + word.length > maxLength) {
+                lines.push('');
+                currentLength = 0;
+            }
+            lines[lines.length - 1] += word + ' ';
+            currentLength += word.length + 1;
+        }
+        return lines.join("\n");
+    };
 
     const openMaps = (address) => {
         const url = Platform.select({
@@ -29,8 +44,6 @@ const DriverOrderListScreen = () => {
         });
         Linking.openURL(url);
     }
-
-
 
     const queryOrders = (pageSize, page) => {
         const param = {
@@ -100,8 +113,6 @@ const DriverOrderListScreen = () => {
             };
         }, [])
     );
-
-
     const acceptOrder = (orderId) => {
         console.log('Accept Order:', orderId);
         const params = {
@@ -120,31 +131,66 @@ const DriverOrderListScreen = () => {
         })
         //todo 刷新订单广场页
     };
-    const renderItem = ({item}) => ((console.log(item) || true) &&
-        <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
-            <View style={styles.floatingIconContainer}>
-                <TouchableWithoutFeedback onPress={() => {
-                    // 弹出 ActionSheet，让用户选择要打开的地址
-                    actionSheetRef.show();
-                }}>
-                    <Image source={require('../picture/navigation.png')} style={styles.iconStyle} />
-                </TouchableWithoutFeedback>
-            </View>
-            <Text style={styles.timeText}>{item.plannedDepartureTime}</Text>
-            <Text>Departure: {item.departureAddress}</Text>
-            <Text>Destination: {item.destinationAddress}</Text>
-            <Text>
-                Expected Earnings:
-                <Text style={{fontWeight: 'bold'}}>RM {item.expectedEarnings}.00</Text>
-            </Text>
-            {item.remark && <Text>Comment: {item.remark}</Text>}
-            <HStack justifyContent="flex-end">
-                <TouchableOpacity onPress={() => acceptOrder(item.orderId)} style={styles.buttonContainer}>
-                    <Text style={styles.buttonText}>Accept</Text>
-                </TouchableOpacity>
-            </HStack>
-        </Box>
-    );
+    const renderItem = ({item}) => {
+        let actionSheetRef; // 为每个订单项创建一个 ref
+
+        return (
+            <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
+                <View style={styles.floatingButtonContainer}>
+                    <TouchableWithoutFeedback onPress={() => {
+                        // 弹出对应订单项的 ActionSheet
+                        actionSheetRef.show();
+                    }}>
+                        <View style={styles.imageWrapper}>
+                            <Image source={require('../picture/navigation.png')} style={styles.iconStyle}/>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </View>
+                <VStack space={1}>
+                    <Text style={styles.timeText}>{item.plannedDepartureTime}</Text>
+                    <HStack space={2} alignItems="flex-start">
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="blue" style={{marginTop: 5}}/>
+                        <Text>{formatText(item.departureAddress)}</Text>
+                    </HStack>
+                    <HStack space={2} alignItems="flex-start">
+                        <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange" style={{marginTop: 5}}/>
+                        <Text>{formatText(item.destinationAddress)}</Text>
+                    </HStack>
+                    <HStack space={2} alignItems="center">
+                        <RemixIcon name="money-cny-circle-fill" size={15} color="green" style={{marginTop: 5}}/>
+                        <Text>
+                            Expected Earnings: <Text style={{fontWeight: 'bold'}}>RM {item.expectedEarnings}.00</Text>
+                        </Text>
+                    </HStack>
+                    {item.remark && <Text>Comment: {item.remark}</Text>}
+                    <HStack justifyContent="flex-end">
+                        <TouchableOpacity onPress={() => acceptOrder(item.orderId)} style={styles.buttonContainer}>
+                            <Text style={styles.buttonText}>Accept</Text>
+                        </TouchableOpacity>
+                    </HStack>
+                </VStack>
+                <ActionSheet
+                    ref={o => actionSheetRef = o}
+                    options={['Departure', 'Destination', 'Cancel']}
+                    cancelButtonIndex={2}
+                    destructiveButtonIndex={2}
+                    onPress={(index) => {
+                        // 处理对应订单项的地址
+                        switch (index) {
+                            case 0:
+                                openMaps(item.departureAddress);
+                                break;
+                            case 1:
+                                openMaps(item.destinationAddress);
+                                break;
+                            default:
+                                break;
+                        }
+                    }}
+                />
+            </Box>
+        );
+    };
 
     return (
         <View style={styles.container}>
@@ -154,20 +200,13 @@ const DriverOrderListScreen = () => {
                 keyExtractor={(item) => item.id}
                 ItemSeparatorComponent={() => null}
                 extraData={updateFlag} // 把 updateFlag 传递给 extraData
-            />
-            <ActionSheet
-                ref={o => actionSheetRef = o}
-                options={['Departure', 'Destination', 'Cancel']}
-                cancelButtonIndex={2}
-                destructiveButtonIndex={2}
-                onPress={(index) => {
-                    // 添加点击事件，分别处理两个选项
-                    switch(index) {
-                        case 0: openMaps(rideOrders[0].departureAddress); break;
-                        case 1: openMaps(rideOrders[0].destinationAddress); break;
-                        default: break;
-                    }
-                }}
+                ListHeaderComponent={
+                    <Box bg="white" shadow={2} rounded="lg" p={4} my={2} style={{marginTop: 10}}>
+                        <Text style={{fontWeight: 'bold', fontSize: 18, color: 'black'}}>Waiting for pick up List</Text>
+                        <Text style={{color: 'black'}}>This page displays a list of all orders you can pick up.</Text>
+                    </Box>
+                }
+                contentContainerStyle={{ flexGrow: 1, padding: 10 }} // 添加这一行
             />
         </View>
     );
@@ -200,10 +239,23 @@ const styles = StyleSheet.create({
         marginLeft: 5,
         transform: [{ rotate: '30deg' }] // 这行会将图标旋转30度
     },
-    floatingIconContainer: {
+    floatingButtonContainer: {
+        width: 50,  // 这个值可以根据需要进行调整
+        height: 50, // 这个值可以根据需要进行调整
+        justifyContent: 'center',
+        alignItems: 'center',
         position: 'absolute',
         right: 10,
         top: 10,
+        zIndex: 1,  // 添加这行代码
+    },
+    imageWrapper: {
+        width: 40,
+        height: 40,
+        borderRadius: 25, // 这将使得 View 具有圆形边框
+        backgroundColor: 'transparent', // 设置背景颜色为透明
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
 

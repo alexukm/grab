@@ -9,12 +9,19 @@ import {
     Linking,
     TouchableWithoutFeedback,
     Platform,
-    Animated
+    Animated,
+    Keyboard
 } from 'react-native';
 import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
-import {driverGetPasserCode, userOrderInfo, userReviewOrder} from "../com/evotech/common/http/BizHttpUtil";
+import {
+    driverCancelOrder,
+    driverGetPasserCode, driverOrderCompleted,
+    driverOrderInfo, driverOrderStart, driverReviewOrder, userCancelOrder,
+    userOrderInfo,
+    userReviewOrder
+} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {Rating} from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
@@ -23,6 +30,7 @@ import ActionSheet from "@alessiocancian/react-native-actionsheet";
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
+
 
 const DriverAcceptDetailScreen = ({route, navigation}) => {
     const {
@@ -37,13 +45,41 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         DestinationCoords
     } = route.params;
     const [existDriverInfo, setExistDriverInfo] = useState(false);
-    const [rating, setRating] = useState(5);
-    const [review, setReview] = useState("");
+    const [rating, setRating] = useState(2);
 
     const refRBSheet = useRef();  // 引用RBSheet
 
+    const cancelReasonRef = useRef('');
+    const reviewRef = useRef('');
     const refRBSheetPayment = useRef();  // 引用RBSheet for PaymentInfoBox
     const refRBSheetReview = useRef();  // 引用RBSheet for ReviewBox
+
+    const handleCancel = () => {
+        refRBSheet.current.open();
+    };
+
+    const handleConfirmCancel = () => {
+        const cancelOrderParam = {
+            driverOrderId: orderDetailInfo.driverOrderId,
+            userOrderId: userOrderId,
+            cancelReason: cancelReasonRef.current.trim() === "" ? 'No Reason' : cancelReasonRef.current,
+            cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+        }
+        driverCancelOrder(cancelOrderParam)
+            .then(data => {
+                if (data.code === 200) {
+                    alert("Cancelled Order Success");
+                    navigation.goBack(); // After canceling the order, return to the previous screen.
+                } else {
+                    console.log(data.message);
+                    alert("Cancel Order failed, Please try again later!")
+                }
+            }).catch(error => {
+            console.log(error);
+            alert("system error: " + error.message)
+        });
+        refRBSheet.current.close();
+    };
 
     const startChat = (userOrderId) => {
         console.log(userOrderId)
@@ -66,6 +102,51 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         });
     }
 
+    // 更新页面数据
+    const fetchDataAndUpdateParams = () => {
+        const queryParam = {
+            driverOrderId: orderDetailInfo.driverOrderId,
+            userOrderId: userOrderId
+        }
+        driverOrderInfo(queryParam)
+            .then(data => {
+                if (data.code === 200) {
+                    navigation.setParams({
+                        Departure: Departure,
+                        Destination: Destination,
+                        Time: data.data.actualDepartureTime,
+                        Price: Price,
+                        Status: data.data.orderState,
+                        orderDetailInfo: data.data,
+                        userOrderId: userOrderId,
+                        DepartureCoords: DepartureCoords,
+                        DestinationCoords: DestinationCoords
+                    });
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+
+    const updateTravelStatus = async (timePropertyName, apiFunction) => {
+        try {
+            const param = {
+                driverOrderId: orderDetailInfo.driverOrderId,
+                userOrderId: orderDetailInfo.userOrderId,
+                [timePropertyName]: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+            };
+            apiFunction(param).then(data => {
+                if (data.code === 200) {
+                    fetchDataAndUpdateParams();
+                } else {
+                    alert(data.message);
+                }
+            });
+        } catch (error) {
+            alert('请求失败，请稍后重试。');
+            console.error(error);
+        }
+    };
 
     const handleOpenMaps = async (address) => {
         const url = Platform.select({
@@ -122,19 +203,30 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         },
     });
 
-    const reviewOrder = (satisfaction, reviewContent) => {
-        console.log("user review")
-        console.log(orderDetailInfo.orderId)
+    const styles1 = StyleSheet.create({
+        buttonStyle: {
+            backgroundColor: 'white',
+            borderRadius: 0,
+            padding: 10,
+        },
+        textStyle: {
+            color: 'black',
+            fontSize: 16,
+            fontWeight: 'bold',
+        },
+    });
 
+    const reviewOrder = (rating, review) => {
         const param = {
-            orderId: orderDetailInfo.orderId,
-            reviewContent: reviewContent,
-            satisfaction: satisfaction,
+            orderId: orderDetailInfo.driverOrderId,
+            reviewContent: review,
+            satisfaction: rating,
             reviewTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         }
-        userReviewOrder(param).then(data => {
+        driverReviewOrder(param).then(data => {
             console.log(data)
             if (data.code !== 200) {
+                fetchDataAndUpdateParams();
                 alert("submit review failed,please try again later!");
             }
         }).catch(err => {
@@ -142,21 +234,27 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             alert("submit review failed,please try again later!");
         });
     }
-
     const ReviewBox = () => (
-        <InfoBox title="Comment your driver">
+        <InfoBox>
             <VStack space={4} alignItems="stretch">
                 <Rating
-                    // showRating
-                    onFinishRating={value => setRating(value)}
-                    style={{paddingVertical: 10}}
+                    type='star'
+                    ratingCount={5}
+                    imageSize={40}
+                    // fractions={1}
+                    startingValue={5}
+                    onFinishRating={(rating) => console.log('Rating is ' + rating)}
                 />
                 <Input
                     placeholder="Write your review here..."
-                    multiline
-                    onChangeText={value => setReview(value)}
+                    onChangeText={value => reviewRef.current = value}
                 />
-                <Button onPress={() => reviewOrder(5, "太棒了")}>
+                <Button
+                    onPress={() => {
+                        Keyboard.dismiss();
+                        reviewOrder(rating, reviewRef.current)
+                    }}
+                >
                     Submit
                 </Button>
             </VStack>
@@ -230,10 +328,54 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         return (
             <InfoBox status={{color: statusColor, text: Status}}>
                 <VStack space={3}>
-                    {Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED && (
+                    {Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED && Status !== OrderStateEnum.DELIVERED && (
                         <View style={{position: 'relative'}}>
-                            <Text>接受订单成功，等带出行</Text>
-                            <Text>请在 <Text fontWeight="bold" color="#0000FF">{Time} </Text> 前到达乘客起点</Text>
+                            {(Status === OrderStateEnum.PENDING) && (
+                                <View>
+                                    <Text>Arrive Before <Text fontWeight="bold" color="#0000FF">{Time} </Text>For Pickup.</Text>
+                                    <TouchableOpacity onPress={handleCancel} style={{alignSelf: 'flex-start'}}>
+                                        <Text fontSize="sm" style={{fontWeight: 'bold'}}>CANCEL?</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            {(Status === OrderStateEnum.IN_TRANSIT) && (
+                                <View>
+                                    <Text>Focus On Driving, Enjoy Your Journey.</Text>
+                                    <TouchableOpacity onPress={() => Linking.openURL('tel:999')} style={{alignSelf: 'flex-start'}}>
+                                        <Text fontSize="sm" style={{fontWeight: 'bold'}}>Emergency Call</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            <RBSheet
+                                ref={refRBSheet}
+                                height={200}
+                                closeOnDragDown={true}
+                                closeOnPressMask={false}
+                                customStyles={{
+                                    wrapper: {
+                                        backgroundColor: "transparent"
+                                    },
+                                    draggableIcon: {
+                                        backgroundColor: "#000"
+                                    }
+                                }}
+                            >
+                                <View style={styles.container}>
+                                    <View style={{ padding: 10 }}>
+                                        <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
+                                        <Input
+                                            mt={4}  // Add margin to the top
+                                            mb={4}  // Add margin to the bottom
+                                            placeholder="Reason for cancellation (OPTIONAL)"
+                                            onChangeText={text => cancelReasonRef.current = text}// onEndEditing={text => setCancelReason(text)}
+                                        />
+
+                                        <Button onPress={handleConfirmCancel}>
+                                            <Text style={styles1.textStyle}>Confirm Cancel</Text>
+                                        </Button>
+                                    </View>
+                                </View>
+                            </RBSheet>
                             <TouchableWithoutFeedback onPress={showActionSheet}>
                                 <Image
                                     source={require('../picture/navigation.png')}
@@ -249,7 +391,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             </TouchableWithoutFeedback>
                             <ActionSheet
                                 ref={actionSheet}
-                                options={['出发地', '目的地', '取消']}
+                                options={['Departure', 'Destination', 'Cancel']}
                                 cancelButtonIndex={2}
                                 onPress={handleActionSheetPress}
                             />
@@ -268,7 +410,6 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             </View>
                         </TouchableOpacity>
                     </View>
-
                     {Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED && (
                         <HStack justifyContent='space-between' alignItems='center' px={0}>
                             <HStack space={4} alignItems='center'>
@@ -325,10 +466,47 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange" style={{marginTop: 5}}/>
                         <Text style={{flex: 1}}>{Destination}</Text>
                     </HStack>
-                    {orderDetailInfo.orderCompletionTime && <HStack space={2} alignItems="center">
-                        <RemixIcon name="team-fill" size={24} color="black"/>
-                        <Text>Passenger Number: {orderDetailInfo.orderCompletionTime}</Text>
-                    </HStack>}
+                    <HStack space={2} alignItems="center">
+                        <RemixIcon name="time-fill" size={15} color="black"/>
+                        <Text>Time: {Time}</Text>
+                    </HStack>
+                    {Status === OrderStateEnum.DELIVERED ? (
+                        <Button
+                            bg="#f0f0f0"
+                            onPress={() => refRBSheetReview.current.open()}
+                            variant="ghost"
+                            style={{height: 40, justifyContent: 'center', flex: 1}}
+                        >
+                            <HStack space={2}>
+                                <RemixIcon name="star-line" size={24} color="black"/>
+                                <Text>Rate</Text>
+                            </HStack>
+                        </Button>
+                    ) : Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED ? (
+                        <HStack space={2}>
+                            <Button
+                                bg="#f0f0f0"
+                                onPress={() => console.log('Chat with Driver')}
+                                variant="ghost"
+                                style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
+                            >
+                                <HStack space={2}>
+                                    <RemixIcon name="message-3-line" size={24} color="black"/>
+                                    <Text>Chat</Text>
+                                </HStack>
+                            </Button>
+                            <Button
+                                bg="#e0e0e0"
+                                onPress={() => console.log('Call Driver')}
+                                variant="ghost"
+                                style={{height: 40, justifyContent: 'center', flex: 2}} // 添加自定义样式
+                            >
+                                <HStack space={2}>
+                                    <RemixIcon name="phone-line" size={24} color="black"/>
+                                </HStack>
+                            </Button>
+                        </HStack>
+                    ) : null}
                 </VStack>
             </InfoBox>
         );
@@ -353,67 +531,64 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         </InfoBox>
     );
 
-    const DriverInfoBox = ({showBack, status}) => (
-        <InfoBox title="Driver Information" showBack={showBack}>
-            <VStack space={4} alignItems="stretch">
-                <HStack justifyContent='space-between' alignItems='center'>
-                    <VStack>
-                        <Avatar
-                            size="lg"
-                            source={{
-                                uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
-                            }}
-                        />
-                        {/*<Text>Driver Name: {orderDetailInfo.userName}</Text>*/}
-                        <Text>Ramalaan bin Abdur Rasheed</Text>
-                    </VStack>
-                    <View style={{alignItems: 'flex-end'}}>
-                        {/*<Text style={{...styles.licensePlateText, lineHeight: 30}}>License Plate: {orderDetailInfo.licensePlate}</Text>*/}
-                        {/*<Text>Car Model: {orderDetailInfo.carBrand}</Text>*/}
-                        <Text style={{...styles.licensePlateText, lineHeight: 30}}>UKM 6869</Text>
-                        <Text>GRAY - PROTON SAGA (GRAY)</Text>
-                    </View>
-                </HStack>
-                {status !== OrderStateEnum.DELIVERED ? (
-                    <HStack space={2}>
-                        <Button
-                            bg="#f0f0f0"
-                            onPress={() => console.log('Chat with Driver')}
-                            variant="ghost"
-                            style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
-                        >
-                            <HStack space={2}>
-                                <RemixIcon name="message-3-line" size={24} color="black"/>
-                                <Text>Chat</Text>
-                            </HStack>
-                        </Button>
-                        <Button
-                            bg="#e0e0e0"
-                            onPress={() => console.log('Call Driver')}
-                            variant="ghost"
-                            style={{height: 40, justifyContent: 'center', flex: 2}} // 添加自定义样式
-                        >
-                            <HStack space={2}>
-                                <RemixIcon name="phone-line" size={24} color="black"/>
-                            </HStack>
-                        </Button>
-                    </HStack>
-                ) : (
-                    <Button
-                        bg="#f0f0f0"
-                        onPress={() => refRBSheetReview.current.open()}
-                        variant="ghost"
-                        style={{height: 40, justifyContent: 'center', flex: 1}}
-                    >
-                        <HStack space={2}>
-                            <RemixIcon name="star-line" size={24} color="black"/>
-                            <Text>Rate</Text>
-                        </HStack>
-                    </Button>
-                )}
-            </VStack>
-        </InfoBox>
-    );
+    // const DriverInfoBox = ({showBack, status}) => (
+    //     <InfoBox title="Driver Information" showBack={showBack}>
+    //         <VStack space={4} alignItems="stretch">
+    //             <HStack justifyContent='space-between' alignItems='center'>
+    //                 <VStack>
+    //                     <Avatar
+    //                         size="lg"
+    //                         source={{
+    //                             uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
+    //                         }}
+    //                     />
+    //                     <Text>Ramalaan bin Abdur Rasheed</Text>
+    //                 </VStack>
+    //                 <View style={{alignItems: 'flex-end'}}>
+    //                     <Text style={{...styles.licensePlateText, lineHeight: 30}}>UKM 6869</Text>
+    //                     <Text>GRAY - PROTON SAGA (GRAY)</Text>
+    //                 </View>
+    //             </HStack>
+    //             {status !== OrderStateEnum.DELIVERED ? (
+    //                 <HStack space={2}>
+    //                     <Button
+    //                         bg="#f0f0f0"
+    //                         onPress={() => console.log('Chat with Driver')}
+    //                         variant="ghost"
+    //                         style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
+    //                     >
+    //                         <HStack space={2}>
+    //                             <RemixIcon name="message-3-line" size={24} color="black"/>
+    //                             <Text>Chat</Text>
+    //                         </HStack>
+    //                     </Button>
+    //                     <Button
+    //                         bg="#e0e0e0"
+    //                         onPress={() => console.log('Call Driver')}
+    //                         variant="ghost"
+    //                         style={{height: 40, justifyContent: 'center', flex: 2}} // 添加自定义样式
+    //                     >
+    //                         <HStack space={2}>
+    //                             <RemixIcon name="phone-line" size={24} color="black"/>
+    //                         </HStack>
+    //                     </Button>
+    //                 </HStack>
+    //             ) : (
+    //                 <Button
+    //                     bg="#f0f0f0"
+    //                     onPress={() => refRBSheetReview.current.open()}
+    //                     variant="ghost"
+    //                     style={{height: 40, justifyContent: 'center', flex: 1}}
+    //                 >
+    //                     <HStack space={2}>
+    //                         <RemixIcon name="star-line" size={24} color="black"/>
+    //                         <Text>Rate</Text>
+    //                     </HStack>
+    //                 </Button>
+    //             )}
+    //         </VStack>
+    //     </InfoBox>
+    // );
 
 
     const MapComponent = () => (
@@ -444,7 +619,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.5} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.184} // 设置RBSheet占据50%的屏幕高度
                         >
                         </RBSheet>
                     </ScrollView>
@@ -457,6 +632,14 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             <ScrollView style={styles.fullScreen}>
                                 <MapComponent/>
                                 <OrderInfoBox showStatus={false}/>
+                                <RBSheet
+                                    ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
+                                    closeOnDragDown={true}
+                                    closeOnPressMask={true}
+                                    height={Dimensions.get('window').height * 0.184}
+                                >
+                                    <PaymentInfoBox/>
+                                </RBSheet>
                             </ScrollView>
                         )}
                     </>
@@ -470,7 +653,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3}
+                            height={Dimensions.get('window').height * 0.184}
                         >
                             <PaymentInfoBox/>
                         </RBSheet>
@@ -478,7 +661,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             ref={refRBSheetReview} // 添加了一个新的RBSheet
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3}
+                            height={Dimensions.get('window').height * 0.28}
                         >
                             <ReviewBox/>
                         </RBSheet>
@@ -490,13 +673,13 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {/*{existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}*/}
                         <RBSheet
-                            ref={refRBSheetPayment}
+                            ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.184}
                         >
+                            <PaymentInfoBox/>
                         </RBSheet>
                     </ScrollView>
                 );
@@ -505,24 +688,22 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             case OrderStateEnum.COMPLETED:
                 return (
                     <ScrollView style={styles.fullScreen}>
-                        <OrderInfoBox showStatus={true}/>
-                        {/*{existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}*/}
+                        <OrderInfoBox showStatus={true} status={Status}/>
+                        {/*{existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}*/}
                         <RBSheet
-                            ref={refRBSheet}
+                            ref={refRBSheetPayment} // 修改这里使用了refRBSheetPayment
                             closeOnDragDown={true}
                             closeOnPressMask={true}
-                            height={Dimensions.get('window').height * 0.3} // 设置RBSheet占据50%的屏幕高度
+                            height={Dimensions.get('window').height * 0.184}
                         >
-                            <ReviewBox/>
+                            <PaymentInfoBox/>
                         </RBSheet>
-                        <PaymentInfoBox/>
                     </ScrollView>
                 );
             default:
                 return null;
         }
     };
-
     return (
         <NativeBaseProvider>
             <View style={styles.container}>
@@ -530,7 +711,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 {
                     Status === OrderStateEnum.PENDING &&
                     <Button
-                        onPress={() => console.log('Arrived at the passenger starting point')}
+                        onPress={() => updateTravelStatus('departureTime', driverOrderStart)}
                         style={{
                             width: '90%',
                             alignSelf: 'center',
@@ -545,7 +726,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 {
                     Status === OrderStateEnum.IN_TRANSIT &&
                     <Button
-                        onPress={() => console.log('Order completed')}
+                        onPress={() => updateTravelStatus('actualArrivalTime', driverOrderCompleted)}
                         style={{
                             width: '90%',
                             alignSelf: 'center',
@@ -560,8 +741,5 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             </View>
         </NativeBaseProvider>
     );
-
-
 };
-
 export default DriverAcceptDetailScreen;

@@ -46,9 +46,6 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
         showTotalEarnings = (orderState === OrderStateEnum.DELIVERED || orderState === OrderStateEnum.COMPLETED),
         cancelButtonShow = (orderState === OrderStateEnum.PENDING || orderState === OrderStateEnum.AWAITING)
     } = order;
-    // const [cancelButtonShow, setCancelButtonShow] = useState(false);
-
-    // setCancelButtonShow(OrderStateEnum.AWAITING === orderState || orderState === OrderStateEnum.PENDING);
     const statusColors = {
         'Pending': '#CCCC00',
         'Awaiting': '#0099FF',
@@ -95,10 +92,6 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
         });
     };
 
-    const handleCancel = () => {
-        openSheet(orderId);
-    };
-
     return (
         <TouchableOpacity onPress={handlePress}>
             <Box bg="white" shadow={2} rounded="lg" p={4} my={2}>
@@ -112,28 +105,10 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                         <RemixIcon name="checkbox-blank-circle-fill" size={15} color="orange" style={{marginTop: 5}}/>
                         <Text>{destinationAddress}</Text>
                     </HStack>
-                    {/*  <HStack space={2} alignItems="center">
-                        <RemixIcon name="calendar-check-line" size={20} color="black"/>
-                        <Text>Distance: {distance} KM</Text>
-                    </HStack>*/}
                     <HStack space={2} alignItems="center">
                         <RemixIcon name="time-fill" size={15} color="black"/>
                         <Text>{actualDepartureTime ? actualDepartureTime : plannedDepartureTime} · {passengersNumber} {passengersNumber > 1 ? "Passengers" : "Passenger"}</Text>
-
                     </HStack>
-                    {/*<HStack space={2} alignItems="center">*/}
-                    {/*    <RemixIcon name="wallet-3-line" size={20} color="black"/>*/}
-                    {/*    <Text>Price: {showTotalEarnings ? totalEarnings : expectedEarnings}</Text>*/}
-                    {/*</HStack>*/}
-                    {/*<HStack space={2} alignItems="center">
-                        <RemixIcon name="wallet-3-line" size={20} color="black"/>
-                        <Text>PassengersNumber: {passengersNumber}</Text>
-                    </HStack>*/}
-                    {cancelButtonShow && <Box position="absolute" bottom={0} right={0}>
-                        <Button style={styles1.buttonStyle} onPress={handleCancel}>
-                            <Text style={styles1.textStyle}>Cancel</Text>
-                        </Button>
-                    </Box>}
                 </VStack>
             </Box>
         </TouchableOpacity>
@@ -161,34 +136,6 @@ const DriverAcceptListScreen = ({navigation}) => {
         setCancelOrderId(orderId);
         refRBSheet.current.open();
     }, []);
-
-    const closeSheet = () => {
-        refRBSheet.current.close();
-    };
-
-    const handleConfirmCancel = () => {
-        const cancelOrderParam = {
-            orderId: cancelOrderId,
-            cancelReason: cancelReason,
-            cancelDateTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
-        };
-
-        userCancelOrder(cancelOrderParam)
-            .then(data => {
-                if (data.code === 200) {
-                    alert("Cancelled Order Success");
-                    handleRefresh(); //取消订单并刷新页面
-                } else {
-                    console.log(data.message);
-                    alert("Cancel Order failed, Please try again later!")
-                }
-            }).catch(error => {
-            console.log(error);
-            alert("system error: " + error.message)
-        });
-
-        closeSheet();
-    };
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -260,31 +207,6 @@ const DriverAcceptListScreen = ({navigation}) => {
                 ListFooterComponent={<Box height={20}/>}
                 keyExtractor={item => item.id}
             />
-            <RBSheet
-                ref={refRBSheet}
-                closeOnDragDown={true}
-                closeOnPressMask={false}
-                customStyles={{
-                    wrapper: {
-                        backgroundColor: "transparent"
-                    },
-                    draggableIcon: {
-                        backgroundColor: "#000"
-                    }
-                }}
-            >
-                <View style={styles.container}>
-                    <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
-                    <Input
-                        placeholder="Reason for cancellation"
-                        onChangeText={text => setCancelReason(text)}
-                        value={cancelReason}
-                    />
-                    <Button onPress={handleConfirmCancel}>
-                        <Text style={styles1.textStyle}>Confirm Cancel</Text>
-                    </Button>
-                </View>
-            </RBSheet>
         </>
     );
 };

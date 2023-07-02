@@ -17,6 +17,7 @@ import {smsSend, driverRegister} from "../com/evotech/common/http/BizHttpUtil";
 import {getUserID, setUserToken, userType} from "../com/evotech/common/appUser/UserConstant";
 import {useNavigation} from '@react-navigation/native';
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
+import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
 
 
 const RegisterScreen = () => {
@@ -85,7 +86,7 @@ const RegisterScreen = () => {
         // 调用后端函数发送验证码
         const userPhone = selectedValue + phoneNumber;
 
-        smsSend(userPhone)
+        smsSend(userPhone,UserTypeEnum.DRIVER)
             .then(data => {
                 if (data.code === 200) {
                     setIsTimerActive(true);
@@ -116,7 +117,7 @@ const RegisterScreen = () => {
     const handleResendOtp = () => {
         // 再次发送验证码
         const userPhone = selectedValue + phoneNumber;
-        smsSend(userPhone)
+        smsSend(userPhone,UserTypeEnum.DRIVER)
             .then(data => {
                 if (data.code === 200) {
                     setIsTimerActive(true);

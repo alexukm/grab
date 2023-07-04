@@ -1,23 +1,49 @@
 import React from 'react';
-import {SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, ImageBackground, Dimensions} from 'react-native';
+import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 import {driverLogout} from "../com/evotech/common/http/BizHttpUtil";
 import { userLogOut} from "../com/evotech/common/appUser/UserConstant";
 
+// Define handlers
+const handleWalletPress = () => {
+    console.log('Wallet is clicked');
+    // Handle wallet click event
+};
+
+const handleSharePress = () => {
+    console.log('Share is clicked');
+    // Handle share click event
+};
+
+const handleDriverSwitchPress = () => {
+    console.log('Switch to driver is clicked');
+    // Handle driver switch click event
+};
+
+const handleCustomerServicePress = () => {
+    console.log('Customer service is clicked');
+    // Handle customer service click event
+};
+
+const handlePricingRulesPress = () => {
+    console.log('Pricing rules is clicked');
+    // Handle pricing rules click event
+};
+
+const handleLogoutPress = () => {
+    console.log('Logout is clicked');
+    // Handle logout click event
+    driverLogout().then();
+    userLogOut();
+};
+
 const options = [
-    {name: '钱包'},
-    {name: '分享'},
-    {name: '切换为司机'},
-    {name: '人工客服'},
-    {name: '计价规则'},
-    {
-        name: '退出', op: () => {
-            // 请求用户退出
-            driverLogout().then();
-            //清理本地用户信息
-            userLogOut();
-        }
-    },
+    { name: 'Wallet', onPress: handleWalletPress },
+    { name: 'Share', onPress: handleSharePress },
+    { name: 'Switch to Driver', onPress: handleDriverSwitchPress },
+    { name: 'Customer Service', onPress: handleCustomerServicePress },
+    { name: 'Pricing Rules', onPress: handlePricingRulesPress },
+    { name: 'Logout', onPress: handleLogoutPress },
 ];
 
 const DriverAccountScreen = () => {
@@ -26,18 +52,18 @@ const DriverAccountScreen = () => {
             <ImageBackground source={require('../picture/acc_bg.png')} style={styles.background}>
                 <View style={styles.header}>
                     <Image
-                        source={{uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80'}}
+                        source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80' }}
                         style={styles.avatar}
                     />
                     <Text style={styles.name}>Alex UKM</Text>
                 </View>
-                <View style={styles.curveMask}/>
+                <View style={styles.curveMask} />
             </ImageBackground>
             <View style={styles.optionsContainer}>
                 {options.map((option, index) => (
-                    <TouchableOpacity key={index} style={styles.option}>
+                    <TouchableOpacity key={index} style={styles.option} onPress={option.onPress}>
                         <Text style={styles.optionText}>{option.name}</Text>
-                        <RemixIcon name="arrow-right-s-line" size={25} color="#000"/>
+                        <RemixIcon name="arrow-right-s-line" size={25} color="#000" />
                     </TouchableOpacity>
                 ))}
             </View>
@@ -93,7 +119,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 0,
         width: Dimensions.get('window').width,
-        height: 30, // Or the height of your curve
+        height: 30,
         backgroundColor: '#ffffff',
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
@@ -101,4 +127,3 @@ const styles = StyleSheet.create({
 });
 
 export default DriverAccountScreen;
-

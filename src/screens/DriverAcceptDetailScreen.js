@@ -226,8 +226,9 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         driverReviewOrder(param).then(data => {
             console.log(data)
             if (data.code !== 200) {
-                fetchDataAndUpdateParams();
                 alert("submit review failed,please try again later!");
+            }else{
+                fetchDataAndUpdateParams();
             }
         }).catch(err => {
             console.error(err.message);

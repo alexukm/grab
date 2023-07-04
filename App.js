@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
-import {NativeBaseProvider, Box} from 'native-base';
-import {getUserToken,  setUserToken} from "./src/com/evotech/common/appUser/UserConstant";
+import {NativeBaseProvider} from 'native-base';
+import {setUserToken} from "./src/com/evotech/common/appUser/UserConstant";
 import UserBottomTabNavigator from "./src/screens/UserBottomTabNavigator";
 import DriverBottomTabNavigator from "./src/screens/DriverBottomTabNavigator";
 import store from "./src/com/evotech/common/redux/store";
@@ -15,8 +15,9 @@ import DriverSignUp from "./src/screens/DriverRegisterForm";
 import DriverRegisterImage from "./src/screens/DriverRegisterImage";
 import {TextEncoder, TextDecoder} from 'text-encoding';
 import {accessToken} from "./src/com/evotech/common/http/BizHttpUtil";
-import {getUserInfoWithLocal, userSkipLogin} from "./src/com/evotech/common/appUser/UserInfo";
+import {userSkipLogin} from "./src/com/evotech/common/appUser/UserInfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
@@ -25,6 +26,10 @@ const Stack = createStackNavigator();
 
 const App = () => {
     const [initialRoute, setInitialRoute] = useState(null);
+
+    // useEffect(() => {
+    //     // AsyncStorage.clear()
+    // }, []);
 
     const skipOp = (userInfo, skipLogin) => {
         const userSkip = (skipLogin) => {

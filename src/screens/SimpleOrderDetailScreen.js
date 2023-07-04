@@ -5,7 +5,7 @@ import {View, Dimensions, ScrollView, TouchableOpacity} from 'react-native';
 import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
-import {userOrderInfo, userReviewOrder, userCancelOrder} from "../com/evotech/common/http/BizHttpUtil";
+import {userOrderInfo, userReviewOrder, userCancelOrder, driverOrderInfo} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {tr} from "date-fns/locale";
 import {Rating} from 'react-native-ratings';
@@ -129,6 +129,30 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         },
     });
 
+    const fetchDataAndUpdateParams = () => {
+        const queryParam = {
+            orderId: orderDetailInfo.orderId
+        }
+        userOrderInfo(queryParam)
+            .then(data => {
+                if (data.code === 200) {
+                    navigation.setParams({
+                        Departure: Departure,
+                        Destination: Destination,
+                        Time: data.data.actualDepartureTime,
+                        Price: Price,
+                        Status: data.data.orderState,
+                        orderDetailInfo: data.data,
+                        userOrderId: orderDetailInfo.orderId,
+                        DepartureCoords: DepartureCoords,
+                        DestinationCoords: DestinationCoords
+                    });
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+
     const reviewOrder = (satisfaction, reviewContent) => {
         console.log("user review")
         console.log(orderDetailInfo.orderId)
@@ -143,6 +167,8 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
             console.log(data)
             if (data.code !== 200) {
                 alert("submit review failed,please try again later!");
+            }else {
+                fetchDataAndUpdateParams();
             }
         }).catch(err => {
             console.error(err.message);
@@ -309,8 +335,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                                 uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80",
                             }}
                         />
-                        {/*<Text>Driver Name: {orderDetailInfo.userName}</Text>*/}
-                        <Text>Ramalaan bin Abdur Rasheed</Text>
+                        <Text>Driver: {orderDetailInfo.userName}</Text>
                     </VStack>
                     <View style={{alignItems: 'flex-end'}}>
                         {/*<Text style={{...styles.licensePlateText, lineHeight: 30}}>License Plate: {orderDetailInfo.licensePlate}</Text>*/}
@@ -456,7 +481,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}
+                        {/*{existDriverInfo && <DriverInfoBox showBack={existDriverInfo}/>}*/}
                         <RBSheet
                             ref={refRBSheetPayment}
                             closeOnDragDown={true}
@@ -471,14 +496,14 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 return (
                     <ScrollView style={styles.fullScreen}>
                         <OrderInfoBox showStatus={true}/>
-                        {existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}
+                        {/*{existDriverInfo && <DriverInfoBox showBack={true} status={Status}/>}*/}
                         <RBSheet
                             ref={refRBSheetPayment}
                             closeOnDragDown={true}
                             closeOnPressMask={true}
                             height={Dimensions.get('window').height * 0.278} // 设置RBSheet占据50%的屏幕高度
                         >
-                            <ReviewBox/>
+                            <PaymentInfoBox/>
                         </RBSheet>
                     </ScrollView>
                 );

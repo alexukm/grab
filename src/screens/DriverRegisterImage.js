@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, ScrollView} from 'react-native';
 import {Center, Box, VStack, Button, FormControl, NativeBaseProvider, Icon, Text} from 'native-base';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import RemixIcon from 'react-native-remix-icon';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {driverUpload} from "../com/evotech/common/http/BizHttpUtil";
 import {DriverImageType} from "../com/evotech/common/appUser/UserConstant";
@@ -39,7 +39,6 @@ const ImageUploadPage = () => {
                 path: 'images',
             },
         };
-
 
         launchImageLibrary(options, async response => {
             if (response.didCancel) {
@@ -124,8 +123,7 @@ const ImageUploadPage = () => {
                                                 bg={form.uploadStatus ? 'green.500' : 'blue.500'}
                                                 onPress={form.handler}
                                             >
-                                                <Icon as={Ionicons} name={form.uploadStatus ? 'checkmark' : 'add'}
-                                                      color="white"/>
+                                                <Icon as={RemixIcon} name={form.uploadStatus ? 'check-line' : 'add-line'} color="white"/>
                                             </Button>
                                         </Box>
                                     ))}
@@ -180,8 +178,7 @@ const ImageUploadPage = () => {
                                                     bg={form.uploadStatus ? 'green.500' : 'blue.500'}
                                                     onPress={form.handler}
                                                 >
-                                                    <Icon as={Ionicons} name={form.uploadStatus ? 'checkmark' : 'add'}
-                                                          color="white"/>
+                                                    <Icon as={RemixIcon} name={form.uploadStatus ? 'check-line' : 'add-line'} color="white"/>
                                                 </Button>
                                             </Box>
                                         )) :
@@ -207,8 +204,7 @@ const ImageUploadPage = () => {
                                                     bg={form.uploadStatus ? 'green.500' : 'blue.500'}
                                                     onPress={form.handler}
                                                 >
-                                                    <Icon as={Ionicons} name={form.uploadStatus ? 'checkmark' : 'add'}
-                                                          color="white"/>
+                                                    <Icon as={RemixIcon} name={form.uploadStatus ? 'check-line' : 'add-line'} color="white"/>
                                                 </Button>
                                             </Box>
                                         ))

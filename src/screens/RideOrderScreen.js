@@ -15,6 +15,8 @@ import {
 import {format} from 'date-fns';
 import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
 import apiService from "../com/evotech/common/apiKey/apiService";
+import {tr} from "date-fns/locale";
+import Js from "@react-native-community/geolocation/js";
 
 // 初始化Geocoder库，这个库用于处理地址和地理坐标的相互转化
 Geocoder.init(googleMapsApiKey);
@@ -114,7 +116,7 @@ const RideOrderScreen = () => {
     // useEffect在组件渲染后执行，用于在用户输入出发地和目的地时获取地址建议
     useEffect(() => {
         if (!isDepartureSelected && departure.length > 2) {
-            fetchDepartureSuggestions(departure);
+            fetchDepartureSuggestions(departure).then();
             setShowDepartureSuggestions(true);
         } else {
             setShowDepartureSuggestions(false);
@@ -124,7 +126,7 @@ const RideOrderScreen = () => {
 
     useEffect(() => {
         if (!isDestinationSelected && destination.length > 2) {
-            fetchDestinationSuggestions(destination);
+            fetchDestinationSuggestions(destination).then();
             setShowDestinationSuggestions(true);
         } else {
             setShowDestinationSuggestions(false);
@@ -132,29 +134,52 @@ const RideOrderScreen = () => {
         }
     }, [destination]);
 
+
+    // const getCurrentLocation = () => {
+    //     Geolocation.getCurrentPosition(async info => {
+    //         const {latitude, longitude} = info.coords;
+    //         // setDeparture(`lat: ${latitude}, lng: ${longitude}`);
+    //         setDepartureCoords({latitude: latitude, longitude: longitude});
+    //         try {
+    //             const response = await Geocoder.from(latitude, longitude);
+    //             const address = response.results[0].formatted_address;
+    //             setDeparture(address);
+    //             const predictions = await apiService.getAutocomplete(address);
+    //             if (predictions.length > 0) {
+    //                 setDepartureAddress(predictions[predictions.length-1].terms)
+    //             }
+    //             mapRef.current.animateToRegion({
+    //                 latitude,
+    //                 longitude,
+    //                 latitudeDelta: 0.0922,
+    //                 longitudeDelta: 0.0421,
+    //             },1000);
+    //             // 定位到地图上的经纬度位置
+    //         } catch (error) {
+    //             console.error(error);
+    //         }
+    //     });
+    // };
+
     // 这个函数获取当前地理位置，并将地图中心移动到这个位置
     const getCurrentLocation = () => {
         Geolocation.getCurrentPosition(async info => {
-            const {latitude, longitude} = info.coords;
-            setDeparture(`lat: ${latitude}, lng: ${longitude}`);
+            const { latitude, longitude } = info.coords;
+            setDepartureCoords({latitude, longitude});
 
             try {
                 const response = await Geocoder.from(latitude, longitude);
                 const address = response.results[0].formatted_address;
+                const placeId = response.results[0].place_id; // 获取地点的ID
                 setDeparture(address);
 
-                // 定位到地图上的经纬度位置
-                mapRef.current.animateToRegion({
-                    latitude,
-                    longitude,
-                    latitudeDelta: 0.0922,
-                    longitudeDelta: 0.0421,
-                });
+                await moveToLocation(placeId); // 使用地点ID移动到当前位置
             } catch (error) {
                 console.error(error);
             }
         });
     };
+
     // 这个函数请求地理位置权限
     const requestLocationPermission = async () => {
         try {
@@ -180,7 +205,9 @@ const RideOrderScreen = () => {
 
     // 在组件渲染后请求地理位置权限
     useEffect(() => {
-        requestLocationPermission();
+        setTimeout(async () => {
+            await requestLocationPermission().then();
+        }, 0);
     }, []);
 
     // 这个函数处理打开日期选择器的逻辑
@@ -272,52 +299,55 @@ const RideOrderScreen = () => {
 
 
     const submitOrder = () => {
-        const orderSubmitParam = {
-            'distance': estimatedDistanceOrder, // 距离
-            'expectedTravelTime': estimatedDurationOrder, // 行程预计时间
-            'plannedDepartureTime': format(date, 'yyyy-MM-dd HH:mm:ss'), // 计划出发时间
-            'travelMode': "Private", // 乘车模式 Private 独享
-            'passengersNumber': passengerCount,
-            'estimatedFare': orderPrice,
-            'remark': remarks, //用户备注
-            'paymentType': "Cash", // TODO 用户付款方式 "Cash", "现金" "E-wallet","电子钱包"
-            'departureCountry': "",//出发地国家
-            'departureState': "",// 出发地州属
-            'departureCity': "",//出发地城市
-            'departureAddress': "", //出发地详细地址
-            'destinationCountry': "", //目的地国家
-            'destinationState': "", // 目的地州属
-            'destinationCity': "", // 目的地城市
-            'destinationAddress': "", // 目的地详细地址
-            'departureLatitude': departureCoords.latitude, //出发地纬度
-            'departureLongitude': departureCoords.longitude, //出发地经度
-            'destinationLatitude': destinationCoords.latitude, //目的地纬度
-            'destinationLongitude': destinationCoords.longitude //目的地经度
+        try {
+            const orderSubmitParam = {
+                'distance': estimatedDistanceOrder, // 距离
+                'expectedTravelTime': estimatedDurationOrder, // 行程预计时间
+                'plannedDepartureTime': format(new Date(), 'yyyy-MM-dd HH:mm:ss'), // 计划出发时间
+                'travelMode': "Private", // 乘车模式 Private 独享
+                'passengersNumber': passengerCount,
+                'estimatedFare': orderPrice,
+                'remark': remarks, //用户备注
+                'paymentType': "Cash", // TODO 用户付款方式 "Cash", "现金" "E-wallet","电子钱包"
+                'departureCountry': "",//出发地国家
+                'departureState': "",// 出发地州属
+                'departureCity': "",//出发地城市
+                'departureAddress': "", //出发地详细地址
+                'destinationCountry': "", //目的地国家
+                'destinationState': "", // 目的地州属
+                'destinationCity': "", // 目的地城市
+                'destinationAddress': "", // 目的地详细地址
+                'departureLatitude': departureCoords.latitude, //出发地纬度
+                'departureLongitude': departureCoords.longitude, //出发地经度
+                'destinationLatitude': destinationCoords.latitude, //目的地纬度
+                'destinationLongitude': destinationCoords.longitude //目的地经度
+            }
+
+            fillDepAddress(orderSubmitParam);
+            fillDescAddress(orderSubmitParam);
+
+            // console.log(orderSubmitParam)
+            userSubmitOrder(orderSubmitParam)
+                .then(data => {
+                    if (data.code === 200) {
+                        navigation.navigate('OrderDetailScreen', {
+                            departure,
+                            destination,
+                            date: date.toISOString(), // 将日期转换为字符串
+                            passengerCount,
+                            pickupWaiting,
+                            coords
+                        });
+                    } else {
+                        alert("Submit failed" + data.message);
+                    }
+                }).catch((err) => {
+                console.log(err);
+                alert("Submit Order failed")
+            });
+        } catch (e) {
+            console.log("下单异常", e);
         }
-
-        fillDepAddress(orderSubmitParam);
-        fillDescAddress(orderSubmitParam);
-
-        // console.log(orderSubmitParam)
-
-        userSubmitOrder(orderSubmitParam)
-            .then(data => {
-                if (data.code === 200) {
-                    navigation.navigate('OrderDetailScreen', {
-                        departure,
-                        destination,
-                        date: date.toISOString(), // 将日期转换为字符串
-                        passengerCount,
-                        pickupWaiting,
-                        coords
-                    });
-                }else {
-                    alert("Submit failed" + data.message);
-                }
-            }).catch((err) => {
-            console.log(err);
-            alert("Submit Order failed")
-        });
     };
     // 处理下一步的逻辑，获取行程的距离和时间，如果已经确认预订，则跳转到订单详情页面
     const handleNextStep = () => {
@@ -335,7 +365,7 @@ const RideOrderScreen = () => {
                 console.log(data);
                 if (data.routes.length) {
                     const legs = data.routes[0].legs[0];
-                    console.log("google map api response: "+data.routes.length);
+                    console.log("google map api response: " + data.routes.length);
                     const distance = legs.distance.text;
                     const duration = legs.duration.text;
 
@@ -431,6 +461,7 @@ const RideOrderScreen = () => {
             <View style={styles.container}>
                 <MapView
                     ref={mapRef} //用于保存对地图的引用
+                    onLayout={getCurrentLocation}
                     style={{...styles.map, marginBottom: Dimensions.get('window').height / 2}}
                     initialRegion={{
                         latitude: 2.9435,
@@ -531,8 +562,7 @@ const RideOrderScreen = () => {
                                         const data = await response.json();
                                         const location = data.results[0].geometry.location;
                                         setDepartureCoords({latitude: location.lat, longitude: location.lng}); // 这里保存新的出发地的经纬度
-
-                                        moveToLocation(suggestion.place_id); // 这里添加代码使地图移动到新的出发地
+                                        await moveToLocation(suggestion.place_id); // 这里添加代码使地图移动到新的出发地
                                     }}
                                 >
                                     {suggestion.description}
@@ -547,7 +577,7 @@ const RideOrderScreen = () => {
                                     onChangeText={(text) => {
                                         setIsDestinationSelected(false);
                                         setDestination(text);
-                                        updateAddressSuggestions(text, setDestinationSuggestions);
+                                        updateAddressSuggestions(text, setDestinationSuggestions).then();
                                     }}
                                 />
                             </HStack>
@@ -593,7 +623,7 @@ const RideOrderScreen = () => {
                                 </HStack>
                             </Pressable>
                             {isLoading ? (
-                                <ActivityIndicator size="large" color="#0000ff" />
+                                <ActivityIndicator size="large" color="#0000ff"/>
                             ) : (
                                 <Button
                                     mt={4}
@@ -662,7 +692,7 @@ const RideOrderScreen = () => {
                                     </Modal.Body>
                                     <Modal.Footer>
                                         {isLoading ? (
-                                            <ActivityIndicator size="large" color="#0000ff" />
+                                            <ActivityIndicator size="large" color="#0000ff"/>
                                         ) : (
                                             <Button
                                                 flex="1"

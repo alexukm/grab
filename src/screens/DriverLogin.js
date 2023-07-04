@@ -14,7 +14,7 @@ import {
     NativeBaseProvider,
     Input,
     Text,
-    HStack,
+    HStack, Radio,
 } from "native-base";
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
@@ -88,7 +88,7 @@ function DriverScreen() {
     };
 
     const [value, setValue] = useState("");
-    const [modalVisible, setModalVisible] = useState(false);
+    // const [modalVisible, setModalVisible] = useState(false);
     const [secondsRemaining, setSecondsRemaining] = useState(30);
     const [isTimerActive, setIsTimerActive] = useState(false);
     const [isResendOtpActive, setIsResendOtpActive] = useState(false);
@@ -135,6 +135,7 @@ function DriverScreen() {
                     // 导航到下一个页面
                     navigation.navigate("Driver");
                 } else {
+                    console.log(userPhone)
                     alert("Login failed"+data.message);
                 }
             })
@@ -199,19 +200,27 @@ function DriverScreen() {
                             width="78%"
                         />
                     </HStack>
-                    <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-                        <Modal.Content>
+                    <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="lg">
+                        <Modal.Content maxWidth="350">
+                            <Modal.CloseButton />
                             <Modal.Header>Select Country Code</Modal.Header>
                             <Modal.Body>
-                                <Select
-                                    selectedValue={selectedValue}
-                                    onValueChange={handleSelect}
-                                    accessibilityLabel="Choose Your Location"
-                                >
-                                    <Select.Item label="+60 Malaysia" value="my" />
-                                    <Select.Item label="+86 China" value="cn" />
-                                </Select>
+                                <Radio.Group defaultValue={selectedValue} name="countryCode" size="sm" onChange={handleSelect}>
+                                    <VStack space={3}>
+                                        <Radio alignItems="flex-start" _text={{ mt: "-1", ml: "2", fontSize: "sm" }} value="my">
+                                            +60 Malaysia
+                                        </Radio>
+                                        <Radio alignItems="flex-start" _text={{ mt: "-1", ml: "2", fontSize: "sm" }} value="cn">
+                                            +86 China
+                                        </Radio>
+                                    </VStack>
+                                </Radio.Group>
                             </Modal.Body>
+                            <Modal.Footer>
+                                <Button flex="1" onPress={() => { setShowModal(false); }}>
+                                    Continue
+                                </Button>
+                            </Modal.Footer>
                         </Modal.Content>
                     </Modal>
                 </FormControl>

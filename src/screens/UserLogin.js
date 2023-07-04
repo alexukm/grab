@@ -35,6 +35,7 @@ function UserScreen() {
     const handleSelect = (value) => {
         setSelectedValue(value);
         setIsPhoneNumberValid(true);
+        setShowModal(false);
     };
 
     const buttonText = () => {

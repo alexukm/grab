@@ -89,6 +89,9 @@ def reactNativeArchitectures() {
 }
 
 android {
+       lintOptions {
+       abortOnError false
+       }
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion

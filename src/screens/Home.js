@@ -8,10 +8,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 function Home() {
     const navigation = useNavigation();
 
-    useEffect(() => {
-        // AsyncStorage.clear()
-    }, []);
-
     const handleUserButtonPress = () => {
        // 调用getUserType接口中的USER值
         navigation.navigate("UserLogin");

@@ -76,6 +76,10 @@ const RideOrderScreen = () => {
     const [isLoading, setIsLoading] = useState(false);
     const isLoadingRef = useRef(isLoading);
 
+    //submitOrder函数spinner
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
     const [isDepartureManual, setIsDepartureManual] = useState(false);
 
     useEffect(() => {
@@ -346,14 +350,18 @@ const RideOrderScreen = () => {
             fillDepAddress(orderSubmitParam);
             fillDescAddress(orderSubmitParam);
 
+            setIsSubmitting(true);
+
             userSubmitOrder(orderSubmitParam)
                 .then(data => {
                     if (data.code === 200) {
                         // 下单后开启订单通知
+                        setIsSubmitting(false);
                         userOrderWebsocket(() => {
                             UserChat(false).then();
                         }).then();
-                        navigation.navigate('OrderDetailScreen', {
+                        //replace防止刷单
+                        navigation.replace('OrderDetailScreen', {
                             departure,
                             destination,
                             date: date.toISOString(), // 将日期转换为字符串
@@ -552,9 +560,24 @@ const RideOrderScreen = () => {
                                 value={remarks}
                                 onChangeText={setRemarks}
                             />
-                            <Button mt={4} onPress={submitOrder}>
-                                Done
-                            </Button>
+                            {isSubmitting ? (
+                                <HStack space={2} alignItems="center" justifyContent="center">
+                                    <Spinner accessibilityLabel="Submitting order" size="lg" />
+                                    <Heading color="primary.500" fontSize="lg">Submitting</Heading>
+                                </HStack>
+                            ) : (
+                                <Button
+                                    mt={4}
+                                    onPress={submitOrder}
+                                    style={{
+                                        paddingVertical: 15,
+                                        paddingHorizontal: 20,
+                                        borderRadius: 10
+                                    }}
+                                >
+                                    Done
+                                </Button>
+                            )}
                         </VStack>
                     </Box>
                 ) : (
@@ -569,7 +592,7 @@ const RideOrderScreen = () => {
                     >
                         <VStack space={4} alignItems="stretch">
                             <HStack space={2} alignItems="center">
-                                <RemixIcon name="map-pin-line" size={20}/>
+                                <RemixIcon name="map-pin-line" size={20} color="blue"/>
                                 <Input
                                     flex={1}
                                     placeholder="Departure"
@@ -605,7 +628,7 @@ const RideOrderScreen = () => {
                                 </Text>
                             ))}
                             <HStack space={2} alignItems="center">
-                                <RemixIcon name="flag-line" size={20}/>
+                                <RemixIcon name="flag-line" size={20} color="orange"/>
                                 <Input
                                     flex={1}
                                     placeholder="Destination"
@@ -643,7 +666,7 @@ const RideOrderScreen = () => {
                             <Pressable onPress={handleOpenDatePicker}
                                        style={{flexDirection: 'row', alignItems: 'center'}}>
                                 <HStack space={2} alignItems="center">
-                                    <RemixIcon name="calendar-2-fill" size={20} color="gray"/>
+                                    <RemixIcon name="calendar-2-fill" size={20} color="green"/>
                                     <Box flex={1} borderWidth={1} borderColor="#ddd" borderRadius={4} p={2}>
                                         <Text flexShrink={1}>{date ? formatDate(new Date(date)) : 'Select Time'}</Text>
                                     </Box>
@@ -652,7 +675,7 @@ const RideOrderScreen = () => {
                             <Pressable onPress={() => setModalVisible(true)}
                                        style={{flexDirection: 'row', alignItems: 'center'}}>
                                 <HStack space={2} alignItems="center">
-                                    <RemixIcon name="group-line" size={20} color="gray"/>
+                                    <RemixIcon name="group-line" size={20} color="black"/>
                                     <Box flex={1} borderWidth={1} borderColor="#ddd" borderRadius={4} p={2}>
                                         <Text
                                             flexShrink={1}>{`${passengerCount} passenger${passengerCount > 1 ? 's' : ''}`}</Text>
@@ -706,22 +729,16 @@ const RideOrderScreen = () => {
                                     <Modal.Header>How many of you will go?</Modal.Header>
                                     <Modal.Body>
                                         <VStack space={4} alignItems="center">
-                                            <HStack
-                                                justifyContent="space-between"
-                                                alignItems="center"
-                                                width="100%"
-                                            >
+                                            <HStack justifyContent="space-between" alignItems="center" width="100%">
                                                 <Button
-                                                    onPress={() =>
-                                                        setPassengerCount(
-                                                            passengerCount > 1 ? passengerCount - 1 : 1
-                                                        )
-                                                    }
+                                                    width="25%" // 调整宽度至20%
+                                                    onPress={() => setPassengerCount(passengerCount > 1 ? passengerCount - 1 : 1)}
                                                 >
                                                     -
                                                 </Button>
                                                 <Text fontSize="xl">{passengerCount}</Text>
                                                 <Button
+                                                    width="25%" // 调整宽度至20%
                                                     onPress={() => setPassengerCount(passengerCount + 1)}
                                                 >
                                                     +

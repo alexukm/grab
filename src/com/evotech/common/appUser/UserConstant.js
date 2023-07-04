@@ -42,6 +42,10 @@ export function setUserToken(token) {
     setKeyValue(defaultHeaders.TOKEN, token).then();
 }
 
+export function removeUserToken() {
+    asyncDelKey(defaultHeaders.TOKEN).then();
+}
+
 export function userLogOut() {
     //删除token
     asyncDelKey(defaultHeaders.TOKEN).then();

@@ -47,7 +47,14 @@ export function buildUserInfo(token, userType, userPhone) {
 export async function userSkipLogin(setInitialRoute, tokenCheck) {
     const userInfo = await getUserInfoWithLocal()
     if (!isAccessToken(userInfo)) {
-        console.log("校验用户信息完整性失败")
+        if (userInfo) {
+            if (userInfo.userType === userType.USER) {
+                return setInitialRoute("UserLogin");
+            }
+            if (userInfo.userType === userType.DRIVER) {
+                return setInitialRoute("DriverLogin");
+            }
+        }
         return setInitialRoute("Home");
     }
     return await tokenCheck(userInfo);

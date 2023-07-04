@@ -1,5 +1,4 @@
-
-export const OrderStateEnum ={
+export const OrderStateEnum = {
     AWAITING: "Awaiting",
     PENDING: "Pending",
     IN_TRANSIT: "InTransit",
@@ -10,4 +9,9 @@ export const OrderStateEnum ={
 
 
 export const UserTypeEnum = {PASSER: "passer", DRIVER: "passer"}
+
+export const DriverInfoStatusEnum = {
+    INCOMPLETE: "Incomplete",
+    COMPLETE: "Complete",
+}
 

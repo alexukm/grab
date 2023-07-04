@@ -5,7 +5,13 @@ import {View, Dimensions, ScrollView, TouchableOpacity} from 'react-native';
 import {StyleSheet} from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import RemixIcon from 'react-native-remix-icon';
-import {userOrderInfo, userReviewOrder, userCancelOrder, driverOrderInfo} from "../com/evotech/common/http/BizHttpUtil";
+import {
+    userOrderInfo,
+    userReviewOrder,
+    userCancelOrder,
+    driverOrderInfo,
+    driverGetPasserCode, passerGetDriverCode
+} from "../com/evotech/common/http/BizHttpUtil";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {tr} from "date-fns/locale";
 import {Rating} from 'react-native-ratings';
@@ -129,6 +135,27 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         },
     });
 
+    const openChatRoom = () => {
+        const params = {
+            orderId: orderDetailInfo.driverOrderId,
+        }
+        console.log(orderDetailInfo.driverOrderId);
+        passerGetDriverCode(params)
+            .then(data => {
+                if (data.code !== 200) {
+                    alert(data.message);
+                    return;
+                }
+                navigation.navigate('ChatRoom', {
+                    receiverName: data.data.userName,
+                    receiverUserCode: data.data.userCode,
+                    orderStatus: Status,
+                });
+            }).catch(err => {
+            console.error(err.message);
+            alert("get user info failed,please try again later!");
+        });
+    }
     const fetchDataAndUpdateParams = () => {
         const queryParam = {
             orderId: orderDetailInfo.orderId
@@ -154,8 +181,6 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
     }
 
     const reviewOrder = (satisfaction, reviewContent) => {
-        console.log("user review")
-        console.log(orderDetailInfo.orderId)
 
         const param = {
             orderId: orderDetailInfo.orderId,
@@ -164,10 +189,9 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
             reviewTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
         }
         userReviewOrder(param).then(data => {
-            console.log(data)
             if (data.code !== 200) {
                 alert("submit review failed,please try again later!");
-            }else {
+            } else {
                 fetchDataAndUpdateParams();
             }
         }).catch(err => {
@@ -348,7 +372,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                     <HStack space={2}>
                         <Button
                             bg="#f0f0f0"
-                            onPress={() => console.log('Chat with Driver')}
+                            onPress={() => openChatRoom()}
                             variant="ghost"
                             style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
                         >

@@ -3,8 +3,8 @@ import {SafeAreaView, TouchableWithoutFeedback, Keyboard, Alert, ScrollView} fro
 import {Center, Box, VStack, Button, FormControl, NativeBaseProvider, Icon, Text} from 'native-base';
 import RemixIcon from 'react-native-remix-icon';
 import {launchImageLibrary} from 'react-native-image-picker';
-import {driverUpload} from "../com/evotech/common/http/BizHttpUtil";
-import {DriverImageType} from "../com/evotech/common/appUser/UserConstant";
+import {driverLogout, driverUpload} from "../com/evotech/common/http/BizHttpUtil";
+import {DriverImageType, removeUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {getUserInfoWithLocal} from "../com/evotech/common/appUser/UserInfo";
 
 
@@ -25,6 +25,11 @@ const ImageUploadPage = () => {
             (documentType === 'ID' ? (uploadedIdCardFront && uploadedIdCardBack) : uploadedPassport)
         ) {
             Alert.alert('Success', 'All documents uploaded successfully!');
+
+            //司机退出登录
+            driverLogout().then();
+            //清空本地司机信息
+            removeUserToken();
             // 这里可以进行页面跳转或其他操作
         }
     }, [uploadedSelfie, uploadedCarInsurance, uploadedLicense, uploadedIdCardFront, uploadedIdCardBack, uploadedPassport, documentType]);
@@ -44,7 +49,7 @@ const ImageUploadPage = () => {
             if (response.didCancel) {
                 alert('User cancelled image picker');
             } else if (response.error) {
-                alert('ImagePicker Error: '+JSON.stringify(response.error));
+                alert('ImagePicker Error: ' + JSON.stringify(response.error));
             } else {
                 const uri = response.assets[0].uri;
                 const userInfo = await getUserInfoWithLocal()
@@ -55,13 +60,13 @@ const ImageUploadPage = () => {
                 try {
                     driverUpload(uri, params)
                         .then(data => {
-                            alert("图片上传结果"+data.message);
+                            alert("图片上传结果" + data.message);
                             setUploadStatus(true);
                         }).catch(err => {
-                        alert("图片上传异常"+err.message);
+                        alert("图片上传异常" + err.message);
                     });
                 } catch (error) {
-                    alert('Failed to upload file: '+error.message);
+                    alert('Failed to upload file: ' + error.message);
                 }
             }
         });
@@ -123,7 +128,9 @@ const ImageUploadPage = () => {
                                                 bg={form.uploadStatus ? 'green.500' : 'blue.500'}
                                                 onPress={form.handler}
                                             >
-                                                <Icon as={RemixIcon} name={form.uploadStatus ? 'check-line' : 'add-line'} color="white"/>
+                                                <Icon as={RemixIcon}
+                                                      name={form.uploadStatus ? 'check-line' : 'add-line'}
+                                                      color="white"/>
                                             </Button>
                                         </Box>
                                     ))}
@@ -178,7 +185,9 @@ const ImageUploadPage = () => {
                                                     bg={form.uploadStatus ? 'green.500' : 'blue.500'}
                                                     onPress={form.handler}
                                                 >
-                                                    <Icon as={RemixIcon} name={form.uploadStatus ? 'check-line' : 'add-line'} color="white"/>
+                                                    <Icon as={RemixIcon}
+                                                          name={form.uploadStatus ? 'check-line' : 'add-line'}
+                                                          color="white"/>
                                                 </Button>
                                             </Box>
                                         )) :
@@ -204,7 +213,9 @@ const ImageUploadPage = () => {
                                                     bg={form.uploadStatus ? 'green.500' : 'blue.500'}
                                                     onPress={form.handler}
                                                 >
-                                                    <Icon as={RemixIcon} name={form.uploadStatus ? 'check-line' : 'add-line'} color="white"/>
+                                                    <Icon as={RemixIcon}
+                                                          name={form.uploadStatus ? 'check-line' : 'add-line'}
+                                                          color="white"/>
                                                 </Button>
                                             </Box>
                                         ))

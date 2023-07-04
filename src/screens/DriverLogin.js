@@ -1,8 +1,8 @@
-import { Keyboard, TouchableWithoutFeedback } from 'react-native';
-import { MD5 } from "crypto-js";
-import React, { useState, useEffect } from "react";
-import { driverLogin, smsSend} from "../com/evotech/common/http/BizHttpUtil";
-import { useNavigation } from "@react-navigation/native";
+import {Keyboard, TouchableWithoutFeedback} from 'react-native';
+import {MD5} from "crypto-js";
+import React, {useState, useEffect} from "react";
+import {driverInfoStatus, driverLogin, smsSend} from "../com/evotech/common/http/BizHttpUtil";
+import {useNavigation} from "@react-navigation/native";
 import {setUserToken, userType} from "../com/evotech/common/appUser/UserConstant";
 import {
     FormControl,
@@ -17,7 +17,7 @@ import {
     HStack, Radio,
 } from "native-base";
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
-import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
+import {DriverInfoStatusEnum, UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
 
 const countryCodes = {
     my: "60",
@@ -70,7 +70,7 @@ function DriverScreen() {
 
         const prefix = countryCodes[selectedValue];
         const phoneNumber = prefix ? prefix + value : value;
-        smsSend(phoneNumber,UserTypeEnum.DRIVER)
+        smsSend(phoneNumber, UserTypeEnum.DRIVER)
             .then(data => {
                 if (data.code === 200) {
                     setIsTimerActive(true);
@@ -133,10 +133,23 @@ function DriverScreen() {
                     setUserToken(data.data)
                     buildUserInfo(data.data, userType.DRIVER, userPhone).saveWithLocal();
                     // 导航到下一个页面
-                    navigation.navigate("Driver");
+                    let skipHome = true;
+                    driverInfoStatus().then(data => {
+                        if (data.code === 200) {
+                            if (data.data === DriverInfoStatusEnum.INCOMPLETE) {
+                                // 跳转信息补充页面
+                            } else {
+                                navigation.navigate("Driver");
+                            }
+                        } else {
+                            // TODO 后台查询失败 处理
+                        }
+                    }).catch(err => {
+                        // TODO 异常处理
+                    })
                 } else {
                     console.log(userPhone)
-                    alert("Login failed"+data.message);
+                    alert("Login failed" + data.message);
                 }
             })
             .catch(error => {
@@ -202,22 +215,27 @@ function DriverScreen() {
                     </HStack>
                     <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="lg">
                         <Modal.Content maxWidth="350">
-                            <Modal.CloseButton />
+                            <Modal.CloseButton/>
                             <Modal.Header>Select Country Code</Modal.Header>
                             <Modal.Body>
-                                <Radio.Group defaultValue={selectedValue} name="countryCode" size="sm" onChange={handleSelect}>
+                                <Radio.Group defaultValue={selectedValue} name="countryCode" size="sm"
+                                             onChange={handleSelect}>
                                     <VStack space={3}>
-                                        <Radio alignItems="flex-start" _text={{ mt: "-1", ml: "2", fontSize: "sm" }} value="my">
+                                        <Radio alignItems="flex-start" _text={{mt: "-1", ml: "2", fontSize: "sm"}}
+                                               value="my">
                                             +60 Malaysia
                                         </Radio>
-                                        <Radio alignItems="flex-start" _text={{ mt: "-1", ml: "2", fontSize: "sm" }} value="cn">
+                                        <Radio alignItems="flex-start" _text={{mt: "-1", ml: "2", fontSize: "sm"}}
+                                               value="cn">
                                             +86 China
                                         </Radio>
                                     </VStack>
                                 </Radio.Group>
                             </Modal.Body>
                             <Modal.Footer>
-                                <Button flex="1" onPress={() => { setShowModal(false); }}>
+                                <Button flex="1" onPress={() => {
+                                    setShowModal(false);
+                                }}>
                                     Continue
                                 </Button>
                             </Modal.Footer>
@@ -250,7 +268,7 @@ export default function Driver() {
     return (
         <NativeBaseProvider>
             <Center flex={1}>
-                <DriverScreen />
+                <DriverScreen/>
             </Center>
         </NativeBaseProvider>
     );

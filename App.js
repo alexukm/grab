@@ -27,9 +27,9 @@ const Stack = createStackNavigator();
 const App = () => {
     const [initialRoute, setInitialRoute] = useState(null);
 
-    // useEffect(() => {
-    //     // AsyncStorage.clear()
-    // }, []);
+    useEffect(() => {
+        // AsyncStorage.clear()
+    }, []);
 
     const skipOp = (userInfo, skipLogin) => {
         const userSkip = (skipLogin) => {

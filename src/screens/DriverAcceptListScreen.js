@@ -180,7 +180,6 @@ const DriverAcceptListScreen = ({navigation}) => {
     const renderItem = useCallback(({item}) => <OrderBox key={item.id} order={item} navigation={navigation}
                                                          openSheet={openSheet}/>, [navigation, openSheet]);
 
-
     return (
         <>
             <FlatList

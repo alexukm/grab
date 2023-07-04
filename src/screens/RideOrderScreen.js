@@ -17,6 +17,9 @@ import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
 import apiService from "../com/evotech/common/apiKey/apiService";
 import {tr} from "date-fns/locale";
 import Js from "@react-native-community/geolocation/js";
+import {formatDate} from "../com/evotech/common/formatDate";
+import {userInitChatWebsocket, userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
+import {UserChat} from "../com/evotech/common/redux/UserChat";
 
 // 初始化Geocoder库，这个库用于处理地址和地理坐标的相互转化
 Geocoder.init(googleMapsApiKey);
@@ -71,6 +74,8 @@ const RideOrderScreen = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const isLoadingRef = useRef(isLoading);
+
+    const [isDepartureManual, setIsDepartureManual] = useState(false);
 
     useEffect(() => {
         isLoadingRef.current = isLoading;
@@ -164,22 +169,21 @@ const RideOrderScreen = () => {
     // 这个函数获取当前地理位置，并将地图中心移动到这个位置
     const getCurrentLocation = () => {
         Geolocation.getCurrentPosition(async info => {
-            const { latitude, longitude } = info.coords;
-            setDepartureCoords({latitude, longitude});
-
-            try {
-                const response = await Geocoder.from(latitude, longitude);
-                const address = response.results[0].formatted_address;
-                const placeId = response.results[0].place_id; // 获取地点的ID
-                setDeparture(address);
-
-                await moveToLocation(placeId); // 使用地点ID移动到当前位置
-            } catch (error) {
-                console.error(error);
+            const {latitude, longitude} = info.coords;
+            setDepartureCoords({latitude: latitude, longitude: longitude});
+            if (!isDepartureManual) { // 如果用户还没有手动输入出发地
+                try {
+                    const response = await Geocoder.from(latitude, longitude);
+                    const address = response.results[0].formatted_address;
+                    const placeId = response.results[0].place_id; // 获取地点的ID
+                    setDeparture(address);
+                    await moveToLocation(placeId); // 使用地点ID移动到当前位置
+                } catch (error) {
+                    console.error(error);
+                }
             }
         });
     };
-
     // 这个函数请求地理位置权限
     const requestLocationPermission = async () => {
         try {
@@ -217,17 +221,6 @@ const RideOrderScreen = () => {
 
     const navigateHome = () => {
         navigation.navigate('Tabs', {screen: 'Home'});
-    };
-
-    //格式化日期
-    const formatDate = (date) => {
-        const options = {year: 'numeric', month: '2-digit', day: '2-digit'};
-        const timeOptions = {hour: '2-digit', minute: '2-digit', hour12: true};
-
-        const dateString = date.toLocaleDateString('en-GB', options); // formats to day/month/year
-        const timeString = date.toLocaleTimeString('en-US', timeOptions); // formats to hour:minute AM/PM
-
-        return `${dateString} ${timeString}`;
     };
     const allowOrder = () => {
         setIsLoading(true);  // 添加这行，点击按钮时触发 spinner
@@ -270,7 +263,6 @@ const RideOrderScreen = () => {
 
     const fillAddress = (addressArray, prefix, orderSubmitParam) => {
         const len = addressArray.length;
-        console.log(addressArray);
         if (len > 0) {
             orderSubmitParam[`${prefix}Country`] = addressArray[len - 1].value;
         }
@@ -303,7 +295,7 @@ const RideOrderScreen = () => {
             const orderSubmitParam = {
                 'distance': estimatedDistanceOrder, // 距离
                 'expectedTravelTime': estimatedDurationOrder, // 行程预计时间
-                'plannedDepartureTime': format(new Date(), 'yyyy-MM-dd HH:mm:ss'), // 计划出发时间
+                'plannedDepartureTime': format(date, 'yyyy-MM-dd HH:mm:ss'), // 计划出发时间  dd-MM-yyyy
                 'travelMode': "Private", // 乘车模式 Private 独享
                 'passengersNumber': passengerCount,
                 'estimatedFare': orderPrice,
@@ -323,13 +315,17 @@ const RideOrderScreen = () => {
                 'destinationLongitude': destinationCoords.longitude //目的地经度
             }
 
+
             fillDepAddress(orderSubmitParam);
             fillDescAddress(orderSubmitParam);
 
-            // console.log(orderSubmitParam)
             userSubmitOrder(orderSubmitParam)
                 .then(data => {
                     if (data.code === 200) {
+                        // 下单后开启订单通知
+                        userOrderWebsocket(() => {
+                            UserChat(false).then();
+                        }).then();
                         navigation.navigate('OrderDetailScreen', {
                             departure,
                             destination,
@@ -356,16 +352,12 @@ const RideOrderScreen = () => {
             return;
         }
 
-        console.log(departure)
-        console.log(destination)
         setIsLoading(true); // 开始显示加载动画
         fetch(`https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(departure)}&destination=${encodeURIComponent(destination)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
                 if (data.routes.length) {
                     const legs = data.routes[0].legs[0];
-                    console.log("google map api response: " + data.routes.length);
                     const distance = legs.distance.text;
                     const duration = legs.duration.text;
 
@@ -461,7 +453,7 @@ const RideOrderScreen = () => {
             <View style={styles.container}>
                 <MapView
                     ref={mapRef} //用于保存对地图的引用
-                    onLayout={getCurrentLocation}
+                    // onLayout={getCurrentLocation}
                     style={{...styles.map, marginBottom: Dimensions.get('window').height / 2}}
                     initialRegion={{
                         latitude: 2.9435,
@@ -540,7 +532,7 @@ const RideOrderScreen = () => {
                                     placeholder="Departure"
                                     value={departure}
                                     onChangeText={(text) => {
-                                        setIsDepartureSelected(false);
+                                        setIsDepartureManual(true); // 用户开始输入departure
                                         setDeparture(text);
                                         updateAddressSuggestions(text, setDepartureSuggestions);
                                     }}
@@ -595,6 +587,7 @@ const RideOrderScreen = () => {
                                         const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(shortAddress)}&key=AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc`);
                                         const data = await response.json();
                                         const location = data.results[0].geometry.location;
+
                                         setDestinationCoords({latitude: location.lat, longitude: location.lng});
 
                                         // 路径规划的逻辑已经移到 handleNextStep 函数中，这里不再需要
@@ -608,7 +601,7 @@ const RideOrderScreen = () => {
                                 <HStack space={2} alignItems="center">
                                     <RemixIcon name="calendar-2-fill" size={20} color="gray"/>
                                     <Box flex={1} borderWidth={1} borderColor="#ddd" borderRadius={4} p={2}>
-                                        <Text flexShrink={1}>{date ? formatDate(date) : 'Select Time'}</Text>
+                                        <Text flexShrink={1}>{date ? formatDate(new Date(date)) : 'Select Time'}</Text>
                                     </Box>
                                 </HStack>
                             </Pressable>

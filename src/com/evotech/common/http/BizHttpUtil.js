@@ -66,6 +66,8 @@ const featureAndPath = {
 
     DRIVER_GET_PASSER_CODE: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/queryUserCode'},
 
+    PASSER_GET_DRIVER_CODE: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/queryUserCode'},
+
     DRIVER_ORDER_START: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/start'},
 
     DRIVER_ORDER_COMPLETED: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/traveled'},
@@ -73,8 +75,24 @@ const featureAndPath = {
     DRIVER_CANCEL_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/cancel'},
 
     DRIVER_REVIEW_ORDER: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/reviewOrder'},
+
+    DRIVER_INFO_STATUS: {method: supportRequestMethod.GET, path: '/v1/ums/api/driver/driverInfoStatus'},
+
+    QUERY_USER_ORDER_STATUS: {method: supportRequestMethod.POST, path: '/v1/oms/api/user/order/queryUserOrderStatus'},
+
+    QUERY_DRIVER_ORDER_STATUS: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/queryDriverOrderStatus'},
 }
 
+export function queryDriverOrderStatus() {
+    return request.post(featureAndPath.QUERY_DRIVER_ORDER_STATUS.path, SupportContextType.APPLICATION_JSON, {});
+}
+export function queryUserOrderStatus() {
+    return request.post(featureAndPath.QUERY_USER_ORDER_STATUS.path, SupportContextType.APPLICATION_JSON,{});
+}
+
+export function driverInfoStatus() {
+    return request.get(featureAndPath.DRIVER_INFO_STATUS.path)
+}
 export function driverReviewOrder(params = {}) {
     return request.post(featureAndPath.DRIVER_REVIEW_ORDER.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
@@ -97,7 +115,9 @@ export function driverOrderInfo(params = {}) {
 
 export function driverGetPasserCode(params = {}) {
     return request.post(featureAndPath.DRIVER_GET_PASSER_CODE.path, SupportContextType.APPLICATION_JSON, {params: params})
-
+}
+export function passerGetDriverCode(params = {}) {
+    return request.post(featureAndPath.PASSER_GET_DRIVER_CODE.path, SupportContextType.APPLICATION_JSON, {params: params})
 }
 
 export function driverOrderPage(params = {}) {

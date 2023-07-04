@@ -5,26 +5,25 @@ import {useDispatch, useSelector} from 'react-redux';
 import {addChatList, addMessage, selectChatMessage} from '../com/evotech/common/redux/chatSlice';
 import uuid from "react-native-uuid";
 import {UserChat} from "../com/evotech/common/redux/UserChat";
+import {closeWebsocket, resetWebsocket} from "../com/evotech/common/websocket/SingletonWebSocketClient";
 
 export default function ChatRoom({route}) {
-    const {receiverName, receiverUserCode} = route.params;
+    const {receiverName, receiverUserCode, orderStatus} = route.params;
     const [chatClient, setChatClient] = useState(null);
     const dispatch = useDispatch();
     const messages = useSelector(selectChatMessage);
 
+    const initChatClient = async () => {
+        console.log("initChatClient")
+        const socketClient = await UserChat(false);
+        setChatClient(socketClient);
+        return socketClient;
+    }
     useEffect(() => {
-        async function initChatClient() {
-            const socketClient = await UserChat((chatWebsocket, frame)=>{
-                console.log("chat room init websocket successfully")
-            });
-            setChatClient(socketClient);
-        }
-
-        console.log("receiverUserCode:"+receiverUserCode)
         initChatClient().then();
     }, [])
 
-    function onSend(newMessages = []) {
+    async function onSend(newMessages = []) {
         try {
             const param = {
                 receiverName: receiverName,
@@ -36,6 +35,7 @@ export default function ChatRoom({route}) {
                 _id: uuid.v4(),
                 userCode: receiverUserCode,
                 text: newMessages[0].text,
+                orderStatus: orderStatus,
                 createdAt: param.requestTime,
                 user: {
                     _id: 1,
@@ -52,13 +52,19 @@ export default function ChatRoom({route}) {
                 unread: '',
                 avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80'
             };
-            if (chatClient) {
-                chatClient.publish({destination: '/uniEase/v1/order/chat/ride', body: JSON.stringify(param)});
+            // 连接被异常关闭
+            if (!chatClient || !chatClient.client.connected) {
+                console.log("websocket not init")
+                //重新连接
+                resetWebsocket();
+              /*  chatClient.publish({destination: '/uniEase/v1/order/chat/ride', body: JSON.stringify(param)});
                 dispatch(addMessage(message));
                 dispatch(addChatList(chatList));
-            } else {
-                alert('chat1 websocket connected failed, please try again later!');
+                return;*/
             }
+            chatClient.publish({destination: '/uniEase/v1/order/chat/ride', body: JSON.stringify(param)});
+            dispatch(addMessage(message));
+            dispatch(addChatList(chatList));
         } catch (e) {
             alert(e.message);
         }
@@ -67,7 +73,7 @@ export default function ChatRoom({route}) {
     return (
         <GiftedChat
             messages={messages[receiverUserCode] || []}
-            onSend={newMessages=> onSend(newMessages)}
+            onSend={newMessages => onSend(newMessages)}
             user={{_id: 1}}
         />
     );

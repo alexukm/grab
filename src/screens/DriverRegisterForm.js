@@ -183,7 +183,7 @@ const RegisterScreen = () => {
                     console.log('注册失败', data.message);
                 }
             }).then((token) => {
-            saveUserInfo(token, userType.DRIVER, userPhone, getUserID())
+            saveUserInfo('', userType.DRIVER, userPhone, getUserID())
             })
             .catch(error => {
                 console.log('注册失败', error);

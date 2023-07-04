@@ -2,8 +2,6 @@ import {Client} from "@stomp/stompjs";
 
 export const defaultBrokerURL = "wss://unieaseapp.com/uniEase/ws-sfc";
 
-export const chatBrokerURL = "wss://unieaseapp.com/uniEase/ws-chat";
-
 class WebSocketClient {
     constructor(brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) {
         this.client = new Client({
@@ -18,6 +16,7 @@ class WebSocketClient {
         });
         this.handlers = {};
         this.subscriptions = {};
+        this.shouldClosed = false;
     }
 
     connect(onConnect, onError, onClose) {
@@ -37,7 +36,14 @@ class WebSocketClient {
             })
 
             setInterval(() => {
-                this.publish({destination: '/uniEase/v1/heart/ping', body: JSON.stringify({message: 'ping'})})
+                //已经断开连接  && 不需要关闭连接
+                if (!this.client.connected && !this.shouldClosed) {
+                    //重新创建连接
+                    this.connect();
+                    return;
+                }
+
+                this.publish({destination: '/uniEase/v1/heart/ping', body: JSON.stringify({message: 'ping'})});
             }, 60000);
             if (onConnect) {
                 onConnect(frame);
@@ -90,6 +96,7 @@ class WebSocketClient {
     }
 
     disconnect() {
+        this.shouldClosed = true;
         Object.values(this.subscriptions).forEach(subscription => {
             subscription.unsubscribe();
         });
@@ -103,17 +110,10 @@ export const defaultWebsocketClient = (headers) => {
     return new WebSocketClient(defaultBrokerURL,headers, 0, 4000, 4000);
 };
 
-export const websocketClient = (brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing) => {
-    return new WebSocketClient(brokerURL,headers, reconnectDelay, heartbeatIncoming, heartbeatOutgoing).client;
-};
-
 
 const defaultClient = (headers) => {
     return defaultWebsocketClient(headers);
 }
 
-export const defaultChatClient = (headers) => {
-    return new WebSocketClient(chatBrokerURL,headers, 0, 60000, 60000);
-}
 
 export default defaultClient;

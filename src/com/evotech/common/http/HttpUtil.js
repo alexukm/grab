@@ -98,7 +98,7 @@ export class HttpUtil {
         });
     }
 
-    async post(uri, supportContextType2, {params = {}, header = {}}) {
+    async post(uri, supportContextType2, {params = null, header = {}}) {
         const requestBody = JSON.stringify(params);
         const requestURL = this.getRequestURI(uri);
         const headers = await headerMap({supportContextType: supportContextType2, header: header});

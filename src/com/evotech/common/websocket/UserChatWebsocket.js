@@ -1,32 +1,36 @@
-import {defaultHeaders} from "../http/HttpUtil";
-import {defaultChatClient} from "./WebSocketClient";
-import {getUserToken} from "../appUser/UserConstant";
+import {socketConnect} from "./SingletonWebSocketClient";
 
-let chatWebsocket = null;
 
-export const userIniWebsocket = async (onConnect, onSubscribe) => {
-    if (chatWebsocket && chatWebsocket.client.connected) {
-        return chatWebsocket;
-    }
-    const token = defaultHeaders.getAuthentication(await getUserToken());
-    chatWebsocket = defaultChatClient(token);
-    chatWebsocket.connect((frame) => {
-        onConnect(chatWebsocket, frame)
-        chatWebsocket.subscribe('/user/topic/chat', (body) => {
-            console.log("body"+body)
-
-            onSubscribe(body)
-        });
+export const userInitChatWebsocket = async (onConnect,needRetry) => {
+    return socketConnect((client, frame) => {
+    }).then(socket => {
+        onConnect(socket);
         const param = {
             ready: true,
         };
-        chatWebsocket.publish({destination: '/uniEase/v1/order/chat/retry', body: JSON.stringify(param)});
-    }, (onError) => {
-        console.error("chat1 websocket error", onError);
-        alert("websocket error")
-    }, (onClose) => {
-        console.log("chat1 websocket closed");
-        alert("websocket closed")
-    });
-    return chatWebsocket;
+        if (needRetry) {
+            socket.publish({destination: '/uniEase/v1/order/chat/retry', body: JSON.stringify(param)});
+        }
+        return socket;
+    })
 };
+
+export const userOrderWebsocket = async (subscribe) => {
+    return socketConnect((client, frame) => {
+        client.subscribe('/user/topic/orderAccept', (body) => {
+            // todo  调用系统通知
+            subscribe(body);
+            alert("Your order accepted")
+        })
+        return client;
+    });
+};
+
+/*export const DriverRefreshOrder = async (onSubscribe) => {
+    return socketConnect((client, frame) => {
+    }).then(data => {
+       return  data.subscribe('/topic/refreshOrder', (body) => {
+            onSubscribe(body)
+        });
+    });
+}*/

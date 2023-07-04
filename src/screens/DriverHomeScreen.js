@@ -1,26 +1,41 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, TouchableOpacity, View} from 'react-native';
 import {Box, AspectRatio, Button, Center, Text} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 import {UserChat, initLocalChat, saveLocalChat} from "../com/evotech/common/redux/UserChat";
+import {queryDriverOrderStatus} from "../com/evotech/common/http/BizHttpUtil";
+import {userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
+import {tr} from "date-fns/locale";
 
 
 const DriverHomeScreen = () => {
     const navigation = useNavigation();
+
+    const initOrderStatusList = (initOrderStatusAfter) => {
+        queryDriverOrderStatus().then((data) => {
+            if (data.code === 200) {
+                //订单状态集
+                return data.data;
+            }
+        }).then((orderStatusList) => {
+            initOrderStatusAfter(orderStatusList);
+        })
+    };
+
+    const initChat = (orderStatusList) => {
+        initLocalChat().then(data => {
+            if (orderStatusList.pending || orderStatusList.inTransit) {
+                UserChat(true).then();
+            }
+        });
+    }
+
     // const MyContext = createContext();
     useEffect(() => {
         setTimeout(() => {
-            initLocalChat().then();
-            UserChat((chatWebsocket, frame) => {
-                console.log("drive chat websocket connected");
-            }).then();
+            initOrderStatusList(initChat);
         }, 0);
-
-        setInterval(() => {
-            saveLocalChat().then();
-        }, 30000);
-
     }, []);
 
     const handlePress = (screen) => {

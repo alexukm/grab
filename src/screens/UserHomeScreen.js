@@ -1,51 +1,47 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Image, TouchableOpacity, View} from 'react-native';
 import {Box, AspectRatio, Button, Center, Text} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
-
-// import PushNotification from 'react-native-push-notification';
 
 
 const UserHomeScreen = () => {
     const navigation = useNavigation();
 
+    //TODO 处理查询失败的情况
+    const subscriptionOrderAccept = async (orderStatusInitAfter) => {
+        await queryUserOrderStatus().then((data) => {
+            console.log(JSON.stringify(data));
+            if (data.code === 200) {
+                //订单状态集
+                const orderStatus = data.data;
+                //存在待接单的订单
+                if (orderStatus.awaiting) {
+                    //订阅  订单接单通知
+                    userOrderWebsocket().then()
+                }
+                return orderStatus;
+            }
+        }).then((orderStatus) => {
+            orderStatusInitAfter(orderStatus);
+        })
+    }
 
-    const subscriptionOrderAccept = () => {
-        setTimeout(async () => {
-            const token = defaultHeaders.getAuthentication(await getUserToken());
-            const client = defaultClient(token);
-
-            client.connect((frame) => {
-                console.log('Connecting successfully');
-                client.subscribe('/user/topic/orderAccept', (body) => {
-                    // todo  调用系统通知
-                    alert("Your order accepted")
-                })
-
-            }, (err) => {
-                // alert("Connection error,please try again later! ")
-                console.log('Connection error:' + JSON.stringify(err));
-            }, (close) => {
-                // alert("Connection close")
-                console.log('Connection close:' + JSON.stringify(close));
-            });
-
-        }, 0)
+    const initUserChat = (orderStatus) => {
+        //在订单状态初始化之后执行
+        initLocalChat().then(data => {
+                //  本地存储聊天信息记录 且存在待出现和旅途中的订单 则初始化websocket聊天订阅
+                if (orderStatus.pending || orderStatus.inTransit) {
+                    console.log("init chat")
+                    UserChat(true).then();
+                }
+            }
+        )
     }
 
     useEffect(() => {
-        // subscriptionOrderAccept()
         setTimeout(() => {
-            initLocalChat().then();
-            UserChat((chatWebsocket, frame) => {
-                console.log("User chat websocket connected");
-            }).then();
+            subscriptionOrderAccept(initUserChat).then();
         }, 0);
-
-        setInterval(() => {
-            saveLocalChat().then();
-            // console.log("保存聊天记录")
-        }, 10000);
     }, []);
 
     const handlePress = (screen) => {
@@ -179,5 +175,7 @@ import defaultClient, {defaultWebsocketClient} from "../com/evotech/common/webso
 import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
 import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {initLocalChat, saveLocalChat, UserChat} from "../com/evotech/common/redux/UserChat";
+import {queryUserOrderStatus} from "../com/evotech/common/http/BizHttpUtil";
+import {userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
 
 export default UserHomeScreen;

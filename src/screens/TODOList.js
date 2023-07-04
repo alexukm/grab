@@ -78,9 +78,9 @@ renderItem 函数也被封装在 useCallback 钩子中。
 
 
 // todo 22. 乘客订单页面，需要把cancel 放进details里面
+//Done
 
 // todo 23. Details里面需要接口接入司机的对话框
-
 
 // todo 29. 乘客地图 去掉推荐地址 地图移动到当前位置
 // todo 30. 新增司机接口  校验司机是否需要补充额外信息

@@ -18,7 +18,7 @@ import RemixIcon from 'react-native-remix-icon';
 import {
     driverCancelOrder,
     driverGetPasserCode, driverOrderCompleted,
-    driverOrderInfo, driverOrderStart, driverReviewOrder, userCancelOrder,
+    driverOrderInfo, driverOrderStart, driverReviewOrder, queryDriverOrderStatus, userCancelOrder,
     userOrderInfo,
     userReviewOrder
 } from "../com/evotech/common/http/BizHttpUtil";
@@ -27,6 +27,7 @@ import {Rating} from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
+import {closeWebsocket} from "../com/evotech/common/websocket/SingletonWebSocketClient";
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
@@ -95,6 +96,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 navigation.navigate('ChatRoom', {
                     receiverName: data.data.userName,
                     receiverUserCode: data.data.userCode,
+                    orderStatus: Status,
                 });
             }).catch(err => {
             console.error(err.message);
@@ -102,6 +104,18 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         });
     }
 
+    const driverOrderStatusCallBack = () => {
+        setTimeout(() => {
+            queryDriverOrderStatus().then(data => {
+                if (data.code === 200) {
+                    const orderStatus = data.data;
+                    if (!(orderStatus.pending || orderStatus.inTransit)) {
+                        closeWebsocket();
+                    }
+                }
+            })
+        }, 0);
+    };
     // 更新页面数据
     const fetchDataAndUpdateParams = () => {
         const queryParam = {
@@ -138,6 +152,9 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             apiFunction(param).then(data => {
                 if (data.code === 200) {
                     fetchDataAndUpdateParams();
+
+                    // 判断 是否需要关闭websocket
+                    driverOrderStatusCallBack();
                 } else {
                     alert(data.message);
                 }
@@ -227,7 +244,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             console.log(data)
             if (data.code !== 200) {
                 alert("submit review failed,please try again later!");
-            }else{
+            } else {
                 fetchDataAndUpdateParams();
             }
         }).catch(err => {
@@ -333,7 +350,8 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         <View style={{position: 'relative'}}>
                             {(Status === OrderStateEnum.PENDING) && (
                                 <View>
-                                    <Text>Arrive Before <Text fontWeight="bold" color="#0000FF">{Time} </Text>For Pickup.</Text>
+                                    <Text>Arrive Before <Text fontWeight="bold" color="#0000FF">{Time} </Text>For
+                                        Pickup.</Text>
                                     <TouchableOpacity onPress={handleCancel} style={{alignSelf: 'flex-start'}}>
                                         <Text fontSize="sm" style={{fontWeight: 'bold'}}>CANCEL?</Text>
                                     </TouchableOpacity>
@@ -342,7 +360,8 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             {(Status === OrderStateEnum.IN_TRANSIT) && (
                                 <View>
                                     <Text>Focus On Driving, Enjoy Your Journey.</Text>
-                                    <TouchableOpacity onPress={() => Linking.openURL('tel:999')} style={{alignSelf: 'flex-start'}}>
+                                    <TouchableOpacity onPress={() => Linking.openURL('tel:999')}
+                                                      style={{alignSelf: 'flex-start'}}>
                                         <Text fontSize="sm" style={{fontWeight: 'bold'}}>Emergency Call</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -362,8 +381,9 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                                 }}
                             >
                                 <View style={styles.container}>
-                                    <View style={{ padding: 10 }}>
-                                        <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the order?</Text>
+                                    <View style={{padding: 10}}>
+                                        <Text style={{fontSize: 18, marginBottom: 10}}>Do you want to cancel the
+                                            order?</Text>
                                         <Input
                                             mt={4}  // Add margin to the top
                                             mb={4}  // Add margin to the bottom

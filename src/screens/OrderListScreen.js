@@ -1,12 +1,12 @@
 import React, { useState, useRef, useCallback} from 'react';
 import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
-import RBSheet from "react-native-raw-bottom-sheet";
 import RemixIcon from 'react-native-remix-icon';
 import {userCancelOrder, userOrderInfo, userOrderPage} from "../com/evotech/common/http/BizHttpUtil";
 import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {useFocusEffect} from '@react-navigation/native';
+import {formatDate} from "../com/evotech/common/formatDate";
 
 const OrderBox = React.memo(({order, navigation}) => {
     const {
@@ -84,7 +84,7 @@ const OrderBox = React.memo(({order, navigation}) => {
                     <HStack space={2} alignItems="center">
                         <RemixIcon name="time-fill" size={15} color="black"/>
                         <Text>
-                            {departureTime} ·
+                            {formatDate(new Date(departureTime))} ·
                             <Text style={{ fontWeight: 'bold' }}>RM {price}</Text>
                         </Text>
                     </HStack>

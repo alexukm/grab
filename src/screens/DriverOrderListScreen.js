@@ -1,13 +1,21 @@
 import React, {useCallback, useState, useRef} from 'react';
-import {View, Text, FlatList, StyleSheet, TouchableOpacity, Image, TouchableWithoutFeedback, Linking, Platform} from 'react-native';
+import {
+    View,
+    Text,
+    FlatList,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    TouchableWithoutFeedback,
+    Linking,
+    Platform
+} from 'react-native';
 import {Box, HStack, VStack} from 'native-base';
-import defaultClient from "../com/evotech/common/websocket/WebSocketClient";
-import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
-import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {carpoolingOrdersQuery, driverAcceptOrder} from "../com/evotech/common/http/BizHttpUtil";
 import {useFocusEffect} from "@react-navigation/native";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
 import RemixIcon from "react-native-remix-icon";
+import {UserChat} from "../com/evotech/common/redux/UserChat";
 
 
 
@@ -75,53 +83,31 @@ const DriverOrderListScreen = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            handleRefresh().then(() => {
-            });
+           /* handleRefresh().then(() => {});
             let cancelSub;
             setTimeout(async () => {
-                const token = defaultHeaders.getAuthentication(await getUserToken());
-                const client = defaultClient(token);
-
-                // clientRef.current = client; // 在 ref 中存储 client
-
-                client.connect((frame) => {
-                    console.log('Connecting successfully');
-                  const cancelSub = client.subscribe('/topic/refreshOrder', (body) => {
-                        setRideOrders((old) => [JSON.parse(body), ...old])
-                        setUpdateFlag(!updateFlag); // 当数据更新时改变 updateFlag 的值
-                    });
-                }, (err) => {
-                    // alert("Connection error,please try again later! ")
-                    console.log('Connection error:' + JSON.stringify(err));
-                }, (close) => {
-                    // alert("Connection close")
-                    console.log('Connection close:' + JSON.stringify(close));
-                });
-
+                await DriverRefreshOrder((body) => {
+                    setRideOrders((old) => [JSON.parse(body), ...old])
+                    setUpdateFlag(!updateFlag); // 当数据更新时改变 updateFlag 的值
+                }).then();
             }, 0)
 
             // 返回一个清理函数，它将在页面失焦时运行
             return () => {
                 if (cancelSub) {
                     cancelSub();
-                   /* clientRef.current.disconnect(() => {
-                        console.log('Disconnected successfully');
-                    }, (err) => {
-                        console.error('Disconnect error:' + JSON.stringify(err));
-                    });*/
                 }
-            };
+            };*/
         }, [])
     );
     const acceptOrder = (orderId) => {
-        console.log('Accept Order:', orderId);
         const params = {
             userOrderId: orderId,
         }
         driverAcceptOrder(params).then(data => {
             if (data.code === 200) {
-                alert("Accept Order Successful")
-                handleRefresh(); //在这里添加代码，接受订单后刷新页面。
+                UserChat(false).then();
+                handleRefresh().then(); //在这里添加代码，接受订单后刷新页面。
             } else {
                 alert(data.message);
             }
@@ -206,7 +192,7 @@ const DriverOrderListScreen = () => {
                         <Text style={{color: 'black'}}>This page displays a list of all orders you can pick up.</Text>
                     </Box>
                 }
-                contentContainerStyle={{ flexGrow: 1, padding: 10 }} // 添加这一行
+                contentContainerStyle={{flexGrow: 1, padding: 10}} // 添加这一行
             />
         </View>
     );
@@ -237,7 +223,7 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
         marginLeft: 5,
-        transform: [{ rotate: '30deg' }] // 这行会将图标旋转30度
+        transform: [{rotate: '30deg'}] // 这行会将图标旋转30度
     },
     floatingButtonContainer: {
         width: 50,  // 这个值可以根据需要进行调整

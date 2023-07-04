@@ -1,16 +1,12 @@
 
 import {addChatList, addMessage, initChatList, initMessage, selectChatList} from "./chatSlice";
 import uuid from "react-native-uuid";
-import {userIniWebsocket} from "../websocket/UserChatWebsocket";
+import {userInitChatWebsocket} from "../websocket/UserChatWebsocket";
 import store from "./store";
-
 import {getChatList, getChatMessages, setChatList, setChatMessages} from "../appUser/UserConstant";
 
-export function UserChat(connect) {
+export function UserChat(needRetry) {
     const dispatch = store.dispatch;
-    const onConnect = (chatWebsocket, frame) => {
-        connect(chatWebsocket, frame);
-    }
 
     const buildChatMsg = (body) => {
         const receiveMsg = JSON.parse(body);
@@ -39,32 +35,36 @@ export function UserChat(connect) {
         dispatch(addChatList(chatList));
         // 添加聊天信息
         dispatch(addMessage(message));
-    }
+    };
 
     const onSubscribe = (body) => {
         buildChatMsg(body);
     }
 
-    return userIniWebsocket(onConnect, onSubscribe)
-        .then(r => {
-            return r;
+    const onConnect = (chatWebsocket, frame) => {
+        chatWebsocket.subscribe('/user/topic/chat', (body) => {
+            onSubscribe(body)
         });
+    }
+    return userInitChatWebsocket(onConnect);
+
 }
 
 export async function initLocalChat() {
     //加载本地聊天信息
     const chatList = await getChatList();
     if (!chatList) {
-        return;
+        return false;
     }
     const dispatch = store.dispatch;
     dispatch(initChatList(chatList));
 
     const chatMessage = await getChatMessages()
     if (!chatMessage) {
-        return;
+        return true;
     }
     dispatch(initMessage(chatMessage))
+    return true;
 }
 
 export async function saveLocalChat() {

@@ -1,11 +1,12 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {PermissionsAndroid, Dimensions, Image, Pressable, View, Alert, ActivityIndicator} from 'react-native';
 import Geolocation from '@react-native-community/geolocation';
-import {Box, Button, HStack, Input, NativeBaseProvider, Text, VStack, Modal} from 'native-base';
+import {Box, Button, HStack, Input, NativeBaseProvider, Text, VStack, Modal, Spinner, Heading} from 'native-base';
 import RemixIcon from 'react-native-remix-icon';
 import DatePicker from 'react-native-date-picker';
 import Geocoder from 'react-native-geocoding';
 import MapView, {Polyline} from 'react-native-maps';
+import { Marker } from 'react-native-maps';
 import {useNavigation} from '@react-navigation/native';
 import {
     orderPriceCheck,
@@ -167,10 +168,34 @@ const RideOrderScreen = () => {
     // };
 
     // 这个函数获取当前地理位置，并将地图中心移动到这个位置
+    // const getCurrentLocation = () => {
+    //     Geolocation.getCurrentPosition(async info => {
+    //         const {latitude, longitude} = info.coords;
+    //         setDepartureCoords({latitude: latitude, longitude: longitude});
+    //         if (!isDepartureManual) { // 如果用户还没有手动输入出发地
+    //             try {
+    //                 const response = await Geocoder.from(latitude, longitude);
+    //                 const address = response.results[0].formatted_address;
+    //                 const placeId = response.results[0].place_id; // 获取地点的ID
+    //                 setDeparture(address);
+    //                 await moveToLocation(placeId); // 使用地点ID移动到当前位置
+    //             } catch (error) {
+    //                 console.error(error);
+    //             }
+    //         }
+    //     });
+    // };
+
     const getCurrentLocation = () => {
         Geolocation.getCurrentPosition(async info => {
             const {latitude, longitude} = info.coords;
             setDepartureCoords({latitude: latitude, longitude: longitude});
+            mapRef.current.animateToRegion({
+                latitude,
+                longitude,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            }, 1000); // 马上移动到当前位置
             if (!isDepartureManual) { // 如果用户还没有手动输入出发地
                 try {
                     const response = await Geocoder.from(latitude, longitude);
@@ -178,12 +203,17 @@ const RideOrderScreen = () => {
                     const placeId = response.results[0].place_id; // 获取地点的ID
                     setDeparture(address);
                     await moveToLocation(placeId); // 使用地点ID移动到当前位置
+                    const predictions = await apiService.getAutocomplete(address);
+                    if (predictions.length > 0) {
+                        setDepartureAddress(predictions[predictions.length-1].terms)
+                    }
                 } catch (error) {
                     console.error(error);
                 }
             }
         });
     };
+
     // 这个函数请求地理位置权限
     const requestLocationPermission = async () => {
         try {
@@ -223,7 +253,6 @@ const RideOrderScreen = () => {
         navigation.navigate('Tabs', {screen: 'Home'});
     };
     const allowOrder = () => {
-        setIsLoading(true);  // 添加这行，点击按钮时触发 spinner
         userOrderCheck()
             .then(data => {
                 if (data.code === 600) {
@@ -314,8 +343,6 @@ const RideOrderScreen = () => {
                 'destinationLatitude': destinationCoords.latitude, //目的地纬度
                 'destinationLongitude': destinationCoords.longitude //目的地经度
             }
-
-
             fillDepAddress(orderSubmitParam);
             fillDescAddress(orderSubmitParam);
 
@@ -332,7 +359,9 @@ const RideOrderScreen = () => {
                             date: date.toISOString(), // 将日期转换为字符串
                             passengerCount,
                             pickupWaiting,
-                            coords
+                            coords,
+                            departureCoords: departureCoords,
+                            destinationCoords: destinationCoords,
                         });
                     } else {
                         alert("Submit failed" + data.message);
@@ -349,6 +378,7 @@ const RideOrderScreen = () => {
     const handleNextStep = () => {
         if (!departure || !destination || !date) {
             alert("Please fill in all fields!");
+            setIsLoading(false);
             return;
         }
 
@@ -365,7 +395,6 @@ const RideOrderScreen = () => {
                     const distanceKm = Math.round(distanceDouble);
                     const durationTime = Math.round(legs.duration.value / 60);
                     // const durationTime =10.21
-
 
                     orderPriceCheck(durationTime, distanceKm)
                         .then(data => {
@@ -415,7 +444,6 @@ const RideOrderScreen = () => {
                                 alert("Get price error, please try again later!")
                                 // setIsBookingConfirmed(false);
                                 setIsLoading(false); // 立即停止加载动画
-
                             }
                         }).catch(err => {
                         console.error(err);
@@ -428,6 +456,8 @@ const RideOrderScreen = () => {
             });
 
     };
+
+
 
 
     // 处理返回的逻辑，根据当前的状态，取消预订或返回到主页
@@ -467,7 +497,21 @@ const RideOrderScreen = () => {
                         strokeWidth={4}
                         strokeColor="red"
                     />
+                    {departureCoords && (  // 判断是否有出发地坐标
+                        <Marker
+                            coordinate={departureCoords}  // 设置标记的位置
+                            title="Departure"  // 设置标记的标题（当用户点击标记时显示）
+                            pinColor="blue"
+                        />
+                    )}
+                    {destinationCoords && (  // 判断是否有目的地坐标
+                        <Marker
+                            coordinate={destinationCoords}  // 设置标记的位置
+                            title="Destination"  // 设置标记的标题（当用户点击标记时显示）
+                        />
+                    )}
                 </MapView>
+
 
                 {!isSuccessScreen && !isBookingConfirmed && (
                     <Button variant="link" onPress={navigateHome} position="absolute" left={5} top={5}>
@@ -523,7 +567,6 @@ const RideOrderScreen = () => {
                         bottom={0}
                         borderTopRadius={10}
                     >
-                        {/* Content for input */}
                         <VStack space={4} alignItems="stretch">
                             <HStack space={2} alignItems="center">
                                 <RemixIcon name="map-pin-line" size={20}/>
@@ -532,6 +575,7 @@ const RideOrderScreen = () => {
                                     placeholder="Departure"
                                     value={departure}
                                     onChangeText={(text) => {
+                                        setIsDepartureSelected(false); // 用户开始输入新的出发地，重置状态
                                         setIsDepartureManual(true); // 用户开始输入departure
                                         setDeparture(text);
                                         updateAddressSuggestions(text, setDepartureSuggestions);
@@ -616,7 +660,10 @@ const RideOrderScreen = () => {
                                 </HStack>
                             </Pressable>
                             {isLoading ? (
-                                <ActivityIndicator size="large" color="#0000ff"/>
+                                <HStack space={2} alignItems="center" justifyContent="center">
+                                    <Spinner accessibilityLabel="Loading posts" size="lg"/>
+                                    <Heading color="primary.500" fontSize="lg">Loading</Heading>
+                                </HStack>
                             ) : (
                                 <Button
                                     mt={4}
@@ -630,7 +677,6 @@ const RideOrderScreen = () => {
                                     Next Step
                                 </Button>
                             )}
-
                             <DatePicker
                                 modal
                                 open={open}

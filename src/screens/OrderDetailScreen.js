@@ -1,12 +1,13 @@
 import { NativeBaseProvider, Box, VStack, HStack, Button, Text } from 'native-base';
-import MapView, {  Polyline } from 'react-native-maps';
+import MapView, {Marker, Polyline} from 'react-native-maps';
 import { View, Dimensions } from 'react-native';
 import { StyleSheet } from 'react-native';
 import RemixIcon from "react-native-remix-icon";
 import React from "react";
 
 const OrderDetailScreen = ({ route, navigation }) => {
-    const { departure, destination, date, passengerCount, pickupWaiting, coords } = route.params;
+    console.log(route.params);
+    const { departure, destination, date, passengerCount, pickupWaiting, coords, departureCoords, destinationCoords } = route.params;
     const dateObj = new Date(date); // 将字符串转换回 Date 对象
 
     const mapHeightPercentage = 0.7;  // 地图组件高度比例
@@ -65,6 +66,19 @@ const OrderDetailScreen = ({ route, navigation }) => {
                         strokeWidth={4}
                         strokeColor="red"
                     />
+                    {departureCoords && (  // 判断是否有出发地坐标
+                        <Marker
+                            coordinate={departureCoords}  // 设置标记的位置
+                            title="Departure"  // 设置标记的标题（当用户点击标记时显示）
+                            pinColor="blue"  // 设置标记的颜色为蓝色
+                        />
+                    )}
+                    {destinationCoords && (  // 判断是否有目的地坐标
+                        <Marker
+                            coordinate={destinationCoords}  // 设置标记的位置
+                            title="Destination"  // 设置标记的标题（当用户点击标记时显示）
+                        />
+                    )}
                 </MapView>
                 <Box
                     bg="white"

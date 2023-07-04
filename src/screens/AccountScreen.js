@@ -2,14 +2,40 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 
+const handleWalletPress = () => {
+    console.log('钱包被点击了');
+    // 处理钱包点击事件
+};
+
+const handleSharePress = () => {
+    console.log('分享被点击了');
+    // 处理分享点击事件
+};
+
+const handleCustomerServicePress = () => {
+    console.log('人工客服被点击了');
+    // 处理人工客服点击事件
+};
+
+const handlePricingRulesPress = () => {
+    console.log('计价规则被点击了');
+    // 处理计价规则点击事件
+};
+
+const handleLogoutPress = () => {
+    console.log('退出被点击了');
+    // 处理退出点击事件
+};
+
+
 const options = [
-    { name: '钱包' },
-    { name: '分享' },
-    { name: '切换为司机' },
-    { name: '人工客服' },
-    { name: '计价规则' },
-    { name: '退出' },
+    { name: 'Wallet', onPress: handleWalletPress },
+    { name: 'Share', onPress: handleSharePress },
+    { name: 'Customer Service', onPress: handleCustomerServicePress },
+    { name: 'Pricing Rules', onPress: handlePricingRulesPress },
+    { name: 'Logout', onPress: handleLogoutPress },
 ];
+
 
 const AccountScreen = () => {
     return (
@@ -26,7 +52,7 @@ const AccountScreen = () => {
             </ImageBackground>
             <View style={styles.optionsContainer}>
                 {options.map((option, index) => (
-                    <TouchableOpacity key={index} style={styles.option}>
+                    <TouchableOpacity key={index} style={styles.option} onPress={option.onPress}>
                         <Text style={styles.optionText}>{option.name}</Text>
                         <RemixIcon name="arrow-right-s-line" size={25} color="#000" />
                     </TouchableOpacity>
@@ -64,8 +90,6 @@ const styles = StyleSheet.create({
     optionsContainer: {
         flex: 2,
         backgroundColor: '#ffffff',
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
         padding: 20,
     },
     option: {

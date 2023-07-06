@@ -1,6 +1,5 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
-
 import com.android.build.OutputFile
 
 /**
@@ -96,10 +95,10 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.awesomeproject"
+    namespace "com.evotech.unieaseapp"
 
     defaultConfig {
-        applicationId "com.awesomeproject"
+        applicationId "com.evotech.unieaseapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -192,6 +191,7 @@ project.ext.vectoricons = [
 
 ]
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 

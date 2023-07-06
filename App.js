@@ -24,6 +24,7 @@ global.TextDecoder = TextDecoder;
 
 const Stack = createStackNavigator();
 
+
 const App = () => {
     const [initialRoute, setInitialRoute] = useState(null);
 
@@ -101,3 +102,5 @@ const App = () => {
 };
 
 export default App;
+
+

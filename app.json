@@ -1,8 +1,0 @@
-{
-  "name": "AwesomeProject",
-  "displayName": "AwesomeProject",
-
-  "expo": {
-    "platforms": ["ios", "android", "web"]
-  }
-}

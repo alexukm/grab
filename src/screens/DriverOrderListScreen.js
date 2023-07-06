@@ -16,7 +16,6 @@ import {useFocusEffect} from "@react-navigation/native";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
 import RemixIcon from "react-native-remix-icon";
 import {UserChat} from "../com/evotech/common/redux/UserChat";
-import crashlytics from '@react-native-firebase/crashlytics';
 
 
 const DriverOrderListScreen = () => {
@@ -129,7 +128,6 @@ const DriverOrderListScreen = () => {
         driverAcceptOrder(params).then(data => {
             if (data.code === 200) {
                 alert("Order successfully Accepted")
-                crashlytics().log('Order successfully Accepted');
                 UserChat(false).then();
                 handleRefresh().then(); //在这里添加代码，接受订单后刷新页面。
             } else {

@@ -1,5 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
+
 import com.android.build.OutputFile
 
 /**
@@ -88,13 +89,9 @@ def reactNativeArchitectures() {
 }
 
 android {
-       namespace "com.evotech.unieaseapp"
        lintOptions {
-               baseline file("lint-baseline.xml")
-           }
-      /*  lintOptions {
        abortOnError false
-       } */
+       }
     ndkVersion rootProject.ext.ndkVersion
 
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -171,16 +168,6 @@ dependencies {
 //    implementation 'com.google.firebase:firebase-messaging:20.0.0'
 
     // The version of react-native is set by the React Native Gradle Plugin
-
-    // Import the Firebase BoM
-//     implementation platform('com.google.firebase:firebase-bom:32.1.1')
-
-    // When using the BoM, don't specify versions in Firebase dependencies
-//     implementation 'com.google.firebase:firebase-analytics'
-
-//     implementation 'com.google.firebase:firebase-crashlytics'
-
-
     implementation("com.facebook.react:react-android")
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.0.0")
@@ -204,8 +191,8 @@ project.ext.vectoricons = [
     iconFontNames: [ 'MaterialIcons.ttf' ]
 
 ]
-apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 apply plugin: 'com.google.gms.google-services'
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 
 

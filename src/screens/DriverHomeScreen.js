@@ -24,16 +24,15 @@ const DriverHomeScreen = () => {
     };
 
     const initChat = (orderStatusList) => {
-        initLocalChat().then(data => {
-            if (orderStatusList.pending || orderStatusList.inTransit) {
-                UserChat(true).then();
-            }
-        });
+        if (orderStatusList.pending || orderStatusList.inTransit) {
+            UserChat(true).then();
+        }
     }
 
     // const MyContext = createContext();
     useEffect(() => {
-        setTimeout(() => {
+        setTimeout(async () => {
+            await initLocalChat()
             initOrderStatusList(initChat);
         }, 0);
     }, []);

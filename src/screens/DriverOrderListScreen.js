@@ -16,13 +16,13 @@ import {useFocusEffect} from "@react-navigation/native";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
 import RemixIcon from "react-native-remix-icon";
 import {UserChat} from "../com/evotech/common/redux/UserChat";
-
+import crashlytics from '@react-native-firebase/crashlytics';
 
 
 const DriverOrderListScreen = () => {
     const [rideOrders, setRideOrders] = React.useState([]);
     const [page, setPage] = React.useState(1);
-    const [pageSize, setPageSize] = React.useState(10);
+    const [pageSize, setPageSize] = React.useState(20);
     const [refreshing, setRefreshing] = useState(false);
 
     const [updateFlag, setUpdateFlag] = useState(false); // 添加这个状态
@@ -44,6 +44,26 @@ const DriverOrderListScreen = () => {
         }
         return lines.join("\n");
     };
+
+    const handleLoadMore = useCallback(async () => {
+        const orderList = await queryOrders(pageSize, page + 1);
+        if (orderList.content.length > 0) {
+            setRideOrders(prevOrders => [...prevOrders, ...orderList.content]);
+            setPage(prevPage => prevPage + 1);
+        }
+    }, [pageSize, page]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            handleRefresh().then( );
+            const timer = setInterval(() => {
+                handleRefresh().then();
+            }, 60000); // 每60秒刷新一次
+
+            // 在页面失焦时取消定时器
+            return () => clearInterval(timer);
+        }, [])
+    );
 
     const openMaps = (address) => {
         const url = Platform.select({
@@ -83,6 +103,8 @@ const DriverOrderListScreen = () => {
 
     useFocusEffect(
         React.useCallback(() => {
+            handleRefresh().then(() => {
+            });
            /* handleRefresh().then(() => {});
             let cancelSub;
             setTimeout(async () => {
@@ -106,6 +128,8 @@ const DriverOrderListScreen = () => {
         }
         driverAcceptOrder(params).then(data => {
             if (data.code === 200) {
+                alert("Order successfully Accepted")
+                crashlytics().log('Order successfully Accepted');
                 UserChat(false).then();
                 handleRefresh().then(); //在这里添加代码，接受订单后刷新页面。
             } else {
@@ -192,7 +216,12 @@ const DriverOrderListScreen = () => {
                         <Text style={{color: 'black'}}>This page displays a list of all orders you can pick up.</Text>
                     </Box>
                 }
-                contentContainerStyle={{flexGrow: 1, padding: 10}} // 添加这一行
+                // contentContainerStyle={{flexGrow: 1, padding: 10}} // 添加这一行
+                contentContainerStyle={{flexGrow: 1, padding: 10}}
+                onRefresh={handleRefresh} // 添加下拉刷新处理函数
+                refreshing={refreshing} // 添加刷新状态
+                onEndReached={handleLoadMore} // 添加滑动到底部时的处理函数
+                onEndReachedThreshold={0.5} // 在距离底部还有多少距离时触发加载更多的操作，这里设为 0.5，表示在距离底部还有屏幕的一半距离时就触发加载更多的操作
             />
         </View>
     );

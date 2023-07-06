@@ -18,6 +18,7 @@ import {Rating} from 'react-native-ratings';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
+import {userCancelSubscribe} from "../com/evotech/common/websocket/UserChatWebsocket";
 
 
 Geocoder.init(googleMapsApiKey);
@@ -62,6 +63,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
             .then(data => {
                 if (data.code === 200) {
                     alert("Cancelled Order Success");
+                    userCancelSubscribe().then()
                     navigation.goBack(); // After canceling the order, return to the previous screen.
                 } else {
                     console.log(data.message);

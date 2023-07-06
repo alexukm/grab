@@ -19,7 +19,7 @@ import apiService from "../com/evotech/common/apiKey/apiService";
 import {tr} from "date-fns/locale";
 import Js from "@react-native-community/geolocation/js";
 import {formatDate} from "../com/evotech/common/formatDate";
-import {userInitChatWebsocket, userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
+import { userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
 import {UserChat} from "../com/evotech/common/redux/UserChat";
 
 // 初始化Geocoder库，这个库用于处理地址和地理坐标的相互转化
@@ -357,8 +357,7 @@ const RideOrderScreen = () => {
                     if (data.code === 200) {
                         // 下单后开启订单通知
                         setIsSubmitting(false);
-                        userOrderWebsocket(() => {
-                            UserChat(false).then();
+                        userOrderWebsocket((body) => {
                         }).then();
                         //replace防止刷单
                         navigation.replace('OrderDetailScreen', {

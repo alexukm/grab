@@ -115,7 +115,7 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
     );
 });
 
-const pageSize = 10;
+const pageSize = 30;
 
 const DriverAcceptListScreen = ({navigation}) => {
     const [page, setPage] = useState(1);

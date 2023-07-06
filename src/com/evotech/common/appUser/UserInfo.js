@@ -46,6 +46,7 @@ export function buildUserInfo(token, userType, userPhone) {
 
 export async function userSkipLogin(setInitialRoute, tokenCheck) {
     const userInfo = await getUserInfoWithLocal()
+    console.log("userSkipLogin")
     if (!isAccessToken(userInfo)) {
         if (userInfo) {
             if (userInfo.userType === userType.USER) {

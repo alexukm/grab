@@ -139,8 +139,9 @@ function DriverScreen() {
                             if (data.data === DriverInfoStatusEnum.INCOMPLETE) {
                                 // 跳转信息补充页面
                             } else {
-                                navigation.navigate("Driver");
+                                alert("Please waiting for us review your documents.");
                             }
+                            navigation.navigate("Driver");
                         } else {
                             // TODO 后台查询失败 处理
                         }

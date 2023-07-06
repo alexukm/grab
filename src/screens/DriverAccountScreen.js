@@ -15,11 +15,6 @@ const handleSharePress = () => {
     // Handle share click event
 };
 
-const handleDriverSwitchPress = () => {
-    console.log('Switch to driver is clicked');
-    // Handle driver switch click event
-};
-
 const handleCustomerServicePress = () => {
     console.log('Customer service is clicked');
     // Handle customer service click event
@@ -40,7 +35,6 @@ const handleLogoutPress = () => {
 const options = [
     { name: 'Wallet', onPress: handleWalletPress },
     { name: 'Share', onPress: handleSharePress },
-    { name: 'Switch to Driver', onPress: handleDriverSwitchPress },
     { name: 'Customer Service', onPress: handleCustomerServicePress },
     { name: 'Pricing Rules', onPress: handlePricingRulesPress },
     { name: 'Logout', onPress: handleLogoutPress },

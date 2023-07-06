@@ -176,7 +176,7 @@ const RegisterScreen = () => {
                     setUserToken(data.data);
                     navigation.navigate("DriverRegisterImage");
                     setShowVerificationCode(false);
-                    alert('niu bi!')
+                    // alert('niu bi!')
                     // 注册成功后的操作，如跳转到其他页面
                     return data.data;
                 } else {

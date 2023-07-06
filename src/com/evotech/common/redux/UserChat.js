@@ -5,7 +5,7 @@ import {userInitChatWebsocket} from "../websocket/UserChatWebsocket";
 import store from "./store";
 import {getChatList, getChatMessages, setChatList, setChatMessages} from "../appUser/UserConstant";
 
-export function UserChat(needRetry) {
+export const UserChat = async (needRetry) => {
     const dispatch = store.dispatch;
 
     const buildChatMsg = (body) => {
@@ -42,11 +42,11 @@ export function UserChat(needRetry) {
     }
 
     const onConnect = (chatWebsocket, frame) => {
-        chatWebsocket.subscribe('/user/topic/chat', (body) => {
+        chatWebsocket.subscribe('/user/topic/chat','chat', (body) => {
             onSubscribe(body)
         });
     }
-    return userInitChatWebsocket(onConnect);
+    return await userInitChatWebsocket(onConnect,needRetry);
 
 }
 

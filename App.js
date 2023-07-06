@@ -27,9 +27,17 @@ const Stack = createStackNavigator();
 const App = () => {
     const [initialRoute, setInitialRoute] = useState(null);
 
-    useEffect(() => {
-        // AsyncStorage.clear()
-    }, []);
+    // 忽略特定的警告信息
+    const originalWarn = console.warn;
+    console.warn = (message, ...optionalParams) => {
+        if (message.indexOf('SSRProvider') === -1) {
+            originalWarn(message, ...optionalParams);
+        }
+    };
+
+   // useEffect(() => {
+   //      AsyncStorage.clear()
+   //  }, []);
 
     const skipOp = (userInfo, skipLogin) => {
         const userSkip = (skipLogin) => {

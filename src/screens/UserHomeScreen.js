@@ -10,20 +10,21 @@ const UserHomeScreen = () => {
     //TODO 处理查询失败的情况
     const subscriptionOrderAccept = async (orderStatusInitAfter) => {
         await queryUserOrderStatus().then((data) => {
-            console.log(JSON.stringify(data));
             if (data.code === 200) {
                 //订单状态集
                 const orderStatus = data.data;
                 //存在待接单的订单
                 if (orderStatus.awaiting) {
                     //订阅  订单接单通知
-                    userOrderWebsocket().then()
+                    setTimeout(async () => {
+                        await userOrderWebsocket().then()
+                    }, 0);
                 }
                 return orderStatus;
             }
-        }).then((orderStatus) => {
+        }).then(orderStatus => {
             orderStatusInitAfter(orderStatus);
-        })
+        });
     }
 
     const initUserChat = (orderStatus) => {
@@ -31,8 +32,9 @@ const UserHomeScreen = () => {
         initLocalChat().then(data => {
                 //  本地存储聊天信息记录 且存在待出现和旅途中的订单 则初始化websocket聊天订阅
                 if (orderStatus.pending || orderStatus.inTransit) {
-                    console.log("init chat")
-                    UserChat(true).then();
+                    setTimeout(async () => {
+                        await UserChat(true).then();
+                    }, 0);
                 }
             }
         )

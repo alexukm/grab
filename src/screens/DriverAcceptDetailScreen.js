@@ -28,6 +28,7 @@ import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
 import {closeWebsocket} from "../com/evotech/common/websocket/SingletonWebSocketClient";
+import {driverCancelSubscribe} from "../com/evotech/common/websocket/UserChatWebsocket";
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
@@ -70,6 +71,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
             .then(data => {
                 if (data.code === 200) {
                     alert("Cancelled Order Success");
+                    driverCancelSubscribe().then();
                     navigation.goBack(); // After canceling the order, return to the previous screen.
                 } else {
                     console.log(data.message);
@@ -448,6 +450,14 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             <HStack alignItems='center' space={4}>
                                 <TouchableOpacity onPress={() => {
                                     console.log('Phone icon was pressed!');
+                                    let phoneNumber = userPhone;
+                                    console.log("phone" + phoneNumber)
+                                    if (Platform.OS !== 'android') {
+                                        phoneNumber = `prompt:${phoneNumber}`;
+                                    } else  {
+                                        phoneNumber = `tel:${phoneNumber}`;
+                                    }
+                                    Linking.openURL(phoneNumber);
                                 }}>
                                     <View style={{
                                         borderWidth: 1,
@@ -503,30 +513,6 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                                 <Text>Rate</Text>
                             </HStack>
                         </Button>
-                    ) : Status !== OrderStateEnum.CANCELLED && Status !== OrderStateEnum.COMPLETED ? (
-                        <HStack space={2}>
-                            <Button
-                                bg="#f0f0f0"
-                                onPress={() => console.log('Chat with Driver')}
-                                variant="ghost"
-                                style={{height: 40, justifyContent: 'center', flex: 8}} // 添加自定义样式
-                            >
-                                <HStack space={2}>
-                                    <RemixIcon name="message-3-line" size={24} color="black"/>
-                                    <Text>Chat</Text>
-                                </HStack>
-                            </Button>
-                            <Button
-                                bg="#e0e0e0"
-                                onPress={() => console.log('Call Driver')}
-                                variant="ghost"
-                                style={{height: 40, justifyContent: 'center', flex: 2}} // 添加自定义样式
-                            >
-                                <HStack space={2}>
-                                    <RemixIcon name="phone-line" size={24} color="black"/>
-                                </HStack>
-                            </Button>
-                        </HStack>
                     ) : null}
                 </VStack>
             </InfoBox>
@@ -642,6 +628,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                             closeOnPressMask={true}
                             height={Dimensions.get('window').height * 0.184} // 设置RBSheet占据50%的屏幕高度
                         >
+                            <PaymentInfoBox/>
                         </RBSheet>
                     </ScrollView>
                 );

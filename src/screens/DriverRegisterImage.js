@@ -6,6 +6,7 @@ import {launchImageLibrary} from 'react-native-image-picker';
 import {driverLogout, driverUpload} from "../com/evotech/common/http/BizHttpUtil";
 import {DriverImageType, removeUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {getUserInfoWithLocal} from "../com/evotech/common/appUser/UserInfo";
+import {useNavigation} from "@react-navigation/native";
 
 
 const ImageUploadPage = () => {
@@ -16,6 +17,7 @@ const ImageUploadPage = () => {
     const [uploadedIdCardBack, setUploadedIdCardBack] = useState(false);
     const [uploadedPassport, setUploadedPassport] = useState(false);
     const [documentType, setDocumentType] = useState('ID');
+    const navigation = useNavigation();
 
     useEffect(() => {
         if (
@@ -25,6 +27,7 @@ const ImageUploadPage = () => {
             (documentType === 'ID' ? (uploadedIdCardFront && uploadedIdCardBack) : uploadedPassport)
         ) {
             Alert.alert('Success', 'All documents uploaded successfully!');
+            navigation.navigate("DriverLogin");
 
             //司机退出登录
             driverLogout().then();

@@ -20,6 +20,9 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
+import { ALERT_TYPE, Dialog, Toast } from 'react-native-alert-notification';
+import {showToast} from "../com/evotech/common/alert/toastHelper";
+
 
 
 
@@ -109,13 +112,14 @@ const RegisterScreen = () => {
                             setIsResendOtpActive(true);
                         }
                     }, 1000);
+                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'SMS sent successfully!');
                 } else {
-                    alert(data.message);
+                    showToast(ALERT_TYPE.WARNING, 'Error', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert('There was an error submitting your data. Please try again.');
+                showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
             });
     };
 
@@ -138,13 +142,14 @@ const RegisterScreen = () => {
                             setIsResendOtpActive(true);
                         }
                     }, 1000);
+                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'SMS sent successfully!');
                 } else {
-                    alert(data.message);
+                    showToast(ALERT_TYPE.WARNING, 'Error', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert('There was an error submitting your data. Please try again.');
+                showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
             });
     };
 
@@ -172,18 +177,32 @@ const RegisterScreen = () => {
         userRegistry(registryParams)
             .then(data => {
                 if (data.code === 200) {
+                    Toast.show({
+                        type: ALERT_TYPE.SUCCESS,
+                        title: 'Registration Success',
+                        textBody: 'Login Success',
+                    });
                     console.log('注册成功', data);
                     setUserToken(data.data);
                     buildUserInfo(data.data, userType.USER, userPhone).saveWithLocal();
                     navigation.navigate("User");
                 } else {
+                    Toast.show({
+                        type: ALERT_TYPE.WARNING,
+                        title: 'Registration failed',
+                        textBody: data.message,
+                    });
                     console.log('注册失败', data.message);
                 }
             })
             .catch(error => {
-                console.log('注册失败', error);
+                console.log(error);
+                Toast.show({
+                    type: ALERT_TYPE.DANGER,
+                    title: 'Error',
+                    textBody: 'Error: ' + error.message,
+                });
             });
-
         setVerificationCode('');
     };
 

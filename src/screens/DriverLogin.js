@@ -18,6 +18,8 @@ import {
 } from "native-base";
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {DriverInfoStatusEnum, UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
+import {ALERT_TYPE} from "react-native-alert-notification";
 
 const countryCodes = {
     my: "60",
@@ -75,14 +77,15 @@ function DriverScreen() {
                 if (data.code === 200) {
                     setIsTimerActive(true);
                     console.log(data.code)
+                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'The SMS has been sent successfully.');
                 } else {
-                    alert(data.message);
+                    showToast(ALERT_TYPE.WARNING, 'Warning', data.message);
                     return false;
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert('There was an error submitting your data. Please try again.');
+                showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
                 return false;
             })
     };
@@ -133,29 +136,32 @@ function DriverScreen() {
                     setUserToken(data.data)
                     buildUserInfo(data.data, userType.DRIVER, userPhone).saveWithLocal();
                     // 导航到下一个页面
-                    let skipHome = true;
                     driverInfoStatus().then(data => {
                         if (data.code === 200) {
                             if (data.data === DriverInfoStatusEnum.INCOMPLETE) {
                                 // 跳转信息补充页面
+                                navigation.navigate("DriverSupplyInfo");
+                                showDialog(ALERT_TYPE.SUCCESS, 'Action Required', 'Please complete your driver information.');
                             } else {
-                                alert("Please waiting for us review your documents.");
+                                navigation.navigate("Driver");
+                                showDialog(ALERT_TYPE.SUCCESS, 'Complete', 'Your documents have been submitted and are under review.');
                             }
-                            navigation.navigate("Driver");
                         } else {
                             // TODO 后台查询失败 处理
+                            showToast(ALERT_TYPE.WARNING, 'Warning', 'Backend query failed.');
                         }
                     }).catch(err => {
                         // TODO 异常处理
+                        showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + err.message);
                     })
                 } else {
                     console.log(userPhone)
-                    alert("Login failed" + data.message);
+                    showToast(ALERT_TYPE.WARNING, 'Login Failed', 'Login failed: ' + data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert("Login failed");
+                showToast(ALERT_TYPE.DANGER, 'Login Error', 'Login failed.');
             });
     };
 

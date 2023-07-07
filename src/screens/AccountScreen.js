@@ -1,60 +1,68 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, ImageBackground, Dimensions } from 'react-native';
+import {SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, ImageBackground, Dimensions} from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
-
-const handleWalletPress = () => {
-    console.log('钱包被点击了');
-    // 处理钱包点击事件
-};
-
-const handleSharePress = () => {
-    console.log('分享被点击了');
-    // 处理分享点击事件
-};
-
-const handleCustomerServicePress = () => {
-    console.log('人工客服被点击了');
-    // 处理人工客服点击事件
-};
-
-const handlePricingRulesPress = () => {
-    console.log('计价规则被点击了');
-    // 处理计价规则点击事件
-};
-
-const handleLogoutPress = () => {
-    console.log('退出被点击了');
-    // 处理退出点击事件
-};
-
-
-const options = [
-    { name: 'Wallet', onPress: handleWalletPress },
-    { name: 'Share', onPress: handleSharePress },
-    { name: 'Customer Service', onPress: handleCustomerServicePress },
-    { name: 'Pricing Rules', onPress: handlePricingRulesPress },
-    { name: 'Logout', onPress: handleLogoutPress },
-];
+import {userLogoutIt} from "../com/evotech/common/http/BizHttpUtil";
+import {userLogOut} from "../com/evotech/common/appUser/UserConstant";
+import {useNavigation} from "@react-navigation/native";
 
 
 const AccountScreen = () => {
+    const navigation = useNavigation();
+    const handleWalletPress = () => {
+        console.log('钱包被点击了');
+        // 处理钱包点击事件
+    };
+
+    const handleSharePress = () => {
+        console.log('分享被点击了');
+        // 处理分享点击事件
+    };
+
+    const handleCustomerServicePress = () => {
+        console.log('人工客服被点击了');
+        // 处理人工客服点击事件
+    };
+
+    const handlePricingRulesPress = () => {
+        console.log('计价规则被点击了');
+        // 处理计价规则点击事件
+    };
+
+
+    const handleLogoutPress = async () => {
+        console.log('Logout is clicked');
+        // Handle logout click event
+        await userLogoutIt().then();
+        userLogOut();
+        navigation.replace("UserLogin");
+    };
+
+
+    const options = [
+        {name: 'Wallet', onPress: handleWalletPress},
+        {name: 'Share', onPress: handleSharePress},
+        {name: 'Customer Service', onPress: handleCustomerServicePress},
+        {name: 'Pricing Rules', onPress: handlePricingRulesPress},
+        {name: 'Logout', onPress: handleLogoutPress},
+    ];
+
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={require('../picture/acc_bg.png')} style={styles.background}>
                 <View style={styles.header}>
                     <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80' }}
+                        source={{uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWgelHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80'}}
                         style={styles.avatar}
                     />
                     <Text style={styles.name}>Alex UKM</Text>
                 </View>
-                <View style={styles.curveMask} />
+                <View style={styles.curveMask}/>
             </ImageBackground>
             <View style={styles.optionsContainer}>
                 {options.map((option, index) => (
                     <TouchableOpacity key={index} style={styles.option} onPress={option.onPress}>
                         <Text style={styles.optionText}>{option.name}</Text>
-                        <RemixIcon name="arrow-right-s-line" size={25} color="#000" />
+                        <RemixIcon name="arrow-right-s-line" size={25} color="#000"/>
                     </TouchableOpacity>
                 ))}
             </View>

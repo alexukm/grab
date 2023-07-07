@@ -83,6 +83,10 @@ const featureAndPath = {
     QUERY_DRIVER_ORDER_STATUS: {method: supportRequestMethod.POST, path: '/v1/oms/api/driver/order/queryDriverOrderStatus'},
 }
 
+export function driverSupplyInfo(params = {}) {
+    return request.post(featureAndPath.DRIVER_SUPPLY_INFO.path, SupportContextType.APPLICATION_JSON, {params: params});
+}
+
 export function queryDriverOrderStatus() {
     return request.post(featureAndPath.QUERY_DRIVER_ORDER_STATUS.path, SupportContextType.APPLICATION_JSON, {});
 }
@@ -188,6 +192,9 @@ export function smsSend(userPhone, userType) {
 
 export function driverLogout() {
     return request.post(featureAndPath.DRIVER_LOGOUT.path, SupportContextType.APPLICATION_JSON, {})
+}
+export function userLogoutIt() {
+    return request.post(featureAndPath.USER_LOGOUT.path, SupportContextType.APPLICATION_JSON, {})
 }
 
 export function accessToken(params = {}) {

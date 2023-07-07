@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, View, Text, Image, TouchableOpacity, ImageBac
 import RemixIcon from 'react-native-remix-icon';
 import {driverLogout} from "../com/evotech/common/http/BizHttpUtil";
 import { userLogOut} from "../com/evotech/common/appUser/UserConstant";
+import {useNavigation} from "@react-navigation/native";
 
 // Define handlers
 const handleWalletPress = () => {
@@ -25,22 +26,28 @@ const handlePricingRulesPress = () => {
     // Handle pricing rules click event
 };
 
-const handleLogoutPress = () => {
-    console.log('Logout is clicked');
-    // Handle logout click event
-    driverLogout().then();
-    userLogOut();
-};
 
-const options = [
-    { name: 'Wallet', onPress: handleWalletPress },
-    { name: 'Share', onPress: handleSharePress },
-    { name: 'Customer Service', onPress: handleCustomerServicePress },
-    { name: 'Pricing Rules', onPress: handlePricingRulesPress },
-    { name: 'Logout', onPress: handleLogoutPress },
-];
+const DriverAccount = () => {
+    const navigation = useNavigation();
 
-const DriverAccountScreen = () => {
+    const handleLogoutPress = async () => {
+        console.log('Logout is clicked');
+        // Handle logout click event
+       await driverLogout().then();
+        userLogOut();
+        navigation.replace("DriverLogin");
+    };
+
+    const options = [
+        { name: 'Wallet', onPress: handleWalletPress },
+        { name: 'Share', onPress: handleSharePress },
+        { name: 'Customer Service', onPress: handleCustomerServicePress },
+        { name: 'Pricing Rules', onPress: handlePricingRulesPress },
+        { name: 'Logout', onPress: handleLogoutPress },
+    ];
+
+
+
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={require('../picture/acc_bg.png')} style={styles.background}>
@@ -120,4 +127,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default DriverAccountScreen;
+export default DriverAccount;

@@ -13,10 +13,13 @@ import DriverLogin from "./src/screens/DriverLogin";
 import UserSignUp from "./src/screens/UserRegisterForm";
 import DriverSignUp from "./src/screens/DriverRegisterForm";
 import DriverRegisterImage from "./src/screens/DriverRegisterImage";
+import DriverSupplyInfo from "./src/screens/DriverSupplyInfoScreen";
 import {TextEncoder, TextDecoder} from 'text-encoding';
 import {accessToken} from "./src/com/evotech/common/http/BizHttpUtil";
 import {userSkipLogin} from "./src/com/evotech/common/appUser/UserInfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DriverAccount from "./src/screens/DriverAccountScreen";
+import {AlertNotificationRoot} from "react-native-alert-notification";
 
 
 global.TextEncoder = TextEncoder;
@@ -76,6 +79,7 @@ const App = () => {
 
     return (
         <NativeBaseProvider>
+            <AlertNotificationRoot>
             <NavigationContainer>
                 <Provider store={store}>
                     {initialRoute && <Stack.Navigator
@@ -91,12 +95,15 @@ const App = () => {
                         <Stack.Screen name="Driver" component={DriverBottomTabNavigator}/>
                         <Stack.Screen name="UserLogin" component={UserLogin}/>
                         <Stack.Screen name="DriverLogin" component={DriverLogin}/>
+                        <Stack.Screen name="DriverSupplyInfo" component={DriverSupplyInfo}/>
                         <Stack.Screen name="UserSignUp" component={UserSignUp}/>
                         <Stack.Screen name="DriverSignUp" component={DriverSignUp}/>
+                        <Stack.Screen name="DriverAccount" component={DriverAccount}/>
                         <Stack.Screen name="DriverRegisterImage" component={DriverRegisterImage}/>
                     </Stack.Navigator>}
                 </Provider>
             </NavigationContainer>
+            </AlertNotificationRoot>
         </NativeBaseProvider>
     );
 };
@@ -104,3 +111,27 @@ const App = () => {
 export default App;
 
 
+
+// import react, { useEffect } from 'react';
+// import { View, Button } from 'react-native';
+// import analytics from '@react-native-firebase/analytics';
+//
+// function App() {
+//     return (
+//         <View>
+//             <Button
+//                 title="Add To Basket"
+//                 onPress={async () =>
+//                 {
+//                     await analytics().logSelectContent({
+//                         content_type: 'clothing',
+//                         item_id: 'abcd',
+//                     })
+//                     console.log("dianji")
+//                 }
+//                 }
+//             />
+//         </View>
+//     );
+// }
+// export default App;

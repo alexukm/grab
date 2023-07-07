@@ -186,6 +186,7 @@ const RegisterScreen = () => {
             saveUserInfo('', userType.DRIVER, userPhone, getUserID())
             })
             .catch(error => {
+                alert('注册失败 ' + error)
                 console.log('注册失败', error);
             });
 

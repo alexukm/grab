@@ -18,6 +18,8 @@ import {
 } from "native-base";
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
+import {ALERT_TYPE} from "react-native-alert-notification";
+import {showToast} from "../com/evotech/common/alert/toastHelper";
 
 const countryCodes = {
     my: "60",
@@ -31,6 +33,11 @@ function UserScreen() {
     const [selectedValue, setSelectedValue] = useState("my");
     const [showModal, setShowModal] = useState(false);
     const [isPhoneNumberValid, setIsPhoneNumberValid] = useState(true);
+
+    const [value, setValue] = useState("");
+    const [secondsRemaining, setSecondsRemaining] = useState(30);
+    const [isTimerActive, setIsTimerActive] = useState(false);
+    const [isResendOtpActive, setIsResendOtpActive] = useState(false);
 
     const handleSelect = (value) => {
         setSelectedValue(value);
@@ -72,20 +79,17 @@ function UserScreen() {
                 if (data.code === 200) {
                     setIsTimerActive(true);
                     console.log(data.code)
+                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'The SMS has been sent successfully.');
                 } else {
-                    alert(data.message);
+                    showToast(ALERT_TYPE.WARNING, 'Warning', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert('There was an error submitting your data. Please try again.');
+                showToast(ALERT_TYPE.DANGER, 'Error', 'There was an error submitting your data. Please try again.');
             });
     };
 
-    const [value, setValue] = useState("");
-    const [secondsRemaining, setSecondsRemaining] = useState(30);
-    const [isTimerActive, setIsTimerActive] = useState(false);
-    const [isResendOtpActive, setIsResendOtpActive] = useState(false);
 
     const setValueAndCheckLength = (text) => {
         setValue(text);
@@ -147,13 +151,14 @@ function UserScreen() {
                     setUserToken(data.data)
                     buildUserInfo(data.data, userType.USER, userPhone).saveWithLocal();
                     navigation.navigate("User");
+                    showToast(ALERT_TYPE.SUCCESS, 'Login Successful', 'You have successfully logged in!');
                 } else {
-                    alert("Login failed:"+data.message);
+                    showToast(ALERT_TYPE.WARNING, 'Login Failed', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert("Login failed");
+                showToast(ALERT_TYPE.WARNING, 'Login Error', 'Error: ' + error.message);
             });
     };
 

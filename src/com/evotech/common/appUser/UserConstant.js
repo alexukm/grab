@@ -7,12 +7,12 @@ export const UserPlatform = {Android: 1, IOS: 2,}
 
 export const userType = {USER: 0, DRIVER: 1}
 
-const CarType = {
-    Sedan: 0,
-    SUV: 1,
-    Sports: 2,
-    Van: 3,
-    Convertible: 4
+export const CarType = {
+    Sedan: {desc: 'Sedan', value: 0},
+    SUV: {desc: 'Sport Utility Vehicle (SUV)', value: 1},
+    Coupe: {desc: 'Coupe',value: 2},
+    MPV: {desc: 'Multi-Purpose Vehicle (MPV)',value: 3},
+    Pickup_Truck: {desc: 'Pickup Truck',value: 4},
 }
 
 export const DriverImageType = {
@@ -28,6 +28,7 @@ export const DriverImageType = {
     Passport: 4,
     //驾照
     License: 5,
+    Car_Path: 6,
 }
 
 export function getUserID() {

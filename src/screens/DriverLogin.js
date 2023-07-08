@@ -55,8 +55,8 @@ function DriverScreen() {
             alert("Please enter a valid 11-digit phone number for China");
             return false;
         }
-        if (selectedValue === "my" && value.length !== 9) {
-            alert("Please enter a valid 9-digit phone number for Malaysia");
+        if (selectedValue === "my" && (value.length !== 9 && value.length !== 10)) {
+            alert("Please enter a valid 9-digit or 10-digit phone number for Malaysia");
             return false;
         }
 
@@ -85,7 +85,7 @@ function DriverScreen() {
             })
             .catch(error => {
                 console.log(error);
-                showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
+                showDialog(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
                 return false;
             })
     };
@@ -156,7 +156,7 @@ function DriverScreen() {
                     })
                 } else {
                     console.log(userPhone)
-                    showToast(ALERT_TYPE.WARNING, 'Login Failed', 'Login failed: ' + data.message);
+                    showDialog(ALERT_TYPE.WARNING, 'Login Failed', 'Login failed: ' + data.message);
                 }
             })
             .catch(error => {

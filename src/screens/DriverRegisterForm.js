@@ -19,6 +19,7 @@ import {useNavigation} from '@react-navigation/native';
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
 import { Picker } from '@react-native-picker/picker';
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 const RegisterScreen = () => {
@@ -109,13 +110,14 @@ const RegisterScreen = () => {
                             setIsResendOtpActive(true);
                         }
                     }, 1000);
+                    showToast('SUCCESS', 'Success', 'SMS sent successfully!');
                 } else {
-                    alert(data.message);
+                    showToast('WARNING', 'Warning', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert('There was an error submitting your data. Please try again.');
+                showToast('DANGER', 'Error', 'Error', error.message);
             });
     };
 
@@ -138,13 +140,14 @@ const RegisterScreen = () => {
                             setIsResendOtpActive(true);
                         }
                     }, 1000);
+                    showToast('SUCCESS', 'Success', 'SMS resent successfully!');
                 } else {
-                    alert(data.message);
+                    showToast('WARNING', 'Warning', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                alert('There was an error submitting your data. Please try again.');
+                showToast('DANGER', 'Error', 'Error', error.message);
             });
     };
 
@@ -174,22 +177,21 @@ const RegisterScreen = () => {
                 if (data.code === 200) {
                     console.log('注册成功', data);
                     setUserToken(data.data);
+                    showDialog('SUCCESS', 'Success', 'Registration successful! Please upload documents for us review');
                     navigation.navigate("DriverRegisterImage");
                     setShowVerificationCode(false);
-                    // alert('niu bi!')
-                    // 注册成功后的操作，如跳转到其他页面
                     return data.data;
                 } else {
                     console.log('注册失败', data.message);
+                    showToast('WARNING', 'Warning', data.message);
                 }
             }).then((token) => {
             saveUserInfo('', userType.DRIVER, userPhone, getUserID())
             })
             .catch(error => {
-                alert('注册失败 ' + error)
+                showToast('DANGER', 'Error', 'Error', error.message);
                 console.log('注册失败', error);
             });
-
         setVerificationCode('');
     };
 

@@ -7,6 +7,7 @@ import {driverLogout, driverUpload} from "../com/evotech/common/http/BizHttpUtil
 import {DriverImageType, removeUserToken} from "../com/evotech/common/appUser/UserConstant";
 import {getUserInfoWithLocal} from "../com/evotech/common/appUser/UserInfo";
 import {useNavigation} from "@react-navigation/native";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 const ImageUploadPage = () => {
@@ -26,7 +27,7 @@ const ImageUploadPage = () => {
             uploadedLicense &&
             (documentType === 'ID' ? (uploadedIdCardFront && uploadedIdCardBack) : uploadedPassport)
         ) {
-            Alert.alert('Success', 'All documents uploaded successfully!');
+            showDialog('SUCCESS', 'Success', 'All documents uploaded successfully! Please waiting fou us view, we will contact you within 2 working days. Thanks! ');
             navigation.navigate("DriverLogin");
 
             //司机退出登录
@@ -50,9 +51,9 @@ const ImageUploadPage = () => {
 
         launchImageLibrary(options, async response => {
             if (response.didCancel) {
-                alert('User cancelled image picker');
+                showToast('WARNING', 'Action Cancelled', 'User cancelled image picker');
             } else if (response.error) {
-                alert('ImagePicker Error: ' + JSON.stringify(response.error));
+                showToast('DANGER', 'Error', 'ImagePicker Error: ' + JSON.stringify(response.error));
             } else {
                 const uri = response.assets[0].uri;
                 const userInfo = await getUserInfoWithLocal()
@@ -63,13 +64,13 @@ const ImageUploadPage = () => {
                 try {
                     driverUpload(uri, params)
                         .then(data => {
-                            alert("图片上传结果" + data.message);
+                            showToast('SUCCESS', 'Upload Status', "Image upload result: " + data.message);
                             setUploadStatus(true);
                         }).catch(err => {
-                        alert("图片上传异常" + err.message);
+                        showToast('DANGER', 'Upload Exception', "Image upload exception: " + err.message);
                     });
                 } catch (error) {
-                    alert('Failed to upload file: ' + error.message);
+                    showToast('DANGER', 'Upload Failed', 'Failed to upload file: ' + error.message);
                 }
             }
         });

@@ -21,6 +21,8 @@ import Js from "@react-native-community/geolocation/js";
 import {formatDate} from "../com/evotech/common/formatDate";
 import { userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
 import {UserChat} from "../com/evotech/common/redux/UserChat";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
+import {ALERT_TYPE} from "react-native-alert-notification";
 
 // 初始化Geocoder库，这个库用于处理地址和地理坐标的相互转化
 Geocoder.init(googleMapsApiKey);
@@ -235,6 +237,7 @@ const RideOrderScreen = () => {
                 getCurrentLocation();
             } else {
                 console.log("Location permission denied");
+                showDialog('WARNING', 'Action Required', 'Location permission denied. For automatic location input, please enable location access.');
             }
         } catch (err) {
             console.warn(err);
@@ -283,7 +286,7 @@ const RideOrderScreen = () => {
                 }
             }).catch(err => {
             console.log("user order check fail" + err.message);
-            alert("System error,Please try again later!");
+            showDialog('DANGER', 'System error', 'System error,Please try again later!');
             setIsLoading(false);  // 处理失败，停止 spinner
         });
     };
@@ -370,15 +373,19 @@ const RideOrderScreen = () => {
                             departureCoords: departureCoords,
                             destinationCoords: destinationCoords,
                         });
+                        showToast('SUCCESS', 'Order Successfully', 'Place the order successfully and wait for the driver to pick up the order');
                     } else {
-                        alert("Submit failed" + data.message);
+                        showDialog('WARNING', 'Submit failed', 'Submit failed' + data.message);
+
                     }
                 }).catch((err) => {
                 console.log(err);
-                alert("Submit Order failed")
+                showDialog('DANGER', 'Submit Order failed', 'Submit failed' + err);
+
             });
         } catch (e) {
             console.log("下单异常", e);
+            showDialog('DANGER', 'Submit Order failed', 'Submit failed' + e);
         }
     };
     // 处理下一步的逻辑，获取行程的距离和时间，如果已经确认预订，则跳转到订单详情页面
@@ -448,14 +455,14 @@ const RideOrderScreen = () => {
                                 }, 1000); // 这是延迟的时间，你可以根据你的应用调整
                             } else {
                                 console.log(data.message)
-                                alert("Get price error, please try again later!")
+                                showDialog('WARNING', 'Get price error', 'Get price error, please try again later!' + data.message);
                                 // setIsBookingConfirmed(false);
                                 setIsLoading(false); // 立即停止加载动画
                             }
                         }).catch(err => {
                         console.error(err);
                         setIsBookingConfirmed(false);
-                        alert("Get price error, please try again later!")
+                        showDialog('DANGER', 'Get price error', 'Get price error, please try again later!' + err);
                         setIsLoading(false); // 立即停止加载动画
                     })
 

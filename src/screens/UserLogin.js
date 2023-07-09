@@ -18,7 +18,6 @@ import {
 } from "native-base";
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
-import {ALERT_TYPE} from "react-native-alert-notification";
 import {showToast} from "../com/evotech/common/alert/toastHelper";
 
 const countryCodes = {
@@ -58,17 +57,17 @@ function UserScreen() {
 
     const submitData = () => {
         if (!value) {
-            alert("Please enter a phone number");
+            showToast('WARNING', 'Warning', 'Please enter a phone number');
             return;
         }
 
         if (!selectedValue) {
-            alert("Please choose a country code");
+            showToast('WARNING', 'Warning', 'Please choose a country code');
             return;
         }
 
         if (!isPhoneNumberValid) {
-            alert("Please enter a valid phone number");
+            showToast('WARNING', 'Warning', 'Please enter a valid number.');
             return;
         }
 
@@ -79,14 +78,14 @@ function UserScreen() {
                 if (data.code === 200) {
                     setIsTimerActive(true);
                     console.log(data.code)
-                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'The SMS has been sent successfully.');
+                    showToast('SUCCESS', 'Success', 'The SMS has been sent successfully.');
                 } else {
-                    showToast(ALERT_TYPE.WARNING, 'Warning', data.message);
+                    showToast('WARNING', 'Warning', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                showToast(ALERT_TYPE.DANGER, 'Error', 'There was an error submitting your data. Please try again.');
+                showToast('DANGER', 'Error', 'There was an error submitting your data. Please try again.');
             });
     };
 
@@ -102,7 +101,8 @@ function UserScreen() {
         }
 
         if (selectedValue === "my") {
-            if (text.length < 9 || text.length > 10) {
+            const phonePattern = /^(?!60|0)\d{9,10}$/;
+            if (!phonePattern.test(text)) {
                 setIsPhoneNumberValid(false);
                 return;
             }
@@ -151,14 +151,14 @@ function UserScreen() {
                     setUserToken(data.data)
                     buildUserInfo(data.data, userType.USER, userPhone).saveWithLocal();
                     navigation.navigate("User");
-                    showToast(ALERT_TYPE.SUCCESS, 'Login Successful', 'You have successfully logged in!');
+                    showToast('SUCCESS', 'Login Successful', 'You have successfully logged in!');
                 } else {
-                    showToast(ALERT_TYPE.WARNING, 'Login Failed', data.message);
+                    showToast('WARNING', 'Login Failed', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                showToast(ALERT_TYPE.WARNING, 'Login Error', 'Error: ' + error.message);
+                showToast('WARNING', 'Login Error', 'Error: ' + error.message);
             });
     };
 
@@ -243,8 +243,8 @@ function UserScreen() {
                     </Modal>
                 </FormControl>
                 {!isPhoneNumberValid && (
-                    <Text color="red.500" mt="1" fontSize="sm">
-                        {selectedValue === "cn" ? "Enter 11-digit phone number for China" : "Enter 9 or 11 digit phone number for Malaysia"}
+                    <Text color="orange.500" mt="1" fontSize="sm">
+                        {selectedValue === "cn" ? "Enter 11-digit phone number for China" : "Enter phone number. Not allowed 60 or 0 in the beginning."}
                     </Text>
                 )}
                 <Input

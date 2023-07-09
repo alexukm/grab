@@ -28,7 +28,7 @@ const ImageUploadPage = () => {
             (documentType === 'ID' ? (uploadedIdCardFront && uploadedIdCardBack) : uploadedPassport)
         ) {
             showDialog('SUCCESS', 'Success', 'All documents uploaded successfully! Please waiting fou us view, we will contact you within 2 working days. Thanks! ');
-            navigation.navigate("DriverLogin");
+            navigation.replace("DriverLogin");
 
             //司机退出登录
             driverLogout().then();
@@ -67,10 +67,10 @@ const ImageUploadPage = () => {
                             showToast('SUCCESS', 'Upload Status', "Image upload result: " + data.message);
                             setUploadStatus(true);
                         }).catch(err => {
-                        showToast('DANGER', 'Upload Exception', "Image upload exception: " + err.message);
+                        showDialog('DANGER', 'Upload Exception', "Image upload exception: " + err.message);
                     });
                 } catch (error) {
-                    showToast('DANGER', 'Upload Failed', 'Failed to upload file: ' + error.message);
+                    showDialog('DANGER', 'Upload Failed', 'Failed to upload file: ' + error.message);
                 }
             }
         });

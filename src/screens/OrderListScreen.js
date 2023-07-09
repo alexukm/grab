@@ -7,6 +7,7 @@ import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {useFocusEffect} from '@react-navigation/native';
 import {formatDate} from "../com/evotech/common/formatDate";
+import {showToast} from "../com/evotech/common/alert/toastHelper";
 
 const OrderBox = React.memo(({order, navigation}) => {
     const {
@@ -61,11 +62,11 @@ const OrderBox = React.memo(({order, navigation}) => {
                         },
                     });
                 } else {
-                    alert(data.message);
+                    showToast('WARNING', 'Warning', data.message);
                 }
             }).catch(error => {
             console.log("order info query failed " + error.message);
-            alert("order details query failed ,please try again later!")
+            showToast('ERROR', 'Error', 'Order details query failed, please try again later!');
         });
     };
     return (
@@ -127,10 +128,12 @@ const OrderListScreen = ({navigation}) => {
                     return data.data;
                 } else {
                     console.log(data.message);
+                    showToast('WARNING', 'Warning', data.message);
                     return [];
                 }
             }).catch(error => {
                 console.log(error);
+                showToast('ERROR', 'Error', 'Error', error);
                 return [];
             })
     };

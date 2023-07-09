@@ -52,21 +52,21 @@ function DriverScreen() {
 
     const submitData = () => {
         if (selectedValue === "cn" && value.length !== 11) {
-            alert("Please enter a valid 11-digit phone number for China");
+            showDialog('WARNING', 'Invalid Input', 'Please enter a valid 11-digit phone number for China');
             return false;
         }
-        if (selectedValue === "my" && (value.length !== 9 && value.length !== 10)) {
-            alert("Please enter a valid 9-digit or 10-digit phone number for Malaysia");
+        if (selectedValue === "my" && ((value.length !== 9 && value.length !== 10) || (value.startsWith("6") || value.startsWith("0")))) {
+            showDialog('WARNING', 'Invalid Input', 'Please enter a valid 9-digit or 10-digit phone number without including 60 or 0 at the beginning.');
             return false;
         }
 
         if (!value) {
-            alert("Please enter a phone number");
+            showToast('WARNING', 'Missing Data', 'Please enter a phone number');
             return false;
         }
 
         if (!selectedValue) {
-            alert("Please choose a country code");
+            showToast('WARNING', 'Missing Data', 'Please choose a country code');
             return false;
         }
 
@@ -77,9 +77,9 @@ function DriverScreen() {
                 if (data.code === 200) {
                     setIsTimerActive(true);
                     console.log(data.code)
-                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'The SMS has been sent successfully.');
+                    showToast('SUCCESS', 'Success', 'The SMS has been sent successfully.');
                 } else {
-                    showToast(ALERT_TYPE.WARNING, 'Warning', data.message);
+                    showDialog(ALERT_TYPE.WARNING, 'Warning', data.message);
                     return false;
                 }
             })
@@ -148,11 +148,11 @@ function DriverScreen() {
                             }
                         } else {
                             // TODO 后台查询失败 处理
-                            showToast(ALERT_TYPE.WARNING, 'Warning', 'Backend query failed.');
+                            showDialog(ALERT_TYPE.WARNING, 'Warning', 'Backend query failed.');
                         }
                     }).catch(err => {
                         // TODO 异常处理
-                        showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + err.message);
+                        showDialog(ALERT_TYPE.DANGER, 'Error', 'Error: ' + err.message);
                     })
                 } else {
                     console.log(userPhone)
@@ -161,7 +161,7 @@ function DriverScreen() {
             })
             .catch(error => {
                 console.log(error);
-                showToast(ALERT_TYPE.DANGER, 'Login Error', 'Login failed.');
+                showDialog(ALERT_TYPE.DANGER, 'Login Error', 'Login failed.');
             });
     };
 

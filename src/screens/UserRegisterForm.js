@@ -15,13 +15,12 @@ import {
 import { MD5 } from 'crypto-js';
 import { smsSend, userRegistry } from "../com/evotech/common/http/BizHttpUtil";
 import {setUserToken, userType} from "../com/evotech/common/appUser/UserConstant";
-import {NavigationActions as navigation} from "react-navigation";
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import {buildUserInfo} from "../com/evotech/common/appUser/UserInfo";
 import {UserTypeEnum} from "../com/evotech/common/constant/BizEnums";
 import { ALERT_TYPE, Dialog, Toast } from 'react-native-alert-notification';
-import {showToast} from "../com/evotech/common/alert/toastHelper";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 
@@ -66,28 +65,31 @@ const RegisterScreen = () => {
     const submitData = () => {
         // 检查所有输入框都已填写
         if (!firstName || !lastName || !email || !phoneNumber) {
-            alert('Please fill in all the fields.');
+            showToast('WARNING', 'Missing Data', 'Please fill in all the fields.');
             return;
         }
 
         // 验证电子邮件格式
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(email)) {
-            alert('Please enter a valid email address.');
+            showToast('WARNING', 'Invalid Email', 'Please enter a valid email address.');
             return;
         }
 
         // 根据选择的国家代码，验证电话号码
         let phonePattern;
         if (selectedValue === '60') {
-            phonePattern = /^\d{9,10}$/;
+            phonePattern = /^(?!60|0)\d{9,10}$/;
+            if (!phonePattern.test(phoneNumber)) {
+                showDialog('WARNING', 'Invalid Input', 'Please enter a valid 9-digit or 10-digit phone number without including 60 or 6 at the beginning.');
+                return;
+            }
         } else if (selectedValue === '86') {
             phonePattern = /^\d{11}$/;
-        }
-
-        if (!phonePattern.test(phoneNumber)) {
-            alert('Please enter a valid phone number.');
-            return;
+            if (!phonePattern.test(phoneNumber)) {
+                showDialog('WARNING', 'Invalid Input', 'Please enter a valid 11-digit phone number');
+                return;
+            }
         }
 
         // 调用后端函数发送验证码
@@ -112,14 +114,14 @@ const RegisterScreen = () => {
                             setIsResendOtpActive(true);
                         }
                     }, 1000);
-                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'SMS sent successfully!');
+                    showToast('SUCCESS', 'Success', 'SMS sent successfully!');
                 } else {
-                    showToast(ALERT_TYPE.WARNING, 'Error', data.message);
+                    showDialog('WARNING', 'Error', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
+                showDialog('DANGER', 'Error', 'Error: ' + error.message);
             });
     };
 
@@ -142,14 +144,14 @@ const RegisterScreen = () => {
                             setIsResendOtpActive(true);
                         }
                     }, 1000);
-                    showToast(ALERT_TYPE.SUCCESS, 'Success', 'SMS sent successfully!');
+                    showToast('SUCCESS', 'Success', 'SMS sent successfully!');
                 } else {
-                    showToast(ALERT_TYPE.WARNING, 'Error', data.message);
+                    showDialog('WARNING', 'Error', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                showToast(ALERT_TYPE.DANGER, 'Error', 'Error: ' + error.message);
+                showDialog('DANGER', 'Error', 'Error: ' + error.message);
             });
     };
 
@@ -177,31 +179,19 @@ const RegisterScreen = () => {
         userRegistry(registryParams)
             .then(data => {
                 if (data.code === 200) {
-                    Toast.show({
-                        type: ALERT_TYPE.SUCCESS,
-                        title: 'Registration Success',
-                        textBody: 'Login Success',
-                    });
+                    showToast('SUCCESS', 'Registration Success', 'Registration was successful');
                     console.log('注册成功', data);
                     setUserToken(data.data);
                     buildUserInfo(data.data, userType.USER, userPhone).saveWithLocal();
                     navigation.navigate("User");
                 } else {
-                    Toast.show({
-                        type: ALERT_TYPE.WARNING,
-                        title: 'Registration failed',
-                        textBody: data.message,
-                    });
+                    showDialog('WARNING', 'Registration Failed', data.message);
                     console.log('注册失败', data.message);
                 }
             })
             .catch(error => {
                 console.log(error);
-                Toast.show({
-                    type: ALERT_TYPE.DANGER,
-                    title: 'Error',
-                    textBody: 'Error: ' + error.message,
-                });
+                showDialog('DANGER', 'Error', 'Error: ' + error.message);
             });
         setVerificationCode('');
     };

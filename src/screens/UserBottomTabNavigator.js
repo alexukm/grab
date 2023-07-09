@@ -4,14 +4,14 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { StyleSheet } from 'react-native';
 import RemixIcon from 'react-native-remix-icon';
 
-import UserHomeScreen from './UserHomeScreen';
 import OrderListScreen from "./OrderListScreen";
 import AccountScreen from './AccountScreen';
 import OrderDetailScreen from './OrderDetailScreen';
 import RideOrderScreen from './RideOrderScreen';
-import SimpleOrderDetailScreen from './SimpleOrderDetailScreen';
+import UserOrderDetailScreen from './UserOrderDetailScreen';
 import ChatList from "./ChatList";
 import ChatRoom from "./ChatRoom";
+import UserHome from "./UserHomeScreen";
 
 
 const Tab = createBottomTabNavigator();
@@ -28,7 +28,7 @@ const OrderStackScreen = () => (
 
 const SimpleOrderDetailStackScreen = () => (
     <SimpleOrderDetailStack.Navigator screenOptions={{ headerShown: false }}>
-        <SimpleOrderDetailStack.Screen name="SimpleOrderDetailScreen" component={SimpleOrderDetailScreen} />
+        <SimpleOrderDetailStack.Screen name="SimpleOrderDetailScreen" component={UserOrderDetailScreen} />
     </SimpleOrderDetailStack.Navigator>
 );
 
@@ -58,7 +58,7 @@ const UserBottomTabNavigator = () => (
             headerShown: false,
         })}
     >
-        <Tab.Screen name="Home" component={UserHomeScreen} />
+        <Tab.Screen name="Home" component={UserHome} />
         <Tab.Screen name="Activity" component={OrderListScreen} />
         {/*<Tab.Screen name="Messages" component={MessagesScreen} />*/}
         <Tab.Screen name="Messages" component={ChatList}/>

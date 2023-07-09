@@ -25,6 +25,7 @@ import DatePicker from 'react-native-date-picker';
 import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import {useNavigation} from "@react-navigation/native";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 const DriverSupplyInfo = () => {
@@ -70,9 +71,9 @@ const DriverSupplyInfo = () => {
 
         launchImageLibrary(options, async response => {
             if (response.didCancel) {
-                alert('User cancelled image picker');
+                showToast('WARNING', 'Action Cancelled', 'User cancelled image picker');
             } else if (response.error) {
-                alert('ImagePicker Error: ' + JSON.stringify(response.error));
+                showToast('DANGER', 'Error', 'ImagePicker Error: ' + JSON.stringify(response.error));
             } else {
                 const uri = response.assets[0].uri;
                 const params = {
@@ -82,13 +83,13 @@ const DriverSupplyInfo = () => {
                 try {
                     driverUpload(uri, params)
                         .then(data => {
-                            alert("图片上传结果" + data.message);
+                            showToast('SUCCESS', 'Upload Status', "Image upload result: " + data.message);
                             setUploadedCarPath(true);
                         }).catch(err => {
-                        alert("图片上传异常" + err.message);
+                        showToast('DANGER', 'Upload Exception', "Image upload exception: " + err.message);
                     });
                 } catch (error) {
-                    alert('Failed to upload file: ' + error.message);
+                    showToast('DANGER', 'Upload Failed', 'Failed to upload file: ' + error.message);
                 }
             }
         });
@@ -115,7 +116,7 @@ const DriverSupplyInfo = () => {
         const missingFields = fields.filter(({name, value}) => !value).map(({name}) => name);
 
         if (missingFields.length > 0) {
-            Alert.alert('Missing Information', 'Please fill in the following: ' + missingFields.join(', '));
+            showDialog('WARNING', 'Missing Information', 'Please fill in the following: ' + missingFields.join(', '));
         } else {
             //获取不到手机号
             if (!userInfo) {
@@ -143,14 +144,17 @@ const DriverSupplyInfo = () => {
                 .then(data => {
                     if (data.code === 200) {
                         console.log('Upload successful', data);
+                        showToast('SUCCESS', 'Upload Successful', 'Upload successful');
                         userInfo.saveWithLocal();
                         navigation.navigate("Driver");
                     } else {
                         console.log('Upload failed', data.message);
+                        showToast('WARNING', 'Upload Failed', 'Upload failed: ' + data.message);
                     }
                 })
                 .catch(error => {
                     console.log('Upload failed', error);
+                    showToast('DANGER', 'Upload Failed', 'Upload failed: ' + error.message);
                 });
         }
     };
@@ -235,7 +239,7 @@ const DriverSupplyInfo = () => {
                                             transparent={true}
                                             onRequestClose={() => setDatePickerVisibility(false)}
                                         >
-                                            <TouchableWithoutFeedback onPress={() => setDatePickerVisibility(false)}>
+                                            <TouchableWithoutFeedback>
                                                 <View style={{
                                                     flex: 1,
                                                     justifyContent: 'center',
@@ -249,12 +253,12 @@ const DriverSupplyInfo = () => {
                                                     }}>
                                                         <DatePicker
                                                             date={carRegistryDate || new Date()}
-                                                            onDateChange={date => {
-                                                                setCarRegistryDate(date);
-                                                                setDatePickerVisibility(false);
-                                                            }}
+                                                            onDateChange={date => setCarRegistryDate(date)}
                                                             mode="date"
                                                         />
+                                                        <Button onPress={() => setDatePickerVisibility(false)}>
+                                                            Confirm
+                                                        </Button>
                                                     </View>
                                                 </View>
                                             </TouchableWithoutFeedback>
@@ -314,7 +318,7 @@ const DriverSupplyInfo = () => {
                                                             refRBSheet.current.close();
                                                         }}
                                                     >
-                                                        <Text>{desc}</Text>
+                                                        <Text style={{ fontSize: 20, margin: 2 }}>{desc}</Text>
                                                     </TouchableHighlight>
                                                 ))
                                             }

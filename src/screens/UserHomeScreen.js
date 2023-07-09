@@ -2,9 +2,17 @@ import React, {useEffect, useState} from 'react';
 import {Image, TouchableOpacity, View} from 'react-native';
 import {Box, AspectRatio, Button, Center, Text} from 'native-base';
 import {useNavigation} from '@react-navigation/native';
+import Swiper from 'react-native-swiper';
+import defaultClient, {defaultWebsocketClient} from "../com/evotech/common/websocket/WebSocketClient";
+import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
+import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
+import {initLocalChat, saveLocalChat, UserChat} from "../com/evotech/common/redux/UserChat";
+import {queryUserOrderStatus} from "../com/evotech/common/http/BizHttpUtil";
+import {userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
+import {showDialog} from "../com/evotech/common/alert/toastHelper";
 
 
-const UserHomeScreen = () => {
+const UserHome = () => {
     const navigation = useNavigation();
 
     //TODO 处理查询失败的情况
@@ -158,7 +166,7 @@ const UserHomeScreen = () => {
                     <Button onPress={() => handlePress('RideOrderScreen')} style={{backgroundColor: '#3498db'}}>Go to
                         Ride</Button>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handlePress('ServiceScreen')} style={{width: "47%"}}>
+                <TouchableOpacity onPress={() => showDialog('WARNING', 'Action Waiting', 'Other features will be available soon, please wait')} style={{width: "47%"}}>
                     <Box>
                         <CardWithoutDescription
                             imageUri="https://images.pexels.com/photos/518244/pexels-photo-518244.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"/>
@@ -172,12 +180,6 @@ const UserHomeScreen = () => {
 };
 
 
-import Swiper from 'react-native-swiper';
-import defaultClient, {defaultWebsocketClient} from "../com/evotech/common/websocket/WebSocketClient";
-import {defaultHeaders} from "../com/evotech/common/http/HttpUtil";
-import {getUserToken} from "../com/evotech/common/appUser/UserConstant";
-import {initLocalChat, saveLocalChat, UserChat} from "../com/evotech/common/redux/UserChat";
-import {queryUserOrderStatus} from "../com/evotech/common/http/BizHttpUtil";
-import {userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
 
-export default UserHomeScreen;
+
+export default UserHome;

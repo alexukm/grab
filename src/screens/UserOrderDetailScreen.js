@@ -19,11 +19,12 @@ import RBSheet from "react-native-raw-bottom-sheet";
 import {format} from "date-fns";
 import {googleMapsApiKey} from "../com/evotech/common/apiKey/mapsApiKey";
 import {userCancelSubscribe} from "../com/evotech/common/websocket/UserChatWebsocket";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 Geocoder.init(googleMapsApiKey);
 
-const SimpleOrderDetailScreen = ({route, navigation}) => {
+const UserOrderDetailScreen = ({route, navigation}) => {
     const {
         Departure,
         Destination,
@@ -62,16 +63,16 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         userCancelOrder(cancelOrderParam)
             .then(data => {
                 if (data.code === 200) {
-                    alert("Cancelled Order Success");
+                    showToast('SUCCESS', 'Success', 'Cancelled Order Successfully');
                     userCancelSubscribe().then()
-                    navigation.goBack(); // After canceling the order, return to the previous screen.
+                    navigation.replace(); // After canceling the order, return to the previous screen.
                 } else {
                     console.log(data.message);
-                    alert("Cancel Order failed, Please try again later!")
+                    showDialog('WARNING', 'Failed', 'Cancel Order failed, Please try again later!');
                 }
             }).catch(error => {
             console.log(error);
-            alert("system error: " + error.message)
+            showDialog('DANGER', 'Error', 'System error: ' + error.message);
         });
         refRBSheet.current.close();
     };
@@ -145,7 +146,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         passerGetDriverCode(params)
             .then(data => {
                 if (data.code !== 200) {
-                    alert(data.message);
+                    showDialog('WARNING', 'Warning', data.message);
                     return;
                 }
                 navigation.navigate('ChatRoom', {
@@ -155,7 +156,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                 });
             }).catch(err => {
             console.error(err.message);
-            alert("get user info failed,please try again later!");
+            showDialog('DANGER', 'Error', 'Get user info failed, please try again later!');
         });
     }
     const fetchDataAndUpdateParams = () => {
@@ -177,7 +178,7 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
                         DestinationCoords: DestinationCoords
                     });
                 } else {
-                    alert(data.message);
+                    showDialog('DANGER', 'Error', 'Error', data.message);
                 }
             });
     }
@@ -192,13 +193,13 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
         }
         userReviewOrder(param).then(data => {
             if (data.code !== 200) {
-                alert("submit review failed,please try again later!");
+                showDialog('WARNING', 'Error', 'Submit review failed,please try again later!');
             } else {
                 fetchDataAndUpdateParams();
             }
         }).catch(err => {
             console.error(err.message);
-            alert("submit review failed,please try again later!");
+            showDialog('DANGER', 'Error', 'Submit review failed,please try again later!');
         });
     }
 
@@ -548,4 +549,4 @@ const SimpleOrderDetailScreen = ({route, navigation}) => {
     );
 };
 
-export default SimpleOrderDetailScreen;
+export default UserOrderDetailScreen;

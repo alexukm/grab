@@ -126,6 +126,7 @@ const DriverOrderListScreen = () => {
         const params = {
             userOrderId: orderId,
         }
+        console.log(orderId)
         driverAcceptOrder(params).then(data => {
             if (data.code === 200) {
                 showDialog('SUCCESS', 'Success', 'Order successfully Accepted');
@@ -251,6 +252,7 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
         marginLeft: 5,
+        marginTop: -20,
         transform: [{rotate: '30deg'}] // 这行会将图标旋转30度
     },
     floatingButtonContainer: {

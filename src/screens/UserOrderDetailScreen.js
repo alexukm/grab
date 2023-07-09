@@ -65,7 +65,7 @@ const UserOrderDetailScreen = ({route, navigation}) => {
                 if (data.code === 200) {
                     showToast('SUCCESS', 'Success', 'Cancelled Order Successfully');
                     userCancelSubscribe().then()
-                    navigation.replace(); // After canceling the order, return to the previous screen.
+                    navigation.goBack(); // After canceling the order, return to the previous screen.
                 } else {
                     console.log(data.message);
                     showDialog('WARNING', 'Failed', 'Cancel Order failed, Please try again later!');

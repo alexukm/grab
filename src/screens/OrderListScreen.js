@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
 import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
 import RemixIcon from 'react-native-remix-icon';
@@ -86,7 +86,7 @@ const OrderBox = React.memo(({order, navigation}) => {
                         <RemixIcon name="time-fill" size={15} color="black"/>
                         <Text>
                             {formatDate(new Date(departureTime))} ·
-                            <Text style={{ fontWeight: 'bold' }}>RM {price}</Text>
+                            <Text style={{fontWeight: 'bold'}}>RM {price}</Text>
                         </Text>
                     </HStack>
                 </VStack>
@@ -95,7 +95,7 @@ const OrderBox = React.memo(({order, navigation}) => {
     );
 });
 
-const pageSize = 10;
+const pageSize = 5;
 
 const OrderListScreen = ({navigation}) => {
     const [page, setPage] = useState(1);
@@ -111,9 +111,9 @@ const OrderListScreen = ({navigation}) => {
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        const orderList = await queryOrderList(pageSize, 1);
-        setOrders(orderList.content);
-        setPage(2);
+        setPage(1); // Reset page
+        const orderList = await queryOrderList(pageSize, 1); // Query the first page of orders
+        setOrders(orderList.content); // Reset the orders list
         setRefreshing(false);
     }, []);
 
@@ -143,16 +143,17 @@ const OrderListScreen = ({navigation}) => {
             return;
         }
         setLoading(true);
-        const orderList = await queryOrderList(pageSize, page);
-        if (orderList.length > 0) {
+        const nextPage = page + 1;
+        const orderList = await queryOrderList(pageSize, nextPage);
+        if (orderList.content.length > 0) {
             setOrders((oldData) => [...oldData, ...orderList.content]);
-            setPage((prevPage) => prevPage + 1);
+            setPage(nextPage);
         }
         setLoading(false);
     }, [loading, page]);
 
     const renderItem = useCallback(({item}) => <OrderBox key={item.id} order={item} navigation={navigation}
-                                                         />, [navigation]);
+    />, [navigation]);
 
 
     return (
@@ -162,9 +163,9 @@ const OrderListScreen = ({navigation}) => {
                 data={orders}
                 renderItem={renderItem}
                 onEndReached={fetchMoreOrders}
-                onEndReachedThreshold={0.5}
+                onEndReachedThreshold={0}
                 windowSize={20}
-                initialNumToRender={10}
+                initialNumToRender={5}
                 maxToRenderPerBatch={20}
                 refreshControl={
                     <RefreshControl

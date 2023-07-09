@@ -46,8 +46,7 @@ export const userCancelSubscribe = async () => {
     queryUserOrderStatus().then((data) => {
         if (data.code === 200) {
             // 没有待出行和旅途中的订单  聊天订阅关闭
-            userCancelSubscribe(orderStatus).then();
-
+            doUserCancelSubscribe(data.data).then();
         }
     });
 }

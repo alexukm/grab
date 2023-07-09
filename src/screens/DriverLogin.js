@@ -144,7 +144,7 @@ function DriverScreen() {
                                 showDialog(ALERT_TYPE.SUCCESS, 'Action Required', 'Please complete your driver information.');
                             } else {
                                 navigation.navigate("Driver");
-                                showDialog(ALERT_TYPE.SUCCESS, 'Complete', 'Your documents have been submitted and are under review.');
+                                showDialog(ALERT_TYPE.SUCCESS, 'Welcome to UniEase Driver Family.', 'You can accept your orders now');
                             }
                         } else {
                             // TODO 后台查询失败 处理

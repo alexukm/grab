@@ -11,6 +11,7 @@ import {
 import {format} from "date-fns";
 import {OrderStateEnum} from "../com/evotech/common/constant/BizEnums";
 import {useFocusEffect} from '@react-navigation/native';
+import {showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 const styles1 = StyleSheet.create({
@@ -84,11 +85,11 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
                         },
                     });
                 } else {
-                    alert(data.message);
+                    showToast('WARNING', 'Warning', data.message)
                 }
             }).catch(error => {
             console.error("order info query failed " , error);
-            alert("order details query failed ,please try again later!")
+            showToast('WARNING', 'Order info query failed', error)
         });
     };
 

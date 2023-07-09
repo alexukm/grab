@@ -46,8 +46,6 @@ const DriverAccount = () => {
         { name: 'Logout', onPress: handleLogoutPress },
     ];
 
-
-
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground source={require('../picture/acc_bg.png')} style={styles.background}>

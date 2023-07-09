@@ -29,6 +29,7 @@ import {format} from "date-fns";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
 import {closeWebsocket} from "../com/evotech/common/websocket/SingletonWebSocketClient";
 import {driverCancelSubscribe} from "../com/evotech/common/websocket/UserChatWebsocket";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 Geocoder.init('AIzaSyCTgmg64j-V2pGH2w6IgdLIofaafqWRwzc');
@@ -70,16 +71,16 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         driverCancelOrder(cancelOrderParam)
             .then(data => {
                 if (data.code === 200) {
-                    alert("Cancelled Order Success");
+                    showToast('SUCCESS', 'Success', "Order successfully cancelled");
                     driverCancelSubscribe().then();
                     navigation.goBack(); // After canceling the order, return to the previous screen.
                 } else {
                     console.log(data.message);
-                    alert("Cancel Order failed, Please try again later!")
+                    showDialog('WARNING', 'Warning', "Order cancellation failed, Please try again later!");
                 }
             }).catch(error => {
             console.log(error);
-            alert("system error: " + error.message)
+            showDialog('ERROR', 'Error', "System error: " + error.message);
         });
         refRBSheet.current.close();
     };
@@ -92,7 +93,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         driverGetPasserCode(params)
             .then(data => {
                 if (data.code !== 200) {
-                    alert(data.message);
+                    showDialog('WARNING', 'Warning', data.message);
                     return;
                 }
                 navigation.navigate('ChatRoom', {
@@ -102,7 +103,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 });
             }).catch(err => {
             console.error(err.message);
-            alert("get user info failed,please try again later!");
+            showDialog('ERROR', 'Error', "Failed to get user info, please try again later!");
         });
     }
 
@@ -139,7 +140,7 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                         DestinationCoords: DestinationCoords
                     });
                 } else {
-                    alert(data.message);
+                    showDialog('WARNING', 'Warning', data.message);
                 }
             });
     }
@@ -158,11 +159,11 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                     // 判断 是否需要关闭websocket
                     driverOrderStatusCallBack();
                 } else {
-                    alert(data.message);
+                    showDialog('WARNING', 'Warning', data.message);
                 }
             });
         } catch (error) {
-            alert('请求失败，请稍后重试。');
+            showDialog('ERROR', 'Error', 'Request failed, please try again later.');
             console.error(error);
         }
     };
@@ -179,12 +180,12 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
                 await Linking.openURL(url);
             } else {
                 // 如果用户的设备上没有导航应用，则抛出错误
-                alert("对不起，您的设备上没有找到导航应用");
+                showDialog('ERROR', 'Error', "Sorry, no navigation application found on your device");
             }
         } catch (error) {
             // 如果其他错误发生，抛出错误
             console.error('An error occurred', error);
-            alert("无法打开导航，发生了一个错误");
+            showToast('ERROR', 'Error', "Unable to open navigation, an error occurred");
         }
     };
 
@@ -245,13 +246,13 @@ const DriverAcceptDetailScreen = ({route, navigation}) => {
         driverReviewOrder(param).then(data => {
             console.log(data)
             if (data.code !== 200) {
-                alert("submit review failed,please try again later!");
+                showDialog('WARNING', 'Warning', "Failed to submit review, please try again later!");
             } else {
                 fetchDataAndUpdateParams();
             }
         }).catch(err => {
             console.error(err.message);
-            alert("submit review failed,please try again later!");
+            showDialog('ERROR', 'Error', "Failed to submit review, please try again later!");
         });
     }
     const ReviewBox = () => (

@@ -16,6 +16,7 @@ import {useFocusEffect} from "@react-navigation/native";
 import ActionSheet from "@alessiocancian/react-native-actionsheet";
 import RemixIcon from "react-native-remix-icon";
 import {UserChat} from "../com/evotech/common/redux/UserChat";
+import {showDialog, showToast} from "../com/evotech/common/alert/toastHelper";
 
 
 const DriverOrderListScreen = () => {
@@ -81,11 +82,11 @@ const DriverOrderListScreen = () => {
             if (data.code === 200) {
                 return data.data;
             } else {
-                alert(data.message);
+                showToast('WARNING', 'Warning', data.message);
                 return [];
             }
         }).catch(err => {
-            alert('Query order failed');
+            showToast('ERROR', 'Error', 'error', err.message);
             console.error(err.message);
             return [];
         })
@@ -127,15 +128,15 @@ const DriverOrderListScreen = () => {
         }
         driverAcceptOrder(params).then(data => {
             if (data.code === 200) {
-                alert("Order successfully Accepted")
+                showDialog('SUCCESS', 'Success', 'Order successfully Accepted');
                 UserChat(false).then();
                 handleRefresh().then(); //在这里添加代码，接受订单后刷新页面。
             } else {
-                alert(data.message);
+                showToast('WARNING', 'Warning', data.message);
             }
         }).catch(err => {
             console.error(err.message);
-            alert('Accept Order Failed');
+            showToast('ERROR', 'Error', 'Accept Order Failed' + err.message);
         })
         //todo 刷新订单广场页
     };

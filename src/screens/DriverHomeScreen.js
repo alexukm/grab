@@ -7,6 +7,7 @@ import {UserChat, initLocalChat, saveLocalChat} from "../com/evotech/common/redu
 import {queryDriverOrderStatus} from "../com/evotech/common/http/BizHttpUtil";
 import {userOrderWebsocket} from "../com/evotech/common/websocket/UserChatWebsocket";
 import {tr} from "date-fns/locale";
+import {showDialog} from "../com/evotech/common/alert/toastHelper";
 
 
 const DriverHomeScreen = () => {
@@ -145,13 +146,13 @@ const DriverHomeScreen = () => {
                     <Button onPress={() => handlePress('DriverOrderListScreen')} style={{backgroundColor: '#3498db'}}>Go
                         to Ride</Button>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => handlePress('ServiceScreen')} style={{width: "47%"}}>
+                <TouchableOpacity onPress={() => showDialog('WARNING', 'Action Waiting', 'Other features will be available soon, please wait')} style={{width: "47%"}}>
                     <Box>
                         <CardWithoutDescription
                             imageUri="https://images.pexels.com/photos/518244/pexels-photo-518244.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"/>
                     </Box>
-                    <Button onPress={() => handlePress('ServiceScreen')} style={{backgroundColor: '#3498db'}}>Go to
-                        Service</Button>
+                    {/*<Button onPress={() => handlePress('ServiceScreen')} style={{backgroundColor: '#3498db'}}>Go to*/}
+                    {/*    Service</Button>*/}
                 </TouchableOpacity>
             </View>
         </View>

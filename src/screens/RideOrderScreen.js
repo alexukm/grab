@@ -375,16 +375,19 @@ const RideOrderScreen = () => {
                         });
                         showToast('SUCCESS', 'Order Successfully', 'Place the order successfully and wait for the driver to pick up the order');
                     } else {
+                        setIsSubmitting(false);
                         showDialog('WARNING', 'Submit failed', 'Submit failed' + data.message);
 
                     }
                 }).catch((err) => {
                 console.log(err);
+                setIsSubmitting(false);
                 showDialog('DANGER', 'Submit Order failed', 'Submit failed' + err);
 
             });
         } catch (e) {
             console.log("下单异常", e);
+            setIsSubmitting(false);
             showDialog('DANGER', 'Submit Order failed', 'Submit failed' + e);
         }
     };

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback} from 'react';
+import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {StyleSheet, FlatList, TouchableOpacity, RefreshControl, View} from 'react-native';
 import {Box, HStack, VStack, Text, Button, Input} from 'native-base';
 import RBSheet from "react-native-raw-bottom-sheet";
@@ -116,10 +116,10 @@ const OrderBox = React.memo(({order, navigation, openSheet}) => {
     );
 });
 
-const pageSize = 30;
+const pageSize = 5;
 
 const DriverAcceptListScreen = ({navigation}) => {
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useState(0);
     const [loading, setLoading] = useState(false);
     const [orders, setOrders] = useState([]);
     const [cancelReason, setCancelReason] = useState("");
@@ -127,11 +127,17 @@ const DriverAcceptListScreen = ({navigation}) => {
     const [refreshing, setRefreshing] = useState(false);
     const refRBSheet = useRef();
 
-    useFocusEffect(
-        React.useCallback(() => {
-            handleRefresh();
-        }, [])
-    );
+    const [hasMore, setHasMore] = useState(true);
+
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         handleRefresh();
+    //     }, [])
+    // );
+
+    useEffect(() => {
+        handleRefresh();  // 在这里运行 handleRefresh 以在组件初始化时获取数据
+    }, []);
 
     const openSheet = useCallback((orderId) => {
         setCancelOrderId(orderId);
@@ -140,11 +146,14 @@ const DriverAcceptListScreen = ({navigation}) => {
 
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        const orderList = await queryOrderList(pageSize, 0);
+        const orderList = await queryOrderList(5, 0);  // 5表示首次加载的项数
         setOrders(orderList.content);
-        setPage(2);
+        setPage(1);  // 设置为第一页
+        setHasMore(true);
         setRefreshing(false);
     }, []);
+
+
 
     const queryOrderList = async (pageSize, page) => {
         const queryOrderListParam = {
@@ -166,17 +175,36 @@ const DriverAcceptListScreen = ({navigation}) => {
     };
 
     const fetchMoreOrders = useCallback(async () => {
-        if (loading) {
+        if (loading || !hasMore) {
             return;
         }
         setLoading(true);
         const orderList = await queryOrderList(pageSize, page);
-        if (orderList.length > 0) {
-            setOrders((oldData) => [...oldData, ...orderList.content]);
-            setPage((prevPage) => prevPage + 1);
+        if (orderList.content.length > 0) {
+            let newOrders = orderList.content.filter(order => {
+                // 检查这个订单是否已经在列表中
+                for (let i = 0; i < orders.length; i++) {
+                    if (orders[i].userOrderId === order.userOrderId) {
+                        return false;  // 如果在列表中找到了这个订单，返回false
+                    }
+                }
+                return true;  // 如果在列表中没有找到这个订单，返回true
+            });
+            setOrders((oldData) => [...oldData, ...newOrders]);
+            if(orderList.content.length < pageSize){
+                console.log('No more data');
+                showToast('SUCCESS', 'Order list is completely', 'There are no more data')
+                setHasMore(false); // 设置hasMore为false
+            }
+        } else {
+            console.log('No more data');
+            showToast('SUCCESS', 'Order list is completely', 'There are no more data')
+            setHasMore(false); // 设置hasMore为false
         }
+        setPage((prevPage) => prevPage + 1);
         setLoading(false);
-    }, [loading, page]);
+    }, [loading, page, pageSize, orders]);
+
 
     const renderItem = useCallback(({item}) => <OrderBox key={item.id} order={item} navigation={navigation}
                                                          openSheet={openSheet}/>, [navigation, openSheet]);
@@ -188,9 +216,9 @@ const DriverAcceptListScreen = ({navigation}) => {
                 data={orders}
                 renderItem={renderItem}
                 onEndReached={fetchMoreOrders}
-                onEndReachedThreshold={0.5}
+                onEndReachedThreshold={0.1}
                 windowSize={20}
-                initialNumToRender={10}
+                initialNumToRender={5}
                 maxToRenderPerBatch={20}
                 refreshControl={
                     <RefreshControl
@@ -205,7 +233,7 @@ const DriverAcceptListScreen = ({navigation}) => {
                     </Box>
                 }
                 ListFooterComponent={<Box height={20}/>}
-                keyExtractor={item => item.id}
+                keyExtractor={(item, index) => index.toString()}
             />
         </>
     );
